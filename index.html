@@ -3,216 +3,151 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Brandi’s Deep Space Float (WebXR)</title>
+  <title>Let’s Float Thru Space</title>
+
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
   <style>
-    html,body{margin:0;height:100%;background:#000}
-    .hud{
-      position:fixed;left:12px;right:12px;bottom:12px;z-index:10;
-      color:#fff;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      display:flex;gap:10px;flex-wrap:wrap;align-items:center
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
     }
-    .btn{
-      background:rgba(255,255,255,.12);
-      border:1px solid rgba(255,255,255,.20);
-      color:#fff;padding:10px 12px;border-radius:12px;cursor:pointer
+    .hud {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 10;
+      color: #fff;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
     }
-    .note{opacity:.85;font-size:13px}
+    .btn {
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.25);
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: #fff;
+      cursor: pointer;
+    }
+    .note {
+      font-size: 13px;
+      opacity: .85;
+    }
   </style>
 
   <script>
-    // Crisp stars: generated points (no texture blur)
+    /* ===== STARFIELD ===== */
     AFRAME.registerComponent('starfield', {
-      schema: { count:{type:'int',default:10000}, radius:{type:'number',default:220} },
-      init: function(){
-        const {count, radius} = this.data;
-        const geom = new THREE.BufferGeometry();
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
-
-        for(let i=0;i<count;i++){
-          const u = Math.random();
-          const v = Math.random();
-          const theta = 2*Math.PI*u;
-          const phi = Math.acos(2*v-1);
-
-          const r = radius * (0.90 + Math.random()*0.10);
-          const x = r * Math.sin(phi) * Math.cos(theta);
-          const y = r * Math.cos(phi);
-          const z = r * Math.sin(phi) * Math.sin(theta);
-
-          positions[i*3+0]=x; positions[i*3+1]=y; positions[i*3+2]=z;
-
-          const warm = Math.random() < 0.18;
-          const base = warm ? [1.0, 0.88, 0.75] : [0.80, 0.90, 1.0];
-          const b = 0.35 + Math.random()*0.65;
-          colors[i*3+0]=base[0]*b;
-          colors[i*3+1]=base[1]*b;
-          colors[i*3+2]=base[2]*b;
+      schema: { count:{default:12000}, radius:{default:260} },
+      init() {
+        const g = new THREE.BufferGeometry();
+        const p = new Float32Array(this.data.count * 3);
+        for (let i=0;i<p.length;i+=3){
+          const r = this.data.radius * (0.9 + Math.random()*0.1);
+          const t = Math.random() * Math.PI * 2;
+          const u = Math.acos(2*Math.random()-1);
+          p[i]   = r * Math.sin(u) * Math.cos(t);
+          p[i+1] = r * Math.cos(u);
+          p[i+2] = r * Math.sin(u) * Math.sin(t);
         }
-
-        geom.setAttribute('position', new THREE.BufferAttribute(positions,3));
-        geom.setAttribute('color', new THREE.BufferAttribute(colors,3));
-
-        const mat = new THREE.PointsMaterial({
-          size: 0.55,
-          vertexColors: true,
-          transparent: true,
-          opacity: 0.95,
-          depthWrite: false
-        });
-
-        this.el.setObject3D('mesh', new THREE.Points(geom, mat));
+        g.setAttribute('position', new THREE.BufferAttribute(p,3));
+        const m = new THREE.PointsMaterial({ color: 0xffffff, size: 0.55 });
+        this.el.setObject3D('mesh', new THREE.Points(g,m));
       }
     });
 
-    // Gentle forward drift for "floating through space"
+    /* ===== FLOAT FORWARD ===== */
     AFRAME.registerComponent('float-forward', {
-      schema:{
-        speed:{type:'number',default:0.65},     // meters/sec (keep low = comfy)
-        sway:{type:'number',default:0.10},      // side sway amount
-        bob:{type:'number',default:0.05}        // vertical bob amount
-      },
+      schema:{ speed:{default:0.5}, sway:{default:0.12}, bob:{default:0.05} },
       init(){ this.start = null; this.base = this.el.object3D.position.clone(); },
-      tick: function(t,dt){
-        const obj = this.el.object3D;
+      tick(t){
         if(!this.start) this.start = t;
         const tt = (t - this.start) / 1000;
-
-        // forward motion (negative z)
-        obj.position.z = this.base.z - (tt * this.data.speed);
-
-        // subtle sway/bob
-        obj.position.x = this.base.x + Math.sin(tt * 0.35) * this.data.sway;
-        obj.position.y = this.base.y + Math.sin(tt * 0.22) * this.data.bob;
+        const o = this.el.object3D;
+        o.position.z = this.base.z - tt * this.data.speed;
+        o.position.x = Math.sin(tt*0.35) * this.data.sway;
+        o.position.y = this.base.y + Math.sin(tt*0.25) * this.data.bob;
       }
     });
 
-    // Makes objects drift toward you and loop behind you again
+    /* ===== DRIFT OBJECTS PAST YOU ===== */
     AFRAME.registerComponent('drift-past', {
-      schema:{
-        speed:{type:'number',default:0.65},
-        resetZ:{type:'number',default:-260},
-        spawnZ:{type:'number',default:60}
-      },
-      tick: function(t,dt){
-        const s = this.data.speed * (dt/1000);
+      schema:{ speed:{default:0.2}, resetZ:{default:-700}, spawnZ:{default:120} },
+      tick(_,dt){
         const p = this.el.object3D.position;
-        // move objects toward camera (positive z direction)
-        p.z += s;
-
-        // once it passes you, push it far away again
-        if(p.z > this.data.spawnZ){
-          p.z = this.data.resetZ;
-        }
+        p.z += (dt/1000) * this.data.speed * 40;
+        if (p.z > this.data.spawnZ) p.z = this.data.resetZ;
       }
     });
 
-    // Slow rotation (planets feel alive)
+    /* ===== SLOW PLANET SPIN ===== */
     AFRAME.registerComponent('slow-spin', {
-      schema:{ speed:{type:'number',default:0.05} },
-      tick: function(t,dt){
-        const s = this.data.speed*(dt/1000);
-        this.el.object3D.rotation.y += s;
-      }
-    });
-
-    // Orbit component for moons
-    AFRAME.registerComponent('slow-orbit', {
-      schema:{
-        center:{type:'vec3', default:{x:0,y:1.6,z:-30}},
-        radius:{type:'number',default:2.2},
-        speed:{type:'number',default:0.14}
-      },
-      init(){ this.a = Math.random()*Math.PI*2; },
-      tick: function(t,dt){
-        this.a += this.data.speed*(dt/1000);
-        const c = this.data.center;
-        const r = this.data.radius;
-        this.el.object3D.position.set(
-          c.x + Math.cos(this.a)*r,
-          c.y + Math.sin(this.a*0.7)*(r*0.08),
-          c.z + Math.sin(this.a)*r
-        );
-      }
-    });
-
-    function startAudio(){
-      const a = document.getElementById('bgm');
-      a.volume = 0.85;
-      a.play().catch(()=>{});
-    }
-
-    window.addEventListener('DOMContentLoaded',()=>{
-      document.getElementById('start').addEventListener('click', startAudio);
+      schema:{ speed:{default:0.01} },
+      tick(_,dt){ this.el.object3D.rotation.y += (dt/1000)*this.data.speed; }
     });
   </script>
 </head>
 
 <body>
   <div class="hud">
-    <button class="btn" id="start">Start sound</button>
-    <span class="note">Deep space float: slow forward drift + planets passing by. Quest: Start sound → Enter VR.</span>
+    <span class="note">Deep space float • Enter VR</span>
   </div>
 
-  <a-scene renderer="colorManagement:true; physicallyCorrectLights:true" background="color:#000010" vr-mode-ui="enabled:true">
-    <a-assets timeout="30000">
-      <audio id="bgm" src="assets/space.mp3" preload="auto" loop playsinline></audio>
+  <a-scene background="color:#000010" vr-mode-ui="enabled:true">
 
-      <!-- Optional: 8K equirectangular nebula (WebP recommended) -->
-      <img id="nebula" src="assets/nebula_8k.webp" />
-
-      <!-- Textures -->
-      <img id="p1" src="assets/planet1.webp" />
-      <img id="p2" src="assets/planet2.webp" />
-      <img id="moon" src="assets/moon.webp" />
-      <img id="rings" src="assets/rings.webp" />
+    <!-- LOAD YOUR NEBULAS (ROOT FILES, EXACT NAMES) -->
+    <a-assets>
+      <img id="neb1"
+        src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
+      <img id="neb2"
+        src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy%20(1).jpg">
     </a-assets>
 
-    <!-- If you don't have nebula yet, comment this out -->
-    <a-sky src="#nebula" rotation="0 -90 0"></a-sky>
+    <!-- STARS -->
+    <a-entity starfield></a-entity>
 
-    <!-- Stars (crisp) -->
-    <a-entity starfield="count:11000; radius:240"></a-entity>
-
-    <!-- Cozy lights -->
-    <a-entity light="type:ambient; intensity:0.50; color:#4455ff"></a-entity>
-    <a-entity light="type:point; intensity:1.0; distance:160; color:#00ffd0" position="18 8 -40"></a-entity>
-    <a-entity light="type:point; intensity:0.85; distance:160; color:#ff66cc" position="-18 2 -55"></a-entity>
-
-    <!-- Camera rig that floats forward -->
-    <a-entity id="rig" position="0 1.6 0" float-forward="speed:0.55; sway:0.12; bob:0.05">
-      <a-camera look-controls="pointerLockEnabled:true" wasd-controls="enabled:false"></a-camera>
+    <!-- CAMERA FLOAT -->
+    <a-entity position="0 1.6 0" float-forward>
+      <a-camera></a-camera>
     </a-entity>
 
-    <!-- PLANETS drifting past (far away = deep space feel) -->
-    <!-- Big planet (left) -->
-    <a-sphere radius="5.0" position="-14 4 -260"
-      material="src:#p1; roughness:0.95; metalness:0.0"
-      slow-spin="speed:0.03"
-      drift-past="speed:0.55; resetZ:-300; spawnZ:45"></a-sphere>
+    <!-- NEBULA CLOUDS -->
+    <a-plane width="180" height="100"
+      position="-60 20 -600"
+      rotation="0 25 0"
+      material="src:#neb1; transparent:true; opacity:0.55; side:double"
+      drift-past></a-plane>
 
-    <!-- Ringed planet (right) -->
-    <a-entity position="16 -1 -230" drift-past="speed:0.55; resetZ:-290; spawnZ:45">
-      <a-sphere radius="3.8"
-        material="src:#p2; roughness:0.95; metalness:0.0"
-        slow-spin="speed:0.04"></a-sphere>
-      <a-circle radius="6.2" rotation="70 20 0"
-        material="src:#rings; transparent:true; opacity:0.9; side:double"></a-circle>
-    </a-entity>
+    <a-plane width="170" height="95"
+      position="70 -10 -650"
+      rotation="0 -30 0"
+      material="src:#neb2; transparent:true; opacity:0.5; side:double"
+      drift-past="speed:0.18"></a-plane>
 
-    <!-- Distant small planet (center, far) -->
-    <a-sphere radius="2.2" position="0 10 -280"
-      material="src:#p2; roughness:0.95; metalness:0.0"
-      slow-spin="speed:0.02"
-      drift-past="speed:0.55; resetZ:-320; spawnZ:55"></a-sphere>
+    <!-- BIG PLANETS (using nebula textures) -->
+    <a-sphere radius="8"
+      position="-30 6 -720"
+      material="src:#neb1; roughness:1"
+      slow-spin
+      drift-past="speed:0.12"></a-sphere>
 
-    <!-- Moons orbiting a point in space (adds motion depth) -->
-    <a-sphere radius="0.55" material="src:#moon; roughness:0.95; metalness:0.0"
-      slow-orbit="center:-14 4 -220; radius:3.2; speed:0.22"></a-sphere>
+    <a-sphere radius="6"
+      position="28 -4 -680"
+      material="src:#neb2; roughness:1"
+      slow-spin="speed:0.015"
+      drift-past="speed:0.14"></a-sphere>
 
-    <a-sphere radius="0.42" material="src:#moon; roughness:0.95; metalness:0.0"
-      slow-orbit="center:16 -1 -210; radius:2.8; speed:0.18"></a-sphere>
+    <!-- GIANT DISTANT PLANET -->
+    <a-sphere radius="14"
+      position="0 18 -1000"
+      material="src:#neb2; roughness:1"
+      slow-spin="speed:0.004"
+      drift-past="speed:0.08; resetZ:-1200"></a-sphere>
 
   </a-scene>
 </body>
