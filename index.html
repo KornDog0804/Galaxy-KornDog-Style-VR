@@ -3,301 +3,202 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Galaxy KornDog VR — Deep Float</title>
+  <title>Galaxy — KornDog Style VR</title>
 
-  <!-- A-Frame + WebXR -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; background:#000; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    .hud{
-      position: fixed; left: 16px; bottom: 16px; z-index: 10;
-      color: rgba(255,255,255,.9); text-shadow: 0 2px 10px rgba(0,0,0,.6);
-      display:flex; flex-direction:column; gap:10px; max-width: 80vw;
+    html, body { margin:0; height:100%; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    .hud {
+      position: fixed; left: 14px; right: 14px; bottom: 18px;
+      display:flex; justify-content: space-between; align-items:flex-end;
+      pointer-events:none; z-index:10;
     }
-    .btn{
-      appearance:none; border:0; border-radius: 14px; padding: 12px 14px;
-      background: rgba(255,255,255,.12); color:#fff; font-weight:600;
-      backdrop-filter: blur(10px);
+    .hud .text {
+      color: rgba(255,255,255,.85);
+      font-size: 14px; line-height: 1.35;
+      text-shadow: 0 2px 10px rgba(0,0,0,.75);
+      max-width: 70%;
     }
-    .btn:active{ transform: scale(.98); }
-    .mini{ font-size: 13px; opacity:.85; line-height: 1.3; }
-    .vrpill{
-      position: fixed; right: 16px; bottom: 16px; z-index: 10;
-      padding: 10px 14px; border-radius: 14px;
-      background: rgba(255,255,255,.92); color:#000; font-weight:800;
+    .hint {
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
     }
   </style>
-</head>
-
-<body>
-  <div class="hud">
-    <button class="btn" id="soundBtn">Start sound</button>
-    <div class="mini">
-      Deep space float • slow forward drift • big planets • nebula haze.<br/>
-      Tap <b>Start sound</b> → then hit <b>Enter VR</b>.
-    </div>
-  </div>
-  <div class="vrpill">VR</div>
-
-  <a-scene
-    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true;"
-    vr-mode-ui="enabled: true"
-    background="color: #000"
-    loading-screen="enabled: true"
-  >
-    <a-assets timeout="120000">
-      <!-- Your files in repo root (same folder as index.html) -->
-      <img id="sky360" src="./HDR_blue_nebulae-1.webp" crossorigin="anonymous" />
-      <img id="nebulaFog" src="./HDR_ringed_brown_dwarf.webp" crossorigin="anonymous" />
-      <audio id="amb" src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_3c2c39d42e.mp3?filename=space-ambient-121869.mp3" preload="auto" crossorigin="anonymous"></audio>
-    </a-assets>
-
-    <!-- Camera rig with slow forward drift -->
-    <a-entity id="rig" position="0 1.6 0" drift-forward>
-      <a-entity id="cam" camera look-controls wasd-controls="enabled: false"></a-entity>
-    </a-entity>
-
-    <!-- True 360 background -->
-    <a-sky src="#sky360" rotation="0 -90 0"></a-sky>
-
-    <!-- Soft lighting so planets look alive -->
-    <a-entity light="type: ambient; intensity: 0.55; color: #9fd3ff"></a-entity>
-    <a-entity light="type: directional; intensity: 0.95; color: #ffffff" position="2 3 -1"></a-entity>
-
-    <!-- Nebula haze layers (big planes that drift past you) -->
-    <a-entity id="fog1" nebula-drift="speed: 0.22; zStart: -18; zReset: 10; y: 2.2; scale: 34"></a-entity>
-    <a-entity id="fog2" nebula-drift="speed: 0.18; zStart: -28; zReset: 14; y: 0.7; scale: 44; rotY: 25; opacity: 0.22"></a-entity>
-
-    <!-- Big planets (generated textures via canvas, no extra files) -->
-    <a-entity id="planetA" big-planet="radius: 4.6; x: -7.5; y: 3.2; z: -22; hue: 205; ring: true;"></a-entity>
-    <a-entity id="planetB" big-planet="radius: 3.4; x: 6.8; y: 1.2; z: -16; hue: 140; ring: false;"></a-entity>
-
-    <!-- A few slow “near stars” to give motion depth -->
-    <a-entity starfield-near="count: 220; spread: 26; speed: 0.35"></a-entity>
-
-    <!-- Audio source -->
-    <a-entity id="audioNode" sound="src: #amb; autoplay: false; loop: true; volume: 0.6;"></a-entity>
-  </a-scene>
 
   <script>
-    // ---------- Sound button (mobile requires gesture) ----------
-    const btn = document.getElementById('soundBtn');
-    const audioNode = document.getElementById('audioNode');
-    let started = false;
+    // ==========================
+    // FILE NAMES (repo root)
+    // ==========================
+    const SKY_MILKYWAY = "space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg";
+    // Your new smaller webp skies:
+    const SKY_BLUE_NEBULA = "HDR_blue_nebulae-1.webp";
+    const SKY_BROWN_DWARF = "HDR_ringed_brown_dwarf.webp";
 
-    btn.addEventListener('click', () => {
-      if (started) return;
-      started = true;
-      try {
-        audioNode.components.sound.playSound();
-        btn.textContent = 'Sound ON';
-        btn.style.opacity = '0.85';
-      } catch (e) {
-        btn.textContent = 'Tap again for sound';
-        started = false;
+    // Planets you said are in the repo (adjust names here if yours differ)
+    const TEX_EARTH   = "realistic-earth-planet-globe-i..."; // optional if you want it later
+    const TEX_JUPITER = "png-closeup-jupiter-planet-i...";   // optional
+    const TEX_SATURN  = "pngtree-saturn-planet-on-tra...";   // optional
+
+    // The two new “real” cutouts you uploaded with crazy names:
+    // (These are what you showed in screenshots as Uranus + Moon)
+    const TEX_URANUS = "cHJpdmFOZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTExL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg";
+    const TEX_MOON   = "cHJpdmFOZS9zdGF0aWMvZmlsZXMvd2Vic2l0ZS8yMDIyLTA1L3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg";
+
+    // If those two names above don’t EXACTLY match your repo,
+    // replace them with the real filenames (copy from GitHub “…” → Copy path).
+
+    // ==========================
+    // A-FRAME COMPONENTS
+    // ==========================
+    AFRAME.registerComponent("slow-drift", {
+      schema: { speed: {default: 0.02} },
+      tick: function (t, dt) {
+        const d = (dt || 16) / 1000;
+        this.el.object3D.position.z -= this.data.speed * d; // gentle forward drift
       }
     });
 
-    // ---------- Drift forward component ----------
-    AFRAME.registerComponent('drift-forward', {
+    AFRAME.registerComponent("floaty", {
       schema: {
-        speed: { type: 'number', default: 0.45 },   // meters per second feel (slow)
-        sway:  { type: 'number', default: 0.06 },   // subtle floating sway
+        amp: {default: 0.25},
+        spd: {default: 0.25},
+        yaw: {default: 4}
       },
-      init() {
-        this.t = 0;
-        this.base = this.el.object3D.position.clone();
+      init: function () {
+        this.baseY = this.el.object3D.position.y;
+        this.baseX = this.el.object3D.position.x;
+        this.baseZ = this.el.object3D.position.z;
       },
-      tick(time, dt) {
-        const d = (dt || 16) / 1000;
-        this.t += d;
-
-        // forward drift
-        this.el.object3D.position.z -= this.data.speed * d;
-
-        // gentle floating sway (prevents “still image” feeling)
-        const s = this.data.sway;
-        this.el.object3D.position.x = this.base.x + Math.sin(this.t * 0.6) * s;
-        this.el.object3D.position.y = this.base.y + Math.sin(this.t * 0.45) * (s * 0.6);
-      }
-    });
-
-    // ---------- Nebula drift (big translucent plane) ----------
-    AFRAME.registerComponent('nebula-drift', {
-      schema: {
-        speed: { type: 'number', default: 0.2 },
-        zStart: { type: 'number', default: -20 },
-        zReset: { type: 'number', default: 10 },
-        y: { type: 'number', default: 1.6 },
-        scale: { type: 'number', default: 38 },
-        rotY: { type: 'number', default: -15 },
-        opacity: { type: 'number', default: 0.28 },
-      },
-      init() {
-        const el = this.el;
-
-        el.setAttribute('geometry', `primitive: plane; width: 10; height: 5;`);
-        el.setAttribute('material', `
-          shader: flat;
-          src: #nebulaFog;
-          transparent: true;
-          opacity: ${this.data.opacity};
-          depthWrite: false;
-          blending: additive;
-        `);
-
-        el.object3D.position.set(0, this.data.y, this.data.zStart);
-        el.object3D.rotation.set(0, THREE.MathUtils.degToRad(this.data.rotY), 0);
-        el.object3D.scale.set(this.data.scale, this.data.scale, 1);
-
-        // slight random X offset so layers don’t stack perfectly
-        el.object3D.position.x = (Math.random() * 10) - 5;
-      },
-      tick(time, dt) {
-        const d = (dt || 16) / 1000;
+      tick: function (t) {
+        const tt = (t || 0) / 1000;
         const o = this.el.object3D;
-        o.position.z += this.data.speed * d;  // move toward camera
-
-        // soft lateral drift + rotation
-        o.position.x += Math.sin((time/1000) * 0.2) * 0.002;
-        o.rotation.y += 0.00035;
-
-        // reset when it passes you
-        if (o.position.z > this.data.zReset) {
-          o.position.z = this.data.zStart;
-          o.position.x = (Math.random() * 12) - 6;
-          o.position.y = this.data.y + ((Math.random() * 1.2) - 0.6);
-        }
+        o.position.y = this.baseY + Math.sin(tt * this.data.spd) * this.data.amp;
+        o.rotation.y = THREE.MathUtils.degToRad(Math.sin(tt * (this.data.spd * 0.6)) * this.data.yaw);
       }
     });
 
-    // ---------- Big planet generator (canvas texture) ----------
-    AFRAME.registerComponent('big-planet', {
-      schema: {
-        radius: { type: 'number', default: 4.0 },
-        x: { type: 'number', default: 6 },
-        y: { type: 'number', default: 2 },
-        z: { type: 'number', default: -18 },
-        hue: { type: 'number', default: 200 }, // 0-360
-        ring: { type: 'boolean', default: false },
-      },
-      init() {
-        const r = this.data.radius;
-        const el = this.el;
-
-        // make a planet sphere
-        el.setAttribute('geometry', `primitive: sphere; radius: ${r}; segmentsWidth: 64; segmentsHeight: 64;`);
-
-        // generate canvas texture
-        const tex = this._makePlanetTexture(this.data.hue);
-        el.setAttribute('material', `src: ${tex}; roughness: 1; metalness: 0;`);
-
-        el.object3D.position.set(this.data.x, this.data.y, this.data.z);
-
-        // slow spin
-        el.setAttribute('animation', `property: rotation; to: 0 360 0; loop: true; dur: 140000; easing: linear;`);
-
-        if (this.data.ring) {
-          const ring = document.createElement('a-entity');
-          ring.setAttribute('geometry', 'primitive: ring; radiusInner: 5.2; radiusOuter: 7.0; segmentsTheta: 128;');
-          ring.setAttribute('material', 'color: #c9b08a; opacity: 0.35; transparent: true; side: double; depthWrite: false;');
-          ring.object3D.rotation.set(THREE.MathUtils.degToRad(65), THREE.MathUtils.degToRad(10), 0);
-          ring.setAttribute('animation', 'property: rotation; to: 65 370 0; loop: true; dur: 220000; easing: linear;');
-          el.appendChild(ring);
-        }
-      },
-      _makePlanetTexture(hue){
-        const c = document.createElement('canvas');
-        c.width = 1024; c.height = 512;
-        const g = c.getContext('2d');
-
-        // base gradient
-        const grad = g.createLinearGradient(0,0,c.width,0);
-        grad.addColorStop(0, `hsl(${hue}, 55%, 22%)`);
-        grad.addColorStop(0.5, `hsl(${hue+20}, 60%, 35%)`);
-        grad.addColorStop(1, `hsl(${hue-10}, 55%, 18%)`);
-        g.fillStyle = grad;
-        g.fillRect(0,0,c.width,c.height);
-
-        // bands
-        for(let i=0;i<80;i++){
-          const y = Math.random()*c.height;
-          const h = 6 + Math.random()*26;
-          g.globalAlpha = 0.08 + Math.random()*0.12;
-          g.fillStyle = `hsl(${hue + (Math.random()*30-15)}, 60%, ${22 + Math.random()*20}%)`;
-          g.fillRect(0,y,c.width,h);
-        }
-
-        // storm spot
-        g.globalAlpha = 0.22;
-        g.beginPath();
-        g.ellipse(c.width*0.72, c.height*0.62, 120, 60, 0.2, 0, Math.PI*2);
-        g.fillStyle = `hsl(${hue+25}, 70%, 55%)`;
-        g.fill();
-
-        // vignette for depth
-        g.globalAlpha = 0.35;
-        const vg = g.createRadialGradient(c.width*0.5, c.height*0.5, 40, c.width*0.5, c.height*0.5, 520);
-        vg.addColorStop(0, 'rgba(0,0,0,0)');
-        vg.addColorStop(1, 'rgba(0,0,0,0.55)');
-        g.fillStyle = vg;
-        g.fillRect(0,0,c.width,c.height);
-
-        // export as data URL
-        return c.toDataURL('image/png');
+    // Billboard planes so planet cutouts always face camera (realistic, no “flat sticker” vibe)
+    AFRAME.registerComponent("billboard", {
+      tick: function () {
+        const cam = document.querySelector("#cam");
+        if (!cam) return;
+        this.el.object3D.lookAt(cam.object3D.getWorldPosition(new THREE.Vector3()));
       }
     });
 
-    // ---------- Near-star particles (gives motion depth) ----------
-    AFRAME.registerComponent('starfield-near', {
-      schema: {
-        count: { type: 'int', default: 180 },
-        spread: { type: 'number', default: 22 },
-        speed: { type: 'number', default: 0.3 }
-      },
-      init() {
-        const count = this.data.count;
-        const spread = this.data.spread;
-
-        const geom = new THREE.BufferGeometry();
-        const positions = new Float32Array(count * 3);
-
-        for (let i = 0; i < count; i++) {
-          const ix = i * 3;
-          positions[ix + 0] = (Math.random() - 0.5) * spread;
-          positions[ix + 1] = (Math.random() - 0.2) * (spread * 0.6) + 1.2;
-          positions[ix + 2] = (Math.random() - 0.5) * spread - 6; // mostly in front
-        }
-
-        geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-
-        const mat = new THREE.PointsMaterial({
-          size: 0.03,
+    // Subtle “haze layer” (floating nebula sheets)
+    AFRAME.registerComponent("haze", {
+      schema: { opacity: {default: 0.16} },
+      init: function () {
+        this.el.setAttribute("material", {
           transparent: true,
-          opacity: 0.85
+          opacity: this.data.opacity,
+          depthWrite: false
         });
-
-        this.points = new THREE.Points(geom, mat);
-        this.el.object3D.add(this.points);
-        this.pos = positions;
-      },
-      tick(time, dt) {
-        const d = (dt || 16) / 1000;
-        const speed = this.data.speed;
-
-        for (let i = 0; i < this.data.count; i++) {
-          const ix = i * 3;
-          this.pos[ix + 2] += speed * d; // move toward camera
-          if (this.pos[ix + 2] > 6) {
-            this.pos[ix + 2] = -26 - Math.random() * 16;
-            this.pos[ix + 0] = (Math.random() - 0.5) * this.data.spread;
-            this.pos[ix + 1] = (Math.random() - 0.2) * (this.data.spread * 0.6) + 1.2;
-          }
-        }
-        this.points.geometry.attributes.position.needsUpdate = true;
       }
     });
   </script>
+</head>
+
+<body>
+  <a-scene
+    renderer="colorManagement:true; physicallyCorrectLights:false; antialias:true"
+    vr-mode-ui="enabled: true"
+    device-orientation-permission-ui="enabled: true">
+
+    <!-- CAMERA -->
+    <a-entity id="camRig" position="0 1.6 0" slow-drift="speed:0.05">
+      <a-entity id="cam" camera look-controls wasd-controls="acceleration:10"></a-entity>
+    </a-entity>
+
+    <!-- LIGHTING (keep it subtle so it doesn’t turn into cartoon balls) -->
+    <a-entity light="type:ambient; intensity:0.9; color:#ffffff"></a-entity>
+
+    <!-- ==========================
+         360 BACKGROUND (MILKY WAY FIRST)
+         ========================== -->
+    <a-sky src="" rotation="0 -90 0"></a-sky>
+
+    <script>
+      // Set sky after scene loads (prevents some mobile weirdness)
+      window.addEventListener("load", () => {
+        const sky = document.querySelector("a-sky");
+        sky.setAttribute("src", SKY_MILKYWAY);
+      });
+    </script>
+
+    <!-- ==========================
+         FLOATING NEBULA HAZE (your new .webp skies)
+         These are NOT the main sky — they’re moving fog layers.
+         ========================== -->
+    <a-entity position="0 2 -14" floaty="amp:0.35; spd:0.14; yaw:2">
+      <a-plane
+        src="HDR_blue_nebulae-1.webp"
+        width="20" height="10"
+        rotation="0 10 0"
+        material="transparent:true; opacity:0.18; blending:additive; depthWrite:false"
+        haze="opacity:0.18">
+      </a-plane>
+    </a-entity>
+
+    <a-entity position="0 1.5 -18" floaty="amp:0.25; spd:0.11; yaw:2">
+      <a-plane
+        src="HDR_ringed_brown_dwarf.webp"
+        width="22" height="11"
+        rotation="0 -15 0"
+        material="transparent:true; opacity:0.14; blending:additive; depthWrite:false"
+        haze="opacity:0.14">
+      </a-plane>
+    </a-entity>
+
+    <!-- ==========================
+         REAL “PLANETS” (CUTOUTS) — Uranus + Moon
+         These are billboards (correct for cutouts).
+         ========================== -->
+
+    <!-- Uranus -->
+    <a-entity position="2.4 2.0 -9.5" floaty="amp:0.18; spd:0.22; yaw:4">
+      <a-plane
+        src=""
+        width="2.6" height="2.6"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
+
+    <!-- Moon -->
+    <a-entity position="-2.8 1.5 -8.0" floaty="amp:0.14; spd:0.26; yaw:4">
+      <a-plane
+        src=""
+        width="2.2" height="2.2"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
+
+    <script>
+      window.addEventListener("load", () => {
+        // wire textures
+        const ur = document.querySelectorAll("a-plane")[2]; // Uranus plane
+        const mo = document.querySelectorAll("a-plane")[3]; // Moon plane
+        ur.setAttribute("src", TEX_URANUS);
+        mo.setAttribute("src", TEX_MOON);
+      });
+    </script>
+
+    <!-- Optional extra “space junk” / distant glow -->
+    <a-entity position="0 3 -25" floaty="amp:0.25; spd:0.10; yaw:1">
+      <a-sphere radius="0.12" color="#ffffff" material="emissive:#ffffff; emissiveIntensity:1; opacity:0.7; transparent:true"></a-sphere>
+    </a-entity>
+
+  </a-scene>
+
+  <div class="hud">
+    <div class="text">
+      Deep space float • Milky Way sky • Uranus + Moon • nebula haze
+      <div class="hint">Move your phone / drag to look • Tap VR when ready</div>
+    </div>
+  </div>
 </body>
 </html>
