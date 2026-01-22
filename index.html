@@ -3,225 +3,221 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Galaxy — KornDog Style VR</title>
+  <title>Deep Space Float · Milky Way · 5 Planets</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    html, body { margin:0; height:100%; width:100%; background:#000; overflow:hidden; }
     .hud {
-      position: fixed; left: 14px; right: 14px; bottom: 18px;
-      display:flex; justify-content: space-between; align-items:flex-end;
-      pointer-events:none; z-index:10;
+      position: fixed;
+      left: 14px;
+      right: 14px;
+      bottom: 14px;
+      z-index: 10;
+      display:flex;
+      justify-content: space-between;
+      align-items:flex-end;
+      gap: 12px;
+      pointer-events:none;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
     .hud .text {
-      color: rgba(255,255,255,.88);
-      font-size: 14px; line-height: 1.35;
-      text-shadow: 0 2px 10px rgba(0,0,0,.85);
-      max-width: 75%;
+      color: rgba(255,255,255,.85);
+      text-shadow: 0 2px 12px rgba(0,0,0,.65);
+      font-size: 14px;
+      line-height: 1.25;
+      max-width: 78%;
     }
-    .hint {
-      color: rgba(255,255,255,.65);
-      font-size: 12px;
-      margin-top: 4px;
-    }
-    .pill {
-      pointer-events:auto;
-      background: rgba(255,255,255,.12);
+    .hud .pill {
+      pointer-events:none;
+      color: rgba(255,255,255,.85);
+      background: rgba(0,0,0,.35);
       border: 1px solid rgba(255,255,255,.18);
-      color: rgba(255,255,255,.92);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 600;
       backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      user-select: none;
+      padding: 10px 12px;
+      border-radius: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      font-weight: 600;
     }
+    /* Hide A-Frame’s annoying “Enter VR” if it overlaps; we keep it default bottom-right */
+    .a-enter-vr { bottom: 16px !important; right: 16px !important; }
   </style>
-
-  <script>
-    // ==========================
-    // COMPONENTS
-    // ==========================
-
-    // Gentle forward drift (keeps it feeling like you're floating)
-    AFRAME.registerComponent("slow-drift", {
-      schema: { speed: {default: 0.02} },
-      tick: function (t, dt) {
-        const d = (dt || 16) / 1000;
-        this.el.object3D.position.z -= this.data.speed * d;
-      }
-    });
-
-    // Float/bob + subtle yaw
-    AFRAME.registerComponent("floaty", {
-      schema: { amp:{default:0.25}, spd:{default:0.25}, yaw:{default:4} },
-      init: function () {
-        const o = this.el.object3D;
-        this.baseY = o.position.y;
-      },
-      tick: function (t) {
-        const tt = (t || 0) / 1000;
-        const o = this.el.object3D;
-        o.position.y = this.baseY + Math.sin(tt * this.data.spd) * this.data.amp;
-        o.rotation.y = THREE.MathUtils.degToRad(Math.sin(tt * (this.data.spd * 0.6)) * this.data.yaw);
-      }
-    });
-
-    // Spin a planet with an axis tilt (what you asked for)
-    // tiltX / tiltZ are in degrees (axis lean)
-    AFRAME.registerComponent("axial-spin", {
-      schema: { speed:{default:12}, tiltX:{default:0}, tiltZ:{default:0} },
-      init: function () {
-        // lock in axis tilt once
-        this.el.object3D.rotation.x = THREE.MathUtils.degToRad(this.data.tiltX);
-        this.el.object3D.rotation.z = THREE.MathUtils.degToRad(this.data.tiltZ);
-      },
-      tick: function (t, dt) {
-        const d = (dt || 16) / 1000;
-        this.el.object3D.rotation.y += THREE.MathUtils.degToRad(this.data.speed) * d;
-      }
-    });
-
-    // Subtle haze material helper
-    AFRAME.registerComponent("haze", {
-      schema: { opacity: {default: 0.16} },
-      init: function () {
-        this.el.setAttribute("material", {
-          transparent: true,
-          opacity: this.data.opacity,
-          depthWrite: false
-        });
-      }
-    });
-  </script>
 </head>
 
 <body>
-  <a-scene
-    renderer="colorManagement:true; antialias:true"
-    vr-mode-ui="enabled: true"
-    device-orientation-permission-ui="enabled: true">
-
-    <!-- PRELOAD EVERYTHING (prevents black screen / missing textures) -->
-    <a-assets timeout="20000">
-      <!-- SKY -->
-      <img id="skyMilky" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" />
-
-      <!-- HAZE LAYERS -->
-      <img id="hazeBlue" src="HDR_blue_nebulae-1.webp" />
-      <img id="hazeBrown" src="HDR_ringed_brown_dwarf.webp" />
-
-      <!-- PLANETS (your generated ones) -->
-      <img id="texEarth"   src="earth.png" />
-      <img id="texJupiter" src="jupiter.png" />
-      <img id="texSaturn"  src="saturn.png" />
-      <img id="texUranus"  src="uranus.png" />
-      <img id="texMoon"    src="moon.png" />
-    </a-assets>
-
-    <!-- CAMERA -->
-    <a-entity id="camRig" position="0 1.6 0" slow-drift="speed:0.045">
-      <a-entity id="cam" camera look-controls wasd-controls="acceleration:10"></a-entity>
-    </a-entity>
-
-    <!-- LIGHTING -->
-    <a-entity light="type:ambient; intensity:0.85; color:#ffffff"></a-entity>
-    <a-entity light="type:directional; intensity:0.55; color:#ffffff" position="-1 2 1"></a-entity>
-
-    <!-- 360 MILKY WAY SKY (the “pink/purple vibe” you liked) -->
-    <a-sky src="#skyMilky" rotation="0 -90 0"></a-sky>
-
-    <!-- FLOATING NEBULA HAZE (adds depth without killing FPS) -->
-    <a-entity position="0 2 -14" floaty="amp:0.35; spd:0.14; yaw:2">
-      <a-plane
-        src="#hazeBlue"
-        width="24" height="12"
-        rotation="0 10 0"
-        material="transparent:true; opacity:0.18; blending:additive; depthWrite:false"
-        haze="opacity:0.18">
-      </a-plane>
-    </a-entity>
-
-    <a-entity position="0 1.4 -18" floaty="amp:0.25; spd:0.11; yaw:2">
-      <a-plane
-        src="#hazeBrown"
-        width="26" height="13"
-        rotation="0 -15 0"
-        material="transparent:true; opacity:0.14; blending:additive; depthWrite:false"
-        haze="opacity:0.14">
-      </a-plane>
-    </a-entity>
-
-    <!-- ==========================
-         PLANETS (SPIN + AXIS TILT)
-         NOTE: These are “best possible” with cutout textures.
-         For PERFECT spheres later, we’ll generate real wrap-textures.
-         ========================== -->
-
-    <!-- EARTH -->
-    <a-entity position="-3.2 1.7 -8.5" floaty="amp:0.10; spd:0.22; yaw:2">
-      <a-sphere
-        radius="1.05"
-        segments-width="48" segments-height="36"
-        material="src:#texEarth; shader:standard; metalness:0.0; roughness:1.0; transparent:true; alphaTest:0.25"
-        axial-spin="speed:10; tiltX:23.5; tiltZ:0">
-      </a-sphere>
-    </a-entity>
-
-    <!-- JUPITER -->
-    <a-entity position="3.4 1.9 -10.0" floaty="amp:0.12; spd:0.18; yaw:2">
-      <a-sphere
-        radius="1.35"
-        segments-width="48" segments-height="36"
-        material="src:#texJupiter; shader:standard; metalness:0.0; roughness:1.0; transparent:true; alphaTest:0.25"
-        axial-spin="speed:18; tiltX:3.1; tiltZ:0">
-      </a-sphere>
-    </a-entity>
-
-    <!-- SATURN (ring planet) -->
-    <a-entity position="0.3 2.3 -12.0" floaty="amp:0.14; spd:0.16; yaw:2">
-      <a-sphere
-        radius="1.15"
-        segments-width="48" segments-height="36"
-        material="src:#texSaturn; shader:standard; metalness:0.0; roughness:1.0; transparent:true; alphaTest:0.25"
-        axial-spin="speed:12; tiltX:26.7; tiltZ:0">
-      </a-sphere>
-    </a-entity>
-
-    <!-- URANUS -->
-    <a-entity position="2.1 0.9 -8.2" floaty="amp:0.10; spd:0.24; yaw:2">
-      <a-sphere
-        radius="0.95"
-        segments-width="48" segments-height="36"
-        material="src:#texUranus; shader:standard; metalness:0.0; roughness:1.0; transparent:true; alphaTest:0.25"
-        axial-spin="speed:8; tiltX:97.8; tiltZ:0">
-      </a-sphere>
-    </a-entity>
-
-    <!-- MOON -->
-    <a-entity position="-0.6 0.9 -6.8" floaty="amp:0.06; spd:0.30; yaw:1">
-      <a-sphere
-        radius="0.55"
-        segments-width="40" segments-height="30"
-        material="src:#texMoon; shader:standard; metalness:0.0; roughness:1.0; transparent:true; alphaTest:0.25"
-        axial-spin="speed:6; tiltX:6.7; tiltZ:0">
-      </a-sphere>
-    </a-entity>
-
-    <!-- little distant glow so it feels alive -->
-    <a-entity position="0 3 -25" floaty="amp:0.25; spd:0.10; yaw:1">
-      <a-sphere radius="0.12" material="color:#fff; emissive:#fff; emissiveIntensity:1; opacity:0.7; transparent:true"></a-sphere>
-    </a-entity>
-
-  </a-scene>
-
   <div class="hud">
     <div class="text">
-      Deep space float • Milky Way • 5 planets • nebula haze
-      <div class="hint">Move your phone / drag to look • Tap VR when ready</div>
+      <div class="pill" style="display:inline-block; margin-bottom:8px;">
+        Deep space float · Milky Way · 5 planets · nebula haze
+      </div>
+      <div>Move your phone / drag to look · Tap VR when ready</div>
     </div>
-    <div class="pill">VR</div>
   </div>
+
+  <a-scene
+    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
+    vr-mode-ui="enabled: true"
+    loading-screen="enabled: false"
+  >
+    <a-assets timeout="20000">
+      <!-- Planet textures (spherical mapping) -->
+      <img id="texEarth"  src="earth_tex.jpg"  crossorigin="anonymous">
+      <img id="texJupiter" src="jupiter_tex.jpg" crossorigin="anonymous">
+      <img id="texSaturn" src="saturn_tex.jpg" crossorigin="anonymous">
+      <img id="texUranus" src="uranus_tex.jpg" crossorigin="anonymous">
+      <img id="texMoon"   src="moon_tex.jpg"   crossorigin="anonymous">
+
+      <!-- We’ll set the sky src in JS (auto-picks the right filename) -->
+      <img id="skyAuto" crossorigin="anonymous">
+    </a-assets>
+
+    <!-- Camera -->
+    <a-entity position="0 1.6 0">
+      <a-camera
+        wasd-controls-enabled="false"
+        look-controls="touchEnabled: true; mouseEnabled: true"
+      ></a-camera>
+    </a-entity>
+
+    <!-- Soft light so planets look like planets (not stickers) -->
+    <a-entity light="type: ambient; intensity: 0.55"></a-entity>
+    <a-entity light="type: directional; intensity: 1.05; castShadow: false" position="6 8 3"></a-entity>
+
+    <!-- Sky (360 background) -->
+    <a-sky id="sky" radius="80"></a-sky>
+
+    <!-- =========================
+         PLANETS: spread around you
+         Wrapper = axial tilt
+         Inner sphere = spin
+         ========================= -->
+
+    <!-- Jupiter (front-right) -->
+    <a-entity id="wrapJupiter" position="6 2.2 -7" rotation="3 0 -3">
+      <a-sphere
+        id="jupiter"
+        radius="1.25"
+        segments-width="64"
+        segments-height="64"
+        material="src:#texJupiter; roughness: 1.0; metalness: 0.0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 28000; easing: linear"
+      ></a-sphere>
+    </a-entity>
+
+    <!-- Saturn (left-front) -->
+    <a-entity id="wrapSaturn" position="-6.2 2.0 -7.6" rotation="0 0 26">
+      <a-sphere
+        id="saturn"
+        radius="1.05"
+        segments-width="64"
+        segments-height="64"
+        material="src:#texSaturn; roughness: 1.0; metalness: 0.0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 32000; easing: linear"
+      ></a-sphere>
+
+      <!-- Simple ring (no ring texture needed) -->
+      <a-ring
+        radius-inner="1.25"
+        radius-outer="2.05"
+        rotation="90 0 0"
+        material="color: #d8c7aa; opacity: 0.45; transparent: true; roughness: 1.0; metalness: 0.0"
+      ></a-ring>
+    </a-entity>
+
+    <!-- Earth (behind-right) -->
+    <a-entity id="wrapEarth" position="7.5 1.9 5.5" rotation="0 0 23.5">
+      <a-sphere
+        id="earth"
+        radius="0.95"
+        segments-width="64"
+        segments-height="64"
+        material="src:#texEarth; roughness: 1.0; metalness: 0.0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
+      ></a-sphere>
+    </a-entity>
+
+    <!-- Uranus (behind-left) -->
+    <a-entity id="wrapUranus" position="-7.2 2.1 5.2" rotation="0 0 97">
+      <a-sphere
+        id="uranus"
+        radius="0.9"
+        segments-width="64"
+        segments-height="64"
+        material="src:#texUranus; roughness: 1.0; metalness: 0.0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 26000; easing: linear"
+      ></a-sphere>
+    </a-entity>
+
+    <!-- Moon (straight up / overhead-ish so you look around) -->
+    <a-entity id="wrapMoon" position="0 6.8 -0.5" rotation="0 0 6.7">
+      <a-sphere
+        id="moon"
+        radius="0.55"
+        segments-width="64"
+        segments-height="64"
+        material="src:#texMoon; roughness: 1.0; metalness: 0.0"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear"
+      ></a-sphere>
+    </a-entity>
+
+    <!-- Tiny star dust (optional vibe) -->
+    <a-entity id="dust"></a-entity>
+
+    <script>
+      // Pick the correct sky filename automatically (you have two)
+      (function pickSky() {
+        const candidates = [
+          "space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg",
+          "space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg"
+        ];
+
+        const skyImg = document.getElementById("skyAuto");
+        const sky = document.getElementById("sky");
+
+        function tryNext(i) {
+          if (i >= candidates.length) {
+            // fallback to a dark gradient if neither exists
+            sky.setAttribute("color", "#05020a");
+            return;
+          }
+          const test = new Image();
+          test.onload = () => {
+            skyImg.src = candidates[i];
+            sky.setAttribute("src", "#skyAuto");
+          };
+          test.onerror = () => tryNext(i + 1);
+          test.src = candidates[i] + "?v=" + Date.now();
+        }
+
+        tryNext(0);
+      })();
+
+      // Sprinkle some subtle “stars” as tiny spheres (cheap + looks good on phones)
+      (function addDust() {
+        const dust = document.getElementById("dust");
+        const count = 140;
+        const rMin = 10, rMax = 28;
+
+        function rand(min, max) { return Math.random() * (max - min) + min; }
+
+        for (let i = 0; i < count; i++) {
+          const a = rand(0, Math.PI * 2);
+          const b = rand(-Math.PI / 2, Math.PI / 2);
+          const r = rand(rMin, rMax);
+
+          const x = Math.cos(b) * Math.cos(a) * r;
+          const y = Math.sin(b) * r + 1.6;
+          const z = Math.cos(b) * Math.sin(a) * r;
+
+          const s = document.createElement("a-sphere");
+          s.setAttribute("radius", rand(0.01, 0.03));
+          s.setAttribute("position", `${x.toFixed(2)} ${y.toFixed(2)} ${z.toFixed(2)}`);
+          s.setAttribute("material", "color: #ffffff; opacity: 0.75; transparent: true; roughness: 1.0; metalness: 0.0");
+          dust.appendChild(s);
+        }
+      })();
+    </script>
+  </a-scene>
 </body>
 </html>
