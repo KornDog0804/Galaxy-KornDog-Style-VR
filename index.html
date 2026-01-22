@@ -1,86 +1,202 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Galaxy KornDog VR</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Galaxy — KornDog Style VR</title>
+
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    body { margin:0; background:black; }
+    html, body { margin:0; height:100%; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    .hud {
+      position: fixed; left: 14px; right: 14px; bottom: 18px;
+      display:flex; justify-content: space-between; align-items:flex-end;
+      pointer-events:none; z-index:10;
+    }
+    .hud .text {
+      color: rgba(255,255,255,.85);
+      font-size: 14px; line-height: 1.35;
+      text-shadow: 0 2px 10px rgba(0,0,0,.75);
+      max-width: 80%;
+    }
     .hint {
-      position:fixed;
-      bottom:12px;
-      left:12px;
-      right:12px;
-      text-align:center;
-      color:#fff;
-      font-family:system-ui, sans-serif;
-      opacity:.85;
-      font-size:14px;
+      color: rgba(255,255,255,.65);
+      font-size: 12px;
     }
   </style>
+
+  <script>
+    // ==========================
+    // FILE NAMES (repo root)
+    // ==========================
+
+    // Milky Way (YOUR weird filename)
+    const SKY_MILKYWAY =
+      "cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTA3L3JtNjcwLWVsZW1lbnQtMDEwLnBuZw.jpeg";
+
+    // Haze layers (webp)
+    const SKY_BLUE_NEBULA  = "HDR_blue_nebulae-1.webp";
+    const SKY_BROWN_DWARF  = "HDR_ringed_brown_dwarf.webp";
+
+    // Planets (normal names)
+    const TEX_JUPITER = "png-closeup-jupiter-planet-isolated-transparent_1080455-12629.jpg";
+    const TEX_SATURN  = "pngtree-saturn-planet-on-transparent-background-png-image_13144127.png";
+    const TEX_EARTH   = "realistic-earth-planet-globe-isolated-with-transparent-background_702390-621.jpg";
+
+    // Uranus + Moon (YOUR weird filenames)
+    const TEX_URANUS =
+      "cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTExL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg";
+
+    const TEX_MOON =
+      "cHJpdmF0ZS9zdGF0aWMvZmlsZXMvd2Vic2l0ZS8yMDIyLTA1L3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg";
+
+    // ==========================
+    // A-FRAME COMPONENTS
+    // ==========================
+    AFRAME.registerComponent("slow-drift", {
+      schema: { speed: {default: 0.02} },
+      tick: function (t, dt) {
+        const d = (dt || 16) / 1000;
+        this.el.object3D.position.z -= this.data.speed * d;
+      }
+    });
+
+    AFRAME.registerComponent("floaty", {
+      schema: { amp:{default:0.25}, spd:{default:0.25}, yaw:{default:4} },
+      init: function () {
+        this.baseY = this.el.object3D.position.y;
+      },
+      tick: function (t) {
+        const tt = (t || 0) / 1000;
+        const o = this.el.object3D;
+        o.position.y = this.baseY + Math.sin(tt * this.data.spd) * this.data.amp;
+        o.rotation.y = THREE.MathUtils.degToRad(Math.sin(tt * (this.data.spd * 0.6)) * this.data.yaw);
+      }
+    });
+
+    // Billboard: always faces camera (best for cutouts)
+    AFRAME.registerComponent("billboard", {
+      tick: function () {
+        const cam = document.querySelector("#cam");
+        if (!cam) return;
+        this.el.object3D.lookAt(cam.object3D.getWorldPosition(new THREE.Vector3()));
+      }
+    });
+
+    // Load textures after scene is ready (mobile-friendly)
+    window.addEventListener("load", () => {
+      // Sky
+      const sky = document.querySelector("#sky");
+      sky.setAttribute("src", SKY_MILKYWAY);
+
+      // Planets
+      document.querySelector("#pJupiter").setAttribute("src", TEX_JUPITER);
+      document.querySelector("#pSaturn").setAttribute("src", TEX_SATURN);
+      document.querySelector("#pEarth").setAttribute("src", TEX_EARTH);
+      document.querySelector("#pUranus").setAttribute("src", TEX_URANUS);
+      document.querySelector("#pMoon").setAttribute("src", TEX_MOON);
+    });
+  </script>
 </head>
 
 <body>
-<a-scene embedded vr-mode-ui="enabled: true">
+  <a-scene
+    renderer="colorManagement:true; antialias:true"
+    vr-mode-ui="enabled:true"
+    device-orientation-permission-ui="enabled:true">
 
-  <!-- ===== ASSETS ===== -->
-  <a-assets>
-    <!-- Milky Way sky -->
-    <img id="milkyway"
-      src="cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS9yMDIzLTA3LTExNjcwLWVsZW1lbnQtdDEwLnBuZw.jpeg">
+    <!-- CAMERA -->
+    <a-entity id="camRig" position="0 1.6 0" slow-drift="speed:0.05">
+      <a-entity id="cam" camera look-controls wasd-controls="acceleration:10"></a-entity>
+    </a-entity>
 
-    <!-- Planets -->
-    <img id="earth"
-      src="realistic-earth-planet-globe-isolated-with-transparent-background_702390-621.jpg">
+    <!-- LIGHTING -->
+    <a-entity light="type:ambient; intensity:0.9; color:#ffffff"></a-entity>
 
-    <img id="jupiter"
-      src="png-closeup-jupiter-planet-isolated-transparent_1080455-12629.jpg">
+    <!-- MILKY WAY SKY -->
+    <a-sky id="sky" src="" rotation="0 -90 0"></a-sky>
 
-    <img id="saturn"
-      src="pngtree-saturn-planet-on-transparent-background-png-image_13144127.png">
+    <!-- NEBULA HAZE LAYERS -->
+    <a-entity position="0 2 -14" floaty="amp:0.35; spd:0.14; yaw:2">
+      <a-plane
+        src="HDR_blue_nebulae-1.webp"
+        width="20" height="10"
+        rotation="0 10 0"
+        material="transparent:true; opacity:0.18; blending:additive; depthWrite:false">
+      </a-plane>
+    </a-entity>
 
-    <img id="uranus"
-      src="cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS9yMDIzLTA3LTExNjcwLWVsZW1lbnQtdDEwLnBuZw.jpeg">
+    <a-entity position="0 1.5 -18" floaty="amp:0.25; spd:0.11; yaw:2">
+      <a-plane
+        src="HDR_ringed_brown_dwarf.webp"
+        width="22" height="11"
+        rotation="0 -15 0"
+        material="transparent:true; opacity:0.14; blending:additive; depthWrite:false">
+      </a-plane>
+    </a-entity>
 
-    <img id="moon"
-      src="cHJpdmF0ZS9zdGdFaW12ZmlsZXMvYmlkL3d2d2YxMzA3MS5qcGVn">
-  </a-assets>
+    <!-- ==========================
+         5 PLANETS (billboard cutouts)
+         ========================== -->
 
-  <!-- ===== SKY ===== -->
-  <a-sky src="#milkyway" rotation="0 -90 0"></a-sky>
+    <!-- Jupiter -->
+    <a-entity position="2.8 2.0 -9.5" floaty="amp:0.18; spd:0.22; yaw:4">
+      <a-plane id="pJupiter"
+        src=""
+        width="2.7" height="2.7"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
 
-  <!-- ===== CAMERA ===== -->
-  <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
+    <!-- Saturn -->
+    <a-entity position="-3.0 1.4 -10.5" floaty="amp:0.16; spd:0.20; yaw:4">
+      <a-plane id="pSaturn"
+        src=""
+        width="3.4" height="2.3"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
 
-  <!-- ===== PLANETS ===== -->
+    <!-- Earth -->
+    <a-entity position="-0.6 2.2 -8.2" floaty="amp:0.14; spd:0.26; yaw:4">
+      <a-plane id="pEarth"
+        src=""
+        width="2.2" height="2.2"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
 
-  <!-- Earth -->
-  <a-image src="#earth" position="0 2 -6" width="3" height="3"
-           material="transparent:true; alphaTest:0.1"></a-image>
+    <!-- Uranus -->
+    <a-entity position="3.8 1.0 -12.2" floaty="amp:0.15; spd:0.21; yaw:4">
+      <a-plane id="pUranus"
+        src=""
+        width="2.2" height="2.2"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
 
-  <!-- Jupiter -->
-  <a-image src="#jupiter" position="-4 1.5 -8" width="4" height="4"
-           material="transparent:true; alphaTest:0.1"></a-image>
+    <!-- Moon -->
+    <a-entity position="-4.0 2.4 -12.0" floaty="amp:0.12; spd:0.24; yaw:4">
+      <a-plane id="pMoon"
+        src=""
+        width="1.9" height="1.9"
+        material="transparent:true; opacity:1; depthWrite:false"
+        billboard>
+      </a-plane>
+    </a-entity>
 
-  <!-- Saturn -->
-  <a-image src="#saturn" position="4 1.2 -9" width="4.5" height="4.5"
-           rotation="0 20 0"
-           material="transparent:true; alphaTest:0.1"></a-image>
+  </a-scene>
 
-  <!-- Uranus -->
-  <a-image src="#uranus" position="-2 3 -7" width="2.5" height="2.5"
-           material="transparent:true; alphaTest:0.1"></a-image>
-
-  <!-- Moon -->
-  <a-image src="#moon" position="2 3 -5" width="1.5" height="1.5"
-           material="transparent:true; alphaTest:0.1"></a-image>
-
-</a-scene>
-
-<div class="hint">
-  Deep space float · Milky Way · 5 planets · Move your phone or enter VR 🌌
-</div>
+  <div class="hud">
+    <div class="text">
+      Deep space float • Milky Way • 5 planets • nebula haze
+      <div class="hint">Move your phone / drag to look • Tap VR when ready</div>
+    </div>
+  </div>
 </body>
 </html>
