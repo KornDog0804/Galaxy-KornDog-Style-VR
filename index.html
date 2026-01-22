@@ -3,221 +3,240 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Deep Space Float · Milky Way · 5 Planets</title>
+  <title>Deep space float • Milky Way • 5 planets • shooting stars</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; width:100%; background:#000; overflow:hidden; }
-    .hud {
+    html, body { margin:0; height:100%; background:#000; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    .hint {
       position: fixed;
-      left: 14px;
-      right: 14px;
-      bottom: 14px;
+      left: 14px; right: 14px; bottom: 12px;
+      color: rgba(255,255,255,.85);
+      font-size: 13px; line-height: 1.35;
+      text-shadow: 0 2px 10px rgba(0,0,0,.9);
+      pointer-events: none;
       z-index: 10;
-      display:flex;
-      justify-content: space-between;
-      align-items:flex-end;
-      gap: 12px;
-      pointer-events:none;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
-    .hud .text {
-      color: rgba(255,255,255,.85);
-      text-shadow: 0 2px 12px rgba(0,0,0,.65);
-      font-size: 14px;
-      line-height: 1.25;
-      max-width: 78%;
-    }
-    .hud .pill {
-      pointer-events:none;
-      color: rgba(255,255,255,.85);
-      background: rgba(0,0,0,.35);
-      border: 1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(8px);
-      padding: 10px 12px;
-      border-radius: 14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-      font-weight: 600;
-    }
-    /* Hide A-Frame’s annoying “Enter VR” if it overlaps; we keep it default bottom-right */
-    .a-enter-vr { bottom: 16px !important; right: 16px !important; }
+    .hint b { color: #fff; }
   </style>
+
+  <script>
+    // Slow continuous rotation for anything you attach it to (planets, sky, etc.)
+    AFRAME.registerComponent('spin', {
+      schema: { speed: {default: 0.4} }, // degrees/sec
+      tick: function (t, dt) {
+        const r = this.el.object3D.rotation;
+        r.y += (this.data.speed * Math.PI/180) * (dt/1000);
+      }
+    });
+
+    // Adds an axis tilt + spins around its own axis
+    AFRAME.registerComponent('axis-spin', {
+      schema: {
+        tilt: {default: 12},     // degrees
+        speed: {default: 0.6}    // degrees/sec
+      },
+      init: function () {
+        const obj = this.el.object3D;
+        obj.rotation.z = (this.data.tilt * Math.PI/180);
+      },
+      tick: function (t, dt) {
+        this.el.object3D.rotation.y += (this.data.speed * Math.PI/180) * (dt/1000);
+      }
+    });
+
+    // Spawns occasional shooting stars across the sky (not too many)
+    AFRAME.registerComponent('shooting-stars', {
+      schema: {
+        minInterval: {default: 5500},  // ms
+        maxInterval: {default: 11000}, // ms
+        maxAlive:    {default: 2}      // keep it tasteful
+      },
+      init: function () {
+        this.alive = 0;
+        this.scheduleNext();
+      },
+      scheduleNext: function () {
+        const wait = this.data.minInterval + Math.random() * (this.data.maxInterval - this.data.minInterval);
+        clearTimeout(this._timer);
+        this._timer = setTimeout(() => this.spawn(), wait);
+      },
+      spawn: function () {
+        if (this.alive >= this.data.maxAlive) { this.scheduleNext(); return; }
+
+        const scene = this.el.sceneEl;
+
+        // Star streak as a thin plane with emissive-ish look
+        const star = document.createElement('a-entity');
+        const len = 2.8 + Math.random() * 2.4;     // length
+        const thick = 0.05 + Math.random() * 0.03; // thickness
+
+        star.setAttribute('geometry', `primitive: plane; width: ${len}; height: ${thick}`);
+        star.setAttribute('material', 'color: #ffffff; opacity: 0.9; transparent: true; shader: flat; side: double');
+        star.setAttribute('render-order', '10');
+
+        // Place far away on a big radius around the user
+        const radius = 45;
+        const startTheta = Math.random() * Math.PI * 2;
+        const startPhi = (Math.PI/2) * (0.15 + Math.random()*0.55); // keep it upper-ish
+        const x = radius * Math.cos(startTheta) * Math.sin(startPhi);
+        const y = radius * Math.cos(startPhi);
+        const z = radius * Math.sin(startTheta) * Math.sin(startPhi);
+
+        star.object3D.position.set(x, y, z);
+
+        // Aim it across the sky: random direction, but mostly sideways
+        const dirTheta = startTheta + (Math.random() * 0.8 + 0.6); // offset
+        const dx = Math.cos(dirTheta);
+        const dz = Math.sin(dirTheta);
+        const dy = (Math.random()*0.12 - 0.06);
+
+        // Rotate plane to face movement direction
+        const angle = Math.atan2(dz, dx);
+        star.object3D.rotation.y = -angle;
+
+        scene.appendChild(star);
+        this.alive++;
+
+        // Animate: streak across then fade out
+        const duration = 900 + Math.random() * 700;
+
+        const start = performance.now();
+        const startPos = star.object3D.position.clone();
+        const speed = 12 + Math.random()*8;
+
+        const tickMove = () => {
+          const now = performance.now();
+          const p = Math.min(1, (now - start) / duration);
+
+          star.object3D.position.x = startPos.x + dx * speed * p;
+          star.object3D.position.y = startPos.y + dy * speed * p;
+          star.object3D.position.z = startPos.z + dz * speed * p;
+
+          // Fade out near the end
+          const opacity = p < 0.65 ? 0.9 : (0.9 * (1 - (p - 0.65) / 0.35));
+          star.setAttribute('material', `color: #ffffff; opacity: ${Math.max(0, opacity).toFixed(3)}; transparent: true; shader: flat; side: double`);
+
+          if (p < 1) requestAnimationFrame(tickMove);
+          else {
+            star.parentNode && star.parentNode.removeChild(star);
+            this.alive--;
+          }
+        };
+
+        requestAnimationFrame(tickMove);
+        this.scheduleNext();
+      },
+      remove: function () {
+        clearTimeout(this._timer);
+      }
+    });
+
+    // Slowly rotates a parent group so planets drift around you (motion without head-whipping)
+    AFRAME.registerComponent('drift-orbit', {
+      schema: { speed: {default: 0.015} }, // radians/sec
+      tick: function (t, dt) {
+        this.el.object3D.rotation.y += this.data.speed * (dt/1000);
+      }
+    });
+  </script>
 </head>
 
 <body>
-  <div class="hud">
-    <div class="text">
-      <div class="pill" style="display:inline-block; margin-bottom:8px;">
-        Deep space float · Milky Way · 5 planets · nebula haze
-      </div>
-      <div>Move your phone / drag to look · Tap VR when ready</div>
-    </div>
+  <div class="hint">
+    <b>Deep space float</b> • Milky Way • 5 planets • nebula motion • shooting stars<br/>
+    Move your phone / drag to look • Tap VR when ready
   </div>
 
   <a-scene
-    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
     vr-mode-ui="enabled: true"
-    loading-screen="enabled: false"
+    renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true;"
+    background="color: #000"
   >
-    <a-assets timeout="20000">
-      <!-- Planet textures (spherical mapping) -->
-      <img id="texEarth"  src="earth_tex.jpg"  crossorigin="anonymous">
-      <img id="texJupiter" src="jupiter_tex.jpg" crossorigin="anonymous">
-      <img id="texSaturn" src="saturn_tex.jpg" crossorigin="anonymous">
-      <img id="texUranus" src="uranus_tex.jpg" crossorigin="anonymous">
-      <img id="texMoon"   src="moon_tex.jpg"   crossorigin="anonymous">
+    <a-assets timeout="15000">
+      <!-- IMPORTANT:
+           If your galaxy background filename is different, change it HERE.
+           (This matches the earlier screenshot name without “(1)”.) -->
+      <img id="skyTex" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous">
 
-      <!-- We’ll set the sky src in JS (auto-picks the right filename) -->
-      <img id="skyAuto" crossorigin="anonymous">
+      <img id="earthTex"  src="earth_tex.jpg"  crossorigin="anonymous">
+      <img id="jupTex"    src="jupiter_tex.jpg" crossorigin="anonymous">
+      <img id="moonTex"   src="moon_tex.jpg"   crossorigin="anonymous">
+      <img id="satTex"    src="saturn_tex.jpg" crossorigin="anonymous">
+      <img id="uraTex"    src="uranus_tex.jpg" crossorigin="anonymous">
     </a-assets>
+
+    <!-- Sky: rotates slowly for motion -->
+    <a-sky src="#skyTex" rotation="0 -90 0" spin="speed: 0.12"></a-sky>
+
+    <!-- Lighting: keeps planets from looking flat -->
+    <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
+    <a-entity light="type: directional; intensity: 0.85; color: #ffffff" position="6 10 6"></a-entity>
+    <a-entity light="type: point; intensity: 0.35; color: #9bd3ff; distance: 80" position="-10 6 -12"></a-entity>
 
     <!-- Camera -->
     <a-entity position="0 1.6 0">
-      <a-camera
-        wasd-controls-enabled="false"
-        look-controls="touchEnabled: true; mouseEnabled: true"
-      ></a-camera>
+      <a-camera wasd-controls-enabled="false" look-controls="pointerLockEnabled: false"></a-camera>
     </a-entity>
 
-    <!-- Soft light so planets look like planets (not stickers) -->
-    <a-entity light="type: ambient; intensity: 0.55"></a-entity>
-    <a-entity light="type: directional; intensity: 1.05; castShadow: false" position="6 8 3"></a-entity>
+    <!-- Shooting stars controller -->
+    <a-entity shooting-stars="minInterval: 6000; maxInterval: 12000; maxAlive: 2"></a-entity>
 
-    <!-- Sky (360 background) -->
-    <a-sky id="sky" radius="80"></a-sky>
+    <!-- Planet field: spread around you + drifting slowly -->
+    <a-entity id="planetField" drift-orbit="speed: 0.01">
 
-    <!-- =========================
-         PLANETS: spread around you
-         Wrapper = axial tilt
-         Inner sphere = spin
-         ========================= -->
-
-    <!-- Jupiter (front-right) -->
-    <a-entity id="wrapJupiter" position="6 2.2 -7" rotation="3 0 -3">
+      <!-- EARTH -->
       <a-sphere
-        id="jupiter"
-        radius="1.25"
-        segments-width="64"
-        segments-height="64"
-        material="src:#texJupiter; roughness: 1.0; metalness: 0.0"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 28000; easing: linear"
-      ></a-sphere>
-    </a-entity>
-
-    <!-- Saturn (left-front) -->
-    <a-entity id="wrapSaturn" position="-6.2 2.0 -7.6" rotation="0 0 26">
-      <a-sphere
-        id="saturn"
-        radius="1.05"
-        segments-width="64"
-        segments-height="64"
-        material="src:#texSaturn; roughness: 1.0; metalness: 0.0"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 32000; easing: linear"
+        radius="2.2"
+        position="12 2 -18"
+        axis-spin="tilt: 23.5; speed: 0.45"
+        material="src: #earthTex; shader: standard; metalness: 0.05; roughness: 0.95"
       ></a-sphere>
 
-      <!-- Simple ring (no ring texture needed) -->
-      <a-ring
-        radius-inner="1.25"
-        radius-outer="2.05"
-        rotation="90 0 0"
-        material="color: #d8c7aa; opacity: 0.45; transparent: true; roughness: 1.0; metalness: 0.0"
-      ></a-ring>
-    </a-entity>
-
-    <!-- Earth (behind-right) -->
-    <a-entity id="wrapEarth" position="7.5 1.9 5.5" rotation="0 0 23.5">
+      <!-- JUPITER -->
       <a-sphere
-        id="earth"
-        radius="0.95"
-        segments-width="64"
-        segments-height="64"
-        material="src:#texEarth; roughness: 1.0; metalness: 0.0"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear"
+        radius="3.2"
+        position="-18 1 -26"
+        axis-spin="tilt: 3.1; speed: 0.32"
+        material="src: #jupTex; shader: standard; metalness: 0.02; roughness: 0.98"
       ></a-sphere>
-    </a-entity>
 
-    <!-- Uranus (behind-left) -->
-    <a-entity id="wrapUranus" position="-7.2 2.1 5.2" rotation="0 0 97">
+      <!-- SATURN -->
+      <a-entity position="22 3 10" rotation="0 35 0">
+        <a-sphere
+          radius="2.7"
+          axis-spin="tilt: 26.7; speed: 0.36"
+          material="src: #satTex; shader: standard; metalness: 0.02; roughness: 0.98"
+        ></a-sphere>
+
+        <!-- Simple ring (subtle) -->
+        <a-ring
+          radius-inner="3.2"
+          radius-outer="4.7"
+          rotation="75 0 0"
+          material="color: #d7c9aa; opacity: 0.35; transparent: true; shader: flat; side: double"
+        ></a-ring>
+      </a-entity>
+
+      <!-- URANUS -->
       <a-sphere
-        id="uranus"
-        radius="0.9"
-        segments-width="64"
-        segments-height="64"
-        material="src:#texUranus; roughness: 1.0; metalness: 0.0"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 26000; easing: linear"
+        radius="2.4"
+        position="-6 3 18"
+        axis-spin="tilt: 97.8; speed: 0.40"
+        material="src: #uraTex; shader: standard; metalness: 0.03; roughness: 0.95"
       ></a-sphere>
-    </a-entity>
 
-    <!-- Moon (straight up / overhead-ish so you look around) -->
-    <a-entity id="wrapMoon" position="0 6.8 -0.5" rotation="0 0 6.7">
+      <!-- MOON -->
       <a-sphere
-        id="moon"
-        radius="0.55"
-        segments-width="64"
-        segments-height="64"
-        material="src:#texMoon; roughness: 1.0; metalness: 0.0"
-        animation="property: rotation; to: 0 360 0; loop: true; dur: 18000; easing: linear"
+        radius="1.4"
+        position="2 0.8 26"
+        axis-spin="tilt: 6.7; speed: 0.18"
+        material="src: #moonTex; shader: standard; metalness: 0.0; roughness: 1.0"
       ></a-sphere>
+
     </a-entity>
 
-    <!-- Tiny star dust (optional vibe) -->
-    <a-entity id="dust"></a-entity>
-
-    <script>
-      // Pick the correct sky filename automatically (you have two)
-      (function pickSky() {
-        const candidates = [
-          "space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg",
-          "space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg"
-        ];
-
-        const skyImg = document.getElementById("skyAuto");
-        const sky = document.getElementById("sky");
-
-        function tryNext(i) {
-          if (i >= candidates.length) {
-            // fallback to a dark gradient if neither exists
-            sky.setAttribute("color", "#05020a");
-            return;
-          }
-          const test = new Image();
-          test.onload = () => {
-            skyImg.src = candidates[i];
-            sky.setAttribute("src", "#skyAuto");
-          };
-          test.onerror = () => tryNext(i + 1);
-          test.src = candidates[i] + "?v=" + Date.now();
-        }
-
-        tryNext(0);
-      })();
-
-      // Sprinkle some subtle “stars” as tiny spheres (cheap + looks good on phones)
-      (function addDust() {
-        const dust = document.getElementById("dust");
-        const count = 140;
-        const rMin = 10, rMax = 28;
-
-        function rand(min, max) { return Math.random() * (max - min) + min; }
-
-        for (let i = 0; i < count; i++) {
-          const a = rand(0, Math.PI * 2);
-          const b = rand(-Math.PI / 2, Math.PI / 2);
-          const r = rand(rMin, rMax);
-
-          const x = Math.cos(b) * Math.cos(a) * r;
-          const y = Math.sin(b) * r + 1.6;
-          const z = Math.cos(b) * Math.sin(a) * r;
-
-          const s = document.createElement("a-sphere");
-          s.setAttribute("radius", rand(0.01, 0.03));
-          s.setAttribute("position", `${x.toFixed(2)} ${y.toFixed(2)} ${z.toFixed(2)}`);
-          s.setAttribute("material", "color: #ffffff; opacity: 0.75; transparent: true; roughness: 1.0; metalness: 0.0");
-          dust.appendChild(s);
-        }
-      })();
-    </script>
   </a-scene>
 </body>
 </html>
