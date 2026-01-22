@@ -2,242 +2,244 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Cosmic Drift VR</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Korndog Cosmic Drift</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; background:#000; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    .hud{
-      position:fixed; left:14px; right:14px; bottom:16px; z-index:10;
-      color:rgba(255,255,255,.86);
-      text-shadow:0 2px 12px rgba(0,0,0,.85);
-      font-size:14px; line-height:1.35;
-      pointer-events:none;
-    }
-    .chip{
-      display:inline-block;
-      padding:8px 10px;
-      border-radius:12px;
-      background:rgba(0,0,0,.42);
-      border:1px solid rgba(255,255,255,.18);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      font-weight:800;
-      letter-spacing:.2px;
-      margin-bottom:8px;
+    html, body { margin:0; height:100%; background:#000; overflow:hidden; }
+    .hint {
+      position: fixed;
+      left: 0; right: 0; bottom: 10px;
+      text-align: center;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: rgba(255,255,255,.8);
+      font-size: 14px;
+      pointer-events: none;
+      text-shadow: 0 2px 10px rgba(0,0,0,.7);
     }
   </style>
 
   <script>
-    // ========= TUNING KNOBS =========
-    // Sky: you asked for 45 seconds because sundial movement sucks.
-    const SKY_BACK_DUR_MS  = 45000;  // noticeable
-    const SKY_FRONT_DUR_MS = 32000;  // parallax layer, slightly faster, opposite direction
-    const SKY_FRONT_OPACITY = 0.22;  // haze strength
-
-    // Planets: "slow" in VR means minutes, not seconds.
-    // Interpreting your "20 secs" as "20 MINUTES".
-    const PLANET_DUR_MS = 20 * 60 * 1000; // 20 minutes
-
-    // Shooting stars: every 30–60 seconds
-    const STAR_MIN_MS = 30000;
-    const STAR_MAX_MS = 60000;
-
-    // Background switching between your two sky photos
-    const BG_SWITCH_MS = 75000; // 75 seconds (smooth vibe)
-
-    // ========= COMPONENTS =========
-
-    // TRUE random scheduler (not one-time random interval)
-    AFRAME.registerComponent('shooting-stars', {
-      schema: { minMs:{default:30000}, maxMs:{default:60000}, maxAlive:{default:1} },
+    // --- Shooting star spawner (lightweight, VR-safe) ---
+    AFRAME.registerComponent("shooting-stars", {
+      schema: {
+        minDelayMs: { default: 30000 }, // 30s
+        maxDelayMs: { default: 60000 }, // 60s
+        durationMs: { default: 1800 }
+      },
       init: function () {
-        this.alive = 0;
-        this._timer = null;
-        this.schedule();
+        this.nextTimer = null;
+        this.scheduleNext();
       },
-      schedule: function () {
-        const wait = this.data.minMs + Math.random() * (this.data.maxMs - this.data.minMs);
-        clearTimeout(this._timer);
-        this._timer = setTimeout(() => this.spawn(), wait);
+      remove: function () {
+        if (this.nextTimer) clearTimeout(this.nextTimer);
       },
-      spawn: function () {
-        if (this.alive >= this.data.maxAlive) { this.schedule(); return; }
-        this.alive++;
+      scheduleNext: function () {
+        const d = this.data;
+        const delay = d.minDelayMs + Math.random() * (d.maxDelayMs - d.minDelayMs);
+        this.nextTimer = setTimeout(() => {
+          this.spawnStar();
+          this.scheduleNext();
+        }, delay);
+      },
+      spawnStar: function () {
+        const scene = this.el.sceneEl;
 
-        const holder = this.el;
-        const star = document.createElement('a-entity');
+        // Spawn in the sky-ish area, far away
+        const r = 180; // radius-ish
+        const theta = Math.random() * Math.PI * 2;
+        const phi = (Math.random() * 0.35 + 0.1) * Math.PI; // upper-ish hemisphere
+        const start = new THREE.Vector3(
+          r * Math.cos(theta) * Math.sin(phi),
+          r * Math.cos(phi),
+          r * Math.sin(theta) * Math.sin(phi)
+        );
 
-        // Start high and far
-        const startX = (Math.random() * 18) - 9;
-        const startY = 7 + Math.random() * 4;
-        const startZ = -28 - Math.random() * 10;
+        // Move across a short arc
+        const dir = new THREE.Vector3(
+          (Math.random() - 0.5),
+          (Math.random() - 0.2),
+          (Math.random() - 0.5)
+        ).normalize();
+        const end = start.clone().add(dir.multiplyScalar(70));
 
-        // End diagonally across view
-        const dir = Math.random() < 0.5 ? -1 : 1;
-        const endX = startX + dir * (12 + Math.random() * 10);
-        const endY = startY - (3 + Math.random() * 3);
-        const endZ = startZ - (8 + Math.random() * 10);
+        const star = document.createElement("a-entity");
 
-        star.setAttribute('position', `${startX.toFixed(2)} ${startY.toFixed(2)} ${startZ.toFixed(2)}`);
-        star.setAttribute('rotation', `0 0 ${(-25 + Math.random()*50).toFixed(2)}`);
+        // Use a thin cylinder as the streak
+        star.setAttribute("geometry", "primitive: cylinder; radius: 0.05; height: 18; segmentsRadial: 8;");
+        star.setAttribute("material", "color: #ffffff; emissive: #ffffff; emissiveIntensity: 1; opacity: 0.0; transparent: true;");
+        star.setAttribute("position", `${start.x} ${start.y} ${start.z}`);
 
-        // streak (thin cylinder)
-        star.setAttribute('geometry', 'primitive: cylinder; radius: 0.02; height: 2.4;');
-        star.setAttribute('material', 'color:#fff; emissive:#fff; emissiveIntensity:0.85; opacity:0.95; transparent:true;');
+        // Orient cylinder toward end
+        const mid = start.clone().add(end).multiplyScalar(0.5);
+        const look = end.clone();
+        star.object3D.position.copy(mid);
+        star.object3D.lookAt(look);
+        // Tilt so cylinder aligns with its length axis
+        star.object3D.rotateX(Math.PI / 2);
 
-        star.setAttribute('animation__move', {
-          property: 'position',
-          to: `${endX.toFixed(2)} ${endY.toFixed(2)} ${endZ.toFixed(2)}`,
-          dur: 1400,
-          easing: 'easeOutQuad'
-        });
-        star.setAttribute('animation__fade', {
-          property: 'material.opacity',
-          to: 0,
-          dur: 1400,
-          easing: 'easeOutQuad'
-        });
+        // Animate: fade in -> travel -> fade out
+        const dur = this.data.durationMs;
 
-        holder.appendChild(star);
+        star.setAttribute("animation__fadein",
+          `property: material.opacity; from: 0; to: 0.85; dur: 250; easing: linear`);
+        star.setAttribute("animation__move",
+          `property: position; from: ${start.x} ${start.y} ${start.z}; to: ${end.x} ${end.y} ${end.z}; dur: ${dur}; easing: linear`);
+        star.setAttribute("animation__fadeout",
+          `property: material.opacity; from: 0.85; to: 0; dur: 300; delay: ${dur - 250}; easing: linear`);
 
+        scene.appendChild(star);
+
+        // Cleanup after done
         setTimeout(() => {
-          if (star.parentNode) star.parentNode.removeChild(star);
-          this.alive--;
-          this.schedule();
-        }, 1500);
+          if (star && star.parentNode) star.parentNode.removeChild(star);
+        }, dur + 500);
+      }
+    });
+
+    // --- Background crossfade switcher (NO parallax) ---
+    AFRAME.registerComponent("bg-switch", {
+      schema: {
+        intervalMs: { default: 180000 }, // 3 minutes (change if you want)
+        fadeMs: { default: 8000 }        // 8s fade
       },
-      remove: function () { clearTimeout(this._timer); }
+      init: function () {
+        this.skyA = document.querySelector("#skyA");
+        this.skyB = document.querySelector("#skyB");
+        this.usingA = true;
+
+        // Start with A visible
+        this.skyA.setAttribute("material", "opacity: 1; transparent: true;");
+        this.skyB.setAttribute("material", "opacity: 0; transparent: true;");
+
+        this.timer = setInterval(() => this.swap(), this.data.intervalMs);
+      },
+      remove: function () {
+        if (this.timer) clearInterval(this.timer);
+      },
+      swap: function () {
+        const fade = this.data.fadeMs;
+
+        if (this.usingA) {
+          // Fade A out, B in
+          this.skyA.setAttribute("animation__op", `property: material.opacity; to: 0; dur: ${fade}; easing: linear`);
+          this.skyB.setAttribute("animation__op", `property: material.opacity; to: 1; dur: ${fade}; easing: linear`);
+        } else {
+          // Fade B out, A in
+          this.skyB.setAttribute("animation__op", `property: material.opacity; to: 0; dur: ${fade}; easing: linear`);
+          this.skyA.setAttribute("animation__op", `property: material.opacity; to: 1; dur: ${fade}; easing: linear`);
+        }
+
+        this.usingA = !this.usingA;
+      }
     });
   </script>
 </head>
 
 <body>
-  <div class="hud">
-    <span class="chip">Cosmic Drift · Parallax Sky · 5 Planets · Shooting Stars</span><br/>
-    Sky rotates fast enough to SEE · Planets rotate like REAL planets · Stars every 30–60s
-  </div>
+  <div class="hint">Deep space float • planets + cosmic drift • tap VR when ready</div>
 
   <a-scene
+    renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true;"
     vr-mode-ui="enabled: true"
-    renderer="antialias:true; colorManagement:true; physicallyCorrectLights:true; precision:high;"
-    background="color:#000"
-  >
-    <a-assets timeout="20000">
-      <!-- Your two sky photos -->
-      <img id="bg1" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
-      <img id="bg2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
+    embedded>
 
-      <!-- Your planet textures -->
-      <img id="earthTex"   src="earth_tex.jpg">
-      <img id="jupiterTex" src="jupiter_tex.jpg">
-      <img id="saturnTex"  src="saturn_tex.jpg">
-      <img id="uranusTex"  src="uranus_tex.jpg">
-      <img id="moonTex"    src="moon_tex.jpg">
+    <a-assets>
+      <!-- Your two backgrounds (as in your repo screenshots) -->
+      <img id="bg1" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous" />
+      <img id="bg2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" crossorigin="anonymous" />
+
+      <!-- Your planet textures from the repo -->
+      <img id="earthTex"   src="earth_tex.jpg" crossorigin="anonymous" />
+      <img id="jupiterTex" src="jupiter_tex.jpg" crossorigin="anonymous" />
+      <img id="saturnTex"  src="saturn_tex.jpg" crossorigin="anonymous" />
+      <img id="uranusTex"  src="uranus_tex.jpg" crossorigin="anonymous" />
+      <img id="moonTex"    src="moon_tex.jpg" crossorigin="anonymous" />
     </a-assets>
 
-    <!-- Camera (NO drift, NO joystick movement) -->
-    <a-entity id="rig" position="0 1.6 0">
-      <a-camera wasd-controls-enabled="false" look-controls></a-camera>
+    <!-- Lights (kept simple; the textures do most of the work) -->
+    <a-entity light="type: ambient; intensity: 0.65"></a-entity>
+    <a-entity light="type: directional; intensity: 0.75" position="2 4 1"></a-entity>
+
+    <!-- Rig: joystick movement + head look -->
+    <a-entity id="rig" movement-controls="speed: 0.05" position="0 1.6 0">
+      <a-camera look-controls="pointerLockEnabled: false"></a-camera>
     </a-entity>
 
-    <!-- Lighting: soft and consistent -->
-    <a-entity light="type: ambient; intensity: 0.72"></a-entity>
-    <a-entity light="type: directional; intensity: 0.52" position="2 3 1"></a-entity>
-
-    <!-- PARALLAX SKY (NO wobble/pulsing) -->
+    <!-- SINGLE sky layer system (NO parallax). Two skies same radius used only to crossfade. -->
     <a-sky
-      id="skyBack"
+      id="skyA"
+      radius="500"
       src="#bg1"
-      material="shader:flat; side:back; transparent:true; opacity:1"
+      material="shader: flat; transparent: true; opacity: 1"
       rotation="0 0 0"
-      animation__spin="property: rotation; to: 0 360 0; loop:true; dur: 45000; easing: linear"
-    ></a-sky>
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 45000; easing: linear">
+    </a-sky>
 
     <a-sky
-      id="skyFront"
-      src="#bg1"
-      material="shader:flat; side:back; transparent:true; opacity:0.22"
+      id="skyB"
+      radius="500"
+      src="#bg2"
+      material="shader: flat; transparent: true; opacity: 0"
       rotation="0 0 0"
-      animation__spin="property: rotation; to: 0 -360 0; loop:true; dur: 32000; easing: linear"
-    ></a-sky>
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 45000; easing: linear">
+    </a-sky>
 
-    <!-- PLANETS: SPACED AROUND YOU (no bunching) -->
-    <a-entity id="planetField">
+    <!-- Background switching + shooting stars controller -->
+    <a-entity bg-switch="intervalMs: 180000; fadeMs: 8000" shooting-stars="minDelayMs: 30000; maxDelayMs: 60000;"></a-entity>
 
-      <!-- Earth: right -->
-      <a-entity position="11 2 -2"
-        animation__spin="property: rotation; to: 0 360 0; loop:true; dur: 1200000; easing: linear">
-        <a-sphere radius="1.2" segments-width="64" segments-height="64"
-          material="src:#earthTex; roughness:1; metalness:0.02"></a-sphere>
-      </a-entity>
+    <!-- Planets: spaced out around you, full spheres, slowed rotation (20s) -->
+    <!-- Earth -->
+    <a-sphere
+      position="0 1.8 -10"
+      radius="1.25"
+      material="src: #earthTex; shader: standard; metalness: 0; roughness: 1; mipmap: false"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+    </a-sphere>
 
-      <!-- Jupiter: left -->
-      <a-entity position="-14 2 1"
-        animation__spin="property: rotation; to: 0 360 0; loop:true; dur: 1200000; easing: linear">
-        <a-sphere radius="2.1" segments-width="64" segments-height="64"
-          material="src:#jupiterTex; roughness:1; metalness:0.02"></a-sphere>
-      </a-entity>
+    <!-- Jupiter -->
+    <a-sphere
+      position="10 2.5 2"
+      radius="2.2"
+      material="src: #jupiterTex; shader: standard; metalness: 0; roughness: 1; mipmap: false"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+    </a-sphere>
 
-      <!-- Saturn: behind -->
-      <a-entity position="2 2 15" rotation="10 0 -10"
-        animation__spin="property: rotation; to: 10 360 -10; loop:true; dur: 1200000; easing: linear">
-        <a-sphere radius="1.45" segments-width="64" segments-height="64"
-          material="src:#saturnTex; roughness:1; metalness:0.02"></a-sphere>
-        <a-ring radius-inner="1.65" radius-outer="2.85" rotation="75 0 0"
-          material="color:#d8c3a3; opacity:0.55; transparent:true; side:double"></a-ring>
-      </a-entity>
+    <!-- Uranus -->
+    <a-sphere
+      position="-10 2.0 4"
+      radius="1.7"
+      material="src: #uranusTex; shader: standard; metalness: 0; roughness: 1; mipmap: false"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+    </a-sphere>
 
-      <!-- Uranus: far front -->
-      <a-entity position="-3 1.8 -16" rotation="0 0 20"
-        animation__spin="property: rotation; to: 0 360 20; loop:true; dur: 1200000; easing: linear">
-        <a-sphere radius="1.5" segments-width="64" segments-height="64"
-          material="src:#uranusTex; roughness:1; metalness:0.02"></a-sphere>
-      </a-entity>
+    <!-- Moon -->
+    <a-sphere
+      position="3 1.2 9"
+      radius="0.75"
+      material="src: #moonTex; shader: standard; metalness: 0; roughness: 1; mipmap: false"
+      animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+    </a-sphere>
 
-      <!-- Moon: above -->
-      <a-entity position="0.8 7.2 2"
-        animation__spin="property: rotation; to: 0 360 0; loop:true; dur: 1200000; easing: linear">
-        <a-sphere radius="0.75" segments-width="64" segments-height="64"
-          material="src:#moonTex; roughness:1; metalness:0.0"></a-sphere>
-      </a-entity>
+    <!-- Saturn (sphere + ring) -->
+    <a-entity position="-6 2.3 -2">
+      <a-sphere
+        radius="1.9"
+        material="src: #saturnTex; shader: standard; metalness: 0; roughness: 1; mipmap: false"
+        animation="property: rotation; to: 0 360 0; loop: true; dur: 20000; easing: linear">
+      </a-sphere>
 
+      <!-- Simple ring (kept subtle, doesn’t strobe) -->
+      <a-ring
+        rotation="65 0 0"
+        radius-inner="2.2"
+        radius-outer="3.2"
+        material="color: #d8cbb3; opacity: 0.35; transparent: true; side: double">
+      </a-ring>
     </a-entity>
-
-    <!-- Shooting stars controller -->
-    <a-entity id="stars" shooting-stars="minMs: 30000; maxMs: 60000; maxAlive: 1"></a-entity>
-
-    <script>
-      // Apply knobs (so you can change only the constants up top)
-      const skyBack  = document.getElementById('skyBack');
-      const skyFront = document.getElementById('skyFront');
-
-      skyBack.setAttribute('animation__spin',  `property: rotation; to: 0 360 0; loop:true; dur: ${SKY_BACK_DUR_MS}; easing: linear`);
-      skyFront.setAttribute('material',        `shader:flat; side:back; transparent:true; opacity:${SKY_FRONT_OPACITY}`);
-      skyFront.setAttribute('animation__spin', `property: rotation; to: 0 -360 0; loop:true; dur: ${SKY_FRONT_DUR_MS}; easing: linear`);
-
-      // Background switching (fade BOTH layers)
-      let using1 = true;
-
-      function fadeSwapSky(el, nextSrc, targetOpacity) {
-        el.setAttribute('animation__fadeout', { property:'material.opacity', to:0, dur:700, easing:'easeInOutQuad' });
-        setTimeout(() => {
-          el.setAttribute('src', nextSrc);
-          el.setAttribute('animation__fadein', { property:'material.opacity', to:targetOpacity, dur:900, easing:'easeInOutQuad' });
-        }, 700);
-      }
-
-      function swapBackgrounds() {
-        const next = using1 ? '#bg2' : '#bg1';
-        using1 = !using1;
-        fadeSwapSky(skyBack,  next, 1.0);
-        fadeSwapSky(skyFront, next, SKY_FRONT_OPACITY);
-      }
-
-      setInterval(swapBackgrounds, BG_SWITCH_MS);
-    </script>
 
   </a-scene>
 </body>
