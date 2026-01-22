@@ -3,105 +3,159 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>KornDog Galaxy VR</title>
+  <title>Deep Space Float • KornDog Style</title>
+
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
   <style>
-    html, body { margin:0; height:100%; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    .hud {
-      position: fixed; left: 18px; right: 18px; bottom: 18px;
-      color: rgba(255,255,255,.92);
-      text-shadow: 0 2px 14px rgba(0,0,0,.8);
-      pointer-events:none;
-      line-height: 1.25;
+    html, body { margin:0; height:100%; background:#000; overflow:hidden; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    .hud{
+      position: fixed; left: 0; right: 0; bottom: 0;
+      padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+      color: rgba(255,255,255,0.92);
+      text-shadow: 0 2px 10px rgba(0,0,0,.65);
+      font-size: 14px;
+      display:flex; justify-content:center; pointer-events:none;
+      background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0));
     }
-    .hud .title { font-size: 16px; letter-spacing:.2px; opacity:.95; }
-    .hud .sub { font-size: 13px; opacity:.78; margin-top: 6px; }
+    .hud .text{ max-width: 900px; text-align:center; line-height:1.25; }
+    .hud .hint{ opacity:.8; font-size: 12px; margin-top: 4px; }
   </style>
+
+  <script>
+    // Smooth float + slight spin
+    AFRAME.registerComponent('floaty', {
+      schema: { amp:{default:0.35}, spd:{default:0.12}, yaw:{default:1.2} },
+      init() { this.baseY = this.el.object3D.position.y; this.t = Math.random()*1000; },
+      tick(t, dt){
+        const d = (dt||16) / 1000;
+        this.t += d;
+        const y = this.baseY + Math.sin(this.t * (this.data.spd*2*Math.PI)) * this.data.amp;
+        this.el.object3D.position.y = y;
+        this.el.object3D.rotation.y += d * (this.data.yaw * 0.15);
+      }
+    });
+
+    // Circle-cut shader: hard masks anything outside a circle (kills square edges + baked checkerboard corners)
+    AFRAME.registerShader('circle-cut', {
+      schema: {
+        src: { type: 'map', is: 'uniform' },
+        opacity: { type: 'number', is: 'uniform', default: 1.0 }
+      },
+      vertexShader: `
+        varying vec2 vUV;
+        void main() {
+          vUV = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D src;
+        uniform float opacity;
+        varying vec2 vUV;
+
+        void main() {
+          vec2 c = vUV - vec2(0.5);
+          float r = length(c);
+          if (r > 0.5) discard;              // perfect circle cut
+          vec4 tex = texture2D(src, vUV);
+          gl_FragColor = vec4(tex.rgb, tex.a * opacity);
+        }
+      `
+    });
+  </script>
 </head>
 
 <body>
-  <div class="hud">
-    <div class="title">Deep space float · Milky Way · 5 planets · nebula haze</div>
-    <div class="sub">Move your phone / drag to look · Tap VR when ready</div>
-  </div>
-
   <a-scene
-    renderer="colorManagement:true; physicallyCorrectLights:true; antialias:true"
-    fog="type: exponential; color: #07060c; density: 0.012"
+    renderer="antialias:true; colorManagement:true"
     vr-mode-ui="enabled:true"
-  >
-    <a-assets>
-      <!-- 360 background (this is the one that was working) -->
-      <img id="sky" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" />
+    loading-screen="enabled:false"
+    background="color:#000">
 
-      <!-- planets -->
-      <img id="earth"  src="realistic-earth-planet-globe-isolated-with-transparent-background_702390-621.jpg" />
-      <img id="jupiter" src="png-closeup-jupiter-planet-isolated-transparent_1080455-12629.jpg" />
-      <img id="saturn" src="pngtree-saturn-planet-on-transparent-background-png-image_13144127.png" />
+    <a-assets timeout="20000">
+      <!-- Your pink/blue galaxy sky (keep this as the main) -->
+      <img id="skyPink" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" />
 
-      <!-- Uranus (your weird filename) -->
-      <img id="uranus" src="cHJpdmFOZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTExL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg" />
+      <!-- Optional alternate skies you told me about (not required, but handy) -->
+      <img id="skyPink2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" />
+      <img id="skyHDRBlue" src="HDR_blue_nebulae-1.webp" />
+      <img id="skyHDRRing" src="HDR_ringed_brown_dwarf.webp" />
 
-      <!-- 5th "planet" -->
-      <img id="dwarf" src="HDR_ringed_brown_dwarf.webp" />
+      <!-- Planets -->
+      <img id="earthTex"  src="realistic-earth-planet-globe-isolated-with-transparent-background_702390-621.jpg" />
+      <img id="jupiterTex" src="png-closeup-jupiter-planet-isolated-transparent_1080455-12629.jpg" />
+      <img id="saturnTex" src="pngtree-saturn-planet-on-transparent-background-png-image_13144127.png" />
 
-      <!-- haze -->
-      <img id="nebula" src="HDR_blue_nebulae-1.webp" />
+      <!-- Uranus / Moon / Milky Way spiral (weird filenames) -->
+      <img id="uranusTex" src="cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTEwL3Jhd3d2c2M2M2mZmljZV8zM18yZF9zdHlsZV9waG90b19vZl91Zl91cmFudXNfcGxhbWV0X2lzZb2xhdGVkX29uX19mM2M4OTY0OTY0MS1jYTFkLTQ5ZWI0NW1N2Q3MWYucG5.jpeg" />
+      <img id="moonTex"   src="cHJpdmF0ZS9zdGFOaWMvZmIsZXMvd2Vic2l0ZS8yMDIyLTA1L3Vwd2s2MjA3MzUwMS1aWTpbWkaWEtaW1hZ2Utam9iODYlLTl3.jpeg" />
+      <img id="milkySpiralTex" src="cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzL3JtNjcwLWVzZW1lbnQtQtMDEwLnBuZw.jpeg" />
     </a-assets>
 
-    <!-- Lights -->
-    <a-entity light="type: ambient; intensity: 0.55; color: #bfb7ff"></a-entity>
-    <a-entity light="type: directional; intensity: 0.9; color: #ffffff" position="2 3 1"></a-entity>
+    <!-- KEEP YOUR BACKGROUND: pink galaxy sky -->
+    <a-sky src="#skyPink" rotation="0 -90 0"></a-sky>
 
-    <!-- SKY (360) -->
-    <a-sky src="#sky" rotation="0 -90 0"></a-sky>
-
-    <!-- Soft nebula haze sphere (inside-out) -->
-    <a-sphere
-      radius="28"
-      segments-width="48" segments-height="48"
-      material="src:#nebula; side:back; transparent:true; opacity:0.18"
-      position="0 0 0"
-      rotation="0 30 0"
-    ></a-sphere>
-
-    <!-- Camera rig: slow forward drift -->
-    <a-entity id="rig" position="0 1.6 6"
-      animation="property: position; to: 0 1.6 -6; dur: 90000; easing: linear; loop: true">
-      <a-camera wasd-controls-enabled="false" look-controls="touchEnabled:true; mouseEnabled:true"></a-camera>
+    <!-- Camera -->
+    <a-entity position="0 1.6 0">
+      <a-camera look-controls="enabled:true" wasd-controls="enabled:false"></a-camera>
     </a-entity>
 
-    <!-- PLANETS (note: if the source image has checkerboard baked in, it will still show) -->
-    <a-sphere radius="1.1" position="-2.6 1.2 -3.8"
-      material="src:#earth; metalness:0.0; roughness:1.0"
-      rotation="0 20 0"
-      animation="property: rotation; to: 0 380 0; dur: 55000; easing: linear; loop: true">
-    </a-sphere>
+    <!-- PLANETS (circle-cut planes so they never show squares) -->
+    <!-- Earth -->
+    <a-entity position="-2.8 1.3 -6.5" rotation="0 25 0" floaty="amp:0.22; spd:0.10; yaw:1.2">
+      <a-plane width="1.6" height="1.6"
+        material="shader:circle-cut; src:#earthTex; transparent:true; opacity:1"
+      ></a-plane>
+    </a-entity>
 
-    <a-sphere radius="1.35" position="2.8 1.0 -5.2"
-      material="src:#jupiter; metalness:0.0; roughness:1.0"
-      rotation="0 0 0"
-      animation="property: rotation; to: 0 -360 0; dur: 70000; easing: linear; loop: true">
-    </a-sphere>
+    <!-- Jupiter -->
+    <a-entity position="2.6 1.35 -6.7" rotation="0 -18 0" floaty="amp:0.25; spd:0.095; yaw:1.05">
+      <a-plane width="1.9" height="1.9"
+        material="shader:circle-cut; src:#jupiterTex; transparent:true; opacity:1"
+      ></a-plane>
+    </a-entity>
 
-    <a-sphere radius="1.15" position="0.2 2.3 -6.8"
-      material="src:#saturn; metalness:0.0; roughness:1.0"
-      rotation="0 120 0"
-      animation="property: rotation; to: 0 480 0; dur: 80000; easing: linear; loop: true">
-    </a-sphere>
+    <!-- Saturn -->
+    <a-entity position="-0.2 2.05 -7.3" rotation="0 10 0" floaty="amp:0.28; spd:0.085; yaw:1.1">
+      <a-plane width="2.1" height="2.1"
+        material="shader:circle-cut; src:#saturnTex; transparent:true; opacity:1"
+      ></a-plane>
+    </a-entity>
 
-    <a-sphere radius="1.05" position="1.2 0.4 -3.0"
-      material="src:#uranus; metalness:0.0; roughness:1.0"
-      rotation="0 200 0"
-      animation="property: rotation; to: 0 560 0; dur: 90000; easing: linear; loop: true">
-    </a-sphere>
+    <!-- Uranus -->
+    <a-entity position="0.0 0.95 -6.0" rotation="0 -8 0" floaty="amp:0.20; spd:0.11; yaw:1.25">
+      <a-plane width="1.45" height="1.45"
+        material="shader:circle-cut; src:#uranusTex; transparent:true; opacity:1"
+      ></a-plane>
+    </a-entity>
 
-    <a-sphere radius="1.45" position="-0.8 0.3 -7.6"
-      material="src:#dwarf; metalness:0.0; roughness:1.0"
-      rotation="0 40 0"
-      animation="property: rotation; to: 0 -420 0; dur: 95000; easing: linear; loop: true">
-    </a-sphere>
+    <!-- Moon -->
+    <a-entity position="1.3 0.55 -5.2" rotation="0 14 0" floaty="amp:0.18; spd:0.12; yaw:1.4">
+      <a-plane width="1.1" height="1.1"
+        material="shader:circle-cut; src:#moonTex; transparent:true; opacity:1"
+      ></a-plane>
+    </a-entity>
+
+    <!-- Milky Way spiral billboard (optional "milky way" object floating far back) -->
+    <a-entity position="0 3.2 -14" rotation="0 0 0" floaty="amp:0.18; spd:0.06; yaw:0.6">
+      <a-plane width="4.2" height="4.2"
+        material="shader:circle-cut; src:#milkySpiralTex; transparent:true; opacity:0.95"
+      ></a-plane>
+    </a-entity>
+
+    <!-- Tiny glow star for depth -->
+    <a-entity position="0 3 -25" floaty="amp:0.25; spd:0.10; yaw:1">
+      <a-sphere radius="0.12" color="#ffffff" material="emissive:#ffffff; emissiveIntensity:1; opacity:0.7; transparent:true"></a-sphere>
+    </a-entity>
 
   </a-scene>
+
+  <div class="hud">
+    <div class="text">
+      Deep space float • Milky Way • 5 planets • nebula haze
+      <div class="hint">Move your phone / drag to look • Tap VR when ready</div>
+    </div>
+  </div>
 </body>
 </html>
