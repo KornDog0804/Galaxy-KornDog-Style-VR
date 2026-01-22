@@ -3,284 +3,109 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift VR</title>
+  <title>Cosmic Drift VR</title>
 
-  <!-- A-Frame (Quest friendly) -->
+  <!-- Only A-Frame. No other CDN scripts. -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
-  <!-- A-Frame Extras (for thumbstick movement-controls) -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe-extras@6.1.1/dist/aframe-extras.min.js"></script>
 
   <style>
     html, body { margin:0; height:100%; background:#000; overflow:hidden; }
-    .hud {
-      position: fixed;
-      left: 14px;
-      bottom: 14px;
-      z-index: 10;
+    .hud{
+      position:fixed; left:14px; bottom:14px; z-index:10;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: rgba(255,255,255,.85);
-      text-shadow: 0 2px 10px rgba(0,0,0,.8);
-      font-size: 14px;
-      line-height: 1.25;
-      user-select: none;
-      pointer-events: none;
+      font-size:14px; line-height:1.25;
+      color:rgba(255,255,255,.85);
+      text-shadow:0 2px 10px rgba(0,0,0,.8);
+      pointer-events:none;
     }
-    .hud b { color:#fff; }
   </style>
+
+  <script>
+    // Click sky to swap backgrounds (Quest-safe: no fades, no dual-sky)
+    AFRAME.registerComponent('sky-swap', {
+      init: function () {
+        const sky = this.el;
+        const srcA = '#bgA';
+        const srcB = '#bgB';
+        let usingA = true;
+
+        sky.addEventListener('click', () => {
+          usingA = !usingA;
+          sky.setAttribute('src', usingA ? srcA : srcB);
+        });
+      }
+    });
+  </script>
 </head>
 
 <body>
-  <div class="hud">
-    <b>Cosmic drift</b> · background swaps · slow spin planets · occasional shooting stars
-  </div>
+  <div class="hud">Click the sky to swap backgrounds • 45s sky drift • 20s planet spin</div>
 
-  <a-scene
-    renderer="colorManagement: true; physicallyCorrectLights: true;"
-    vr-mode-ui="enabled: true"
-    background="color: #000"
-  >
-    <a-assets timeout="10000">
+  <a-scene vr-mode-ui="enabled: true" background="color:#000">
+    <a-assets timeout="15000">
       <!-- Backgrounds -->
-      <img id="bgA" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" />
-      <img id="bgB" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" />
+      <img id="bgA" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
+      <img id="bgB" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
 
       <!-- Planet textures -->
-      <img id="texEarth"  src="earth_tex.jpg" />
-      <img id="texJupiter" src="jupiter_tex.jpg" />
-      <img id="texSaturn" src="saturn_tex.jpg" />
-      <img id="texUranus" src="uranus_tex.jpg" />
-      <img id="texMoon"   src="moon_tex.jpg" />
+      <img id="earthTex"   src="earth_tex.jpg">
+      <img id="jupiterTex" src="jupiter_tex.jpg">
+      <img id="saturnTex"  src="saturn_tex.jpg">
+      <img id="uranusTex"  src="uranus_tex.jpg">
+      <img id="moonTex"    src="moon_tex.jpg">
     </a-assets>
 
-    <!-- Soft light so the textures read better in VR -->
-    <a-entity light="type: ambient; intensity: 0.65"></a-entity>
-    <a-entity light="type: directional; intensity: 0.55; position: 1 2 1"></a-entity>
+    <!-- Camera (simple = reliable VR) -->
+    <a-entity id="rig" position="0 1.6 0">
+      <a-camera wasd-controls-enabled="false"></a-camera>
+    </a-entity>
 
-    <!-- ONE sky only (Quest-safe). We animate rotation + do fade swaps. -->
+    <!-- Lighting -->
+    <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+    <a-entity light="type: directional; intensity: 0.55" position="2 3 1"></a-entity>
+
+    <!-- ONE SKY ONLY (Quest-safe) -->
     <a-sky
       id="sky"
       src="#bgA"
+      sky-swap
       rotation="0 0 0"
-      material="shader: flat; transparent: true; opacity: 1"
+      material="shader: flat"
+      animation="property: rotation; to: 0 360 0; dur: 45000; easing: linear; loop: true"
     ></a-sky>
 
-    <!-- Player rig (thumbstick movement + look) -->
-    <a-entity
-      id="rig"
-      position="0 1.6 0"
-      movement-controls="speed: 0.08; fly: true"
-    >
-      <a-camera wasd-controls="enabled: true"></a-camera>
-
-      <!-- Hands (Quest controllers) -->
-      <a-entity laser-controls="hand: left"></a-entity>
-      <a-entity laser-controls="hand: right"></a-entity>
-    </a-entity>
-
-    <!-- Planets (spaced out around you) -->
-    <!-- NOTE: slow spin: 20s per rotation (dur: 20000) -->
+    <!-- PLANETS: spaced around you (ring) -->
+    <!-- Spin: 20 seconds per full rotation -->
     <a-entity id="planets">
-      <!-- Earth -->
-      <a-sphere
-        radius="1.15"
-        position="-6 2.2 -10"
-        material="src: #texEarth; roughness: 1; metalness: 0"
-        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-      ></a-sphere>
+      <!-- Front -->
+      <a-sphere radius="1.15" position="0 2 -12"
+        material="src:#earthTex; roughness:1; metalness:0"
+        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
 
-      <!-- Jupiter -->
-      <a-sphere
-        radius="1.85"
-        position="8 1.6 -14"
-        material="src: #texJupiter; roughness: 1; metalness: 0"
-        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-      ></a-sphere>
+      <!-- Right -->
+      <a-sphere radius="1.85" position="12 2 -2"
+        material="src:#jupiterTex; roughness:1; metalness:0"
+        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
 
-      <!-- Uranus -->
-      <a-sphere
-        radius="1.35"
-        position="2 3.3 -8"
-        material="src: #texUranus; roughness: 1; metalness: 0"
-        rotation="98 10 0"
-        animation="property: rotation; to: 98 370 0; dur: 20000; easing: linear; loop: true"
-      ></a-sphere>
+      <!-- Left -->
+      <a-sphere radius="1.35" position="-12 2 1"
+        material="src:#uranusTex; roughness:1; metalness:0"
+        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
 
-      <!-- Moon -->
-      <a-sphere
-        radius="0.65"
-        position="-1 1.1 -5"
-        material="src: #texMoon; roughness: 1; metalness: 0"
-        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-      ></a-sphere>
-
-      <!-- Saturn + ring -->
-      <a-entity position="-10 1.8 -16">
-        <a-sphere
-          radius="1.55"
-          material="src: #texSaturn; roughness: 1; metalness: 0"
-          animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-        ></a-sphere>
-
-        <!-- Simple ring (kept lightweight for Quest) -->
-        <a-ring
-          radius-inner="2.05"
-          radius-outer="2.75"
-          rotation="75 15 0"
-          material="color: #c9c0b2; opacity: 0.35; side: double; transparent: true"
-        ></a-ring>
+      <!-- Behind -->
+      <a-entity position="0 2 14">
+        <a-sphere radius="1.55"
+          material="src:#saturnTex; roughness:1; metalness:0"
+          animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
+        <a-ring radius-inner="2.05" radius-outer="2.75" rotation="75 15 0"
+          material="color:#c9c0b2; opacity:0.35; transparent:true; side:double"></a-ring>
       </a-entity>
+
+      <!-- Up-ish -->
+      <a-sphere radius="0.65" position="3 6 -6"
+        material="src:#moonTex; roughness:1; metalness:0"
+        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
     </a-entity>
-
-    <!-- Shooting star container -->
-    <a-entity id="shootingStars"></a-entity>
-
-    <script>
-      // -----------------------------
-      // Settings you asked for
-      // -----------------------------
-      const BG_DRIFT_SECONDS = 45;     // noticeable movement
-      const BG_SWAP_SECONDS  = 60;     // background switches (you can change)
-      const PLANET_SPIN_MS   = 20000;  // 20s (already set in animations)
-
-      // Shooting star interval: random 30s–60s
-      const STAR_MIN_MS = 30000;
-      const STAR_MAX_MS = 60000;
-
-      // -----------------------------
-      // Background drift (Quest-safe)
-      // -----------------------------
-      const sky = document.querySelector('#sky');
-
-      // Rotate the sky 360 degrees every 45 seconds
-      sky.setAttribute('animation__drift', `
-        property: rotation;
-        to: 0 360 0;
-        dur: ${BG_DRIFT_SECONDS * 1000};
-        easing: linear;
-        loop: true;
-      `);
-
-      // -----------------------------
-      // Background swapping (ONE sky only)
-      // Fade out -> swap src -> fade in
-      // -----------------------------
-      const bgs = ['#bgA', '#bgB'];
-      let bgIndex = 0;
-
-      function fadeSwapBackground() {
-        // fade out
-        sky.setAttribute('animation__fadeout', `
-          property: material.opacity;
-          to: 0;
-          dur: 1200;
-          easing: easeInOutQuad;
-        `);
-
-        // after fade out, swap src, fade back in
-        setTimeout(() => {
-          bgIndex = (bgIndex + 1) % bgs.length;
-          sky.setAttribute('src', bgs[bgIndex]);
-
-          sky.setAttribute('animation__fadein', `
-            property: material.opacity;
-            to: 1;
-            dur: 1400;
-            easing: easeInOutQuad;
-          `);
-        }, 1250);
-      }
-
-      setInterval(fadeSwapBackground, BG_SWAP_SECONDS * 1000);
-
-      // -----------------------------
-      // Shooting stars (lightweight, occasional)
-      // -----------------------------
-      const starRoot = document.querySelector('#shootingStars');
-
-      function rand(min, max) { return Math.random() * (max - min) + min; }
-
-      function spawnShootingStar() {
-        // Start and end points on a big "shell" around the viewer
-        // Keep them high-ish in the sky so it feels natural.
-        const R = 60;
-
-        const start = {
-          x: rand(-R, R),
-          y: rand(12, 25),
-          z: rand(-R, -10)
-        };
-
-        // Move across the sky diagonally
-        const end = {
-          x: start.x + rand(20, 45),
-          y: start.y + rand(-6, 6),
-          z: start.z + rand(-10, 10)
-        };
-
-        const star = document.createElement('a-entity');
-
-        // A thin glowing plane works well in VR and is cheap
-        star.setAttribute('geometry', 'primitive: plane; width: 6; height: 0.08');
-        star.setAttribute('material', 'color: #ffffff; opacity: 0; transparent: true; shader: flat;');
-        star.setAttribute('position', `${start.x} ${start.y} ${start.z}`);
-
-        // Point the streak in its travel direction (roughly)
-        const dx = end.x - start.x;
-        const dy = end.y - start.y;
-        const yaw = Math.atan2(dx, (end.z - start.z)) * (180 / Math.PI);
-        const pitch = -Math.atan2(dy, Math.sqrt(dx*dx + (end.z - start.z)*(end.z - start.z))) * (180 / Math.PI);
-        star.setAttribute('rotation', `${pitch} ${yaw} 0`);
-
-        // Fade in quickly
-        star.setAttribute('animation__in', `
-          property: material.opacity;
-          to: 0.9;
-          dur: 250;
-          easing: easeOutQuad;
-        `);
-
-        // Fly across
-        star.setAttribute('animation__move', `
-          property: position;
-          to: ${end.x} ${end.y} ${end.z};
-          dur: 1200;
-          easing: easeInOutQuad;
-        `);
-
-        // Fade out near the end
-        star.setAttribute('animation__out', `
-          property: material.opacity;
-          to: 0;
-          dur: 450;
-          delay: 750;
-          easing: easeInQuad;
-        `);
-
-        starRoot.appendChild(star);
-
-        // Cleanup
-        setTimeout(() => {
-          if (star.parentNode) star.parentNode.removeChild(star);
-        }, 1600);
-      }
-
-      function scheduleNextStar() {
-        const delay = Math.floor(rand(STAR_MIN_MS, STAR_MAX_MS));
-        setTimeout(() => {
-          spawnShootingStar();
-          scheduleNextStar();
-        }, delay);
-      }
-      scheduleNextStar();
-
-      // -----------------------------
-      // Safety: if assets fail to load, keep scene running
-      // -----------------------------
-      document.querySelector('a-assets').addEventListener('timeout', () => {
-        console.warn('Assets timed out. Scene still running.');
-      });
-    </script>
 
   </a-scene>
 </body>
