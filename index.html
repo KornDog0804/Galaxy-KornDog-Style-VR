@@ -1,204 +1,86 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Galaxy — KornDog Style VR</title>
-
+  <meta charset="utf-8">
+  <title>Galaxy KornDog VR</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; background:#000; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    .hud {
-      position: fixed; left: 14px; right: 14px; bottom: 18px;
-      display:flex; justify-content: space-between; align-items:flex-end;
-      pointer-events:none; z-index:10;
-    }
-    .hud .text {
-      color: rgba(255,255,255,.85);
-      font-size: 14px; line-height: 1.35;
-      text-shadow: 0 2px 10px rgba(0,0,0,.75);
-      max-width: 70%;
-    }
+    body { margin:0; background:black; }
     .hint {
-      color: rgba(255,255,255,.65);
-      font-size: 12px;
+      position:fixed;
+      bottom:12px;
+      left:12px;
+      right:12px;
+      text-align:center;
+      color:#fff;
+      font-family:system-ui, sans-serif;
+      opacity:.85;
+      font-size:14px;
     }
   </style>
-
-  <script>
-    // ==========================
-    // FILE NAMES (repo root)
-    // ==========================
-    const SKY_MILKYWAY = "space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg";
-    // Your new smaller webp skies:
-    const SKY_BLUE_NEBULA = "HDR_blue_nebulae-1.webp";
-    const SKY_BROWN_DWARF = "HDR_ringed_brown_dwarf.webp";
-
-    // Planets you said are in the repo (adjust names here if yours differ)
-    const TEX_EARTH   = "realistic-earth-planet-globe-i..."; // optional if you want it later
-    const TEX_JUPITER = "png-closeup-jupiter-planet-i...";   // optional
-    const TEX_SATURN  = "pngtree-saturn-planet-on-tra...";   // optional
-
-    // The two new “real” cutouts you uploaded with crazy names:
-    // (These are what you showed in screenshots as Uranus + Moon)
-    const TEX_URANUS = "cHJpdmFOZS9zci9pbWFnZXMvd2Vic2l0ZS8yMDIzLTExL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3Jhd3BpeGVsX29mZmljZV8zM18yMDIyLTAxL3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg";
-    const TEX_MOON   = "cHJpdmFOZS9zdGF0aWMvZmlsZXMvd2Vic2l0ZS8yMDIyLTA1L3wd2s2MjA3MzUwMS13aWtpbWVkaWEtaW1hZ2Utb3V0dG9yLnBuZw.jpeg";
-
-    // If those two names above don’t EXACTLY match your repo,
-    // replace them with the real filenames (copy from GitHub “…” → Copy path).
-
-    // ==========================
-    // A-FRAME COMPONENTS
-    // ==========================
-    AFRAME.registerComponent("slow-drift", {
-      schema: { speed: {default: 0.02} },
-      tick: function (t, dt) {
-        const d = (dt || 16) / 1000;
-        this.el.object3D.position.z -= this.data.speed * d; // gentle forward drift
-      }
-    });
-
-    AFRAME.registerComponent("floaty", {
-      schema: {
-        amp: {default: 0.25},
-        spd: {default: 0.25},
-        yaw: {default: 4}
-      },
-      init: function () {
-        this.baseY = this.el.object3D.position.y;
-        this.baseX = this.el.object3D.position.x;
-        this.baseZ = this.el.object3D.position.z;
-      },
-      tick: function (t) {
-        const tt = (t || 0) / 1000;
-        const o = this.el.object3D;
-        o.position.y = this.baseY + Math.sin(tt * this.data.spd) * this.data.amp;
-        o.rotation.y = THREE.MathUtils.degToRad(Math.sin(tt * (this.data.spd * 0.6)) * this.data.yaw);
-      }
-    });
-
-    // Billboard planes so planet cutouts always face camera (realistic, no “flat sticker” vibe)
-    AFRAME.registerComponent("billboard", {
-      tick: function () {
-        const cam = document.querySelector("#cam");
-        if (!cam) return;
-        this.el.object3D.lookAt(cam.object3D.getWorldPosition(new THREE.Vector3()));
-      }
-    });
-
-    // Subtle “haze layer” (floating nebula sheets)
-    AFRAME.registerComponent("haze", {
-      schema: { opacity: {default: 0.16} },
-      init: function () {
-        this.el.setAttribute("material", {
-          transparent: true,
-          opacity: this.data.opacity,
-          depthWrite: false
-        });
-      }
-    });
-  </script>
 </head>
 
 <body>
-  <a-scene
-    renderer="colorManagement:true; physicallyCorrectLights:false; antialias:true"
-    vr-mode-ui="enabled: true"
-    device-orientation-permission-ui="enabled: true">
+<a-scene embedded vr-mode-ui="enabled: true">
 
-    <!-- CAMERA -->
-    <a-entity id="camRig" position="0 1.6 0" slow-drift="speed:0.05">
-      <a-entity id="cam" camera look-controls wasd-controls="acceleration:10"></a-entity>
-    </a-entity>
+  <!-- ===== ASSETS ===== -->
+  <a-assets>
+    <!-- Milky Way sky -->
+    <img id="milkyway"
+      src="cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS9yMDIzLTA3LTExNjcwLWVsZW1lbnQtdDEwLnBuZw.jpeg">
 
-    <!-- LIGHTING (keep it subtle so it doesn’t turn into cartoon balls) -->
-    <a-entity light="type:ambient; intensity:0.9; color:#ffffff"></a-entity>
+    <!-- Planets -->
+    <img id="earth"
+      src="realistic-earth-planet-globe-isolated-with-transparent-background_702390-621.jpg">
 
-    <!-- ==========================
-         360 BACKGROUND (MILKY WAY FIRST)
-         ========================== -->
-    <a-sky src="" rotation="0 -90 0"></a-sky>
+    <img id="jupiter"
+      src="png-closeup-jupiter-planet-isolated-transparent_1080455-12629.jpg">
 
-    <script>
-      // Set sky after scene loads (prevents some mobile weirdness)
-      window.addEventListener("load", () => {
-        const sky = document.querySelector("a-sky");
-        sky.setAttribute("src", SKY_MILKYWAY);
-      });
-    </script>
+    <img id="saturn"
+      src="pngtree-saturn-planet-on-transparent-background-png-image_13144127.png">
 
-    <!-- ==========================
-         FLOATING NEBULA HAZE (your new .webp skies)
-         These are NOT the main sky — they’re moving fog layers.
-         ========================== -->
-    <a-entity position="0 2 -14" floaty="amp:0.35; spd:0.14; yaw:2">
-      <a-plane
-        src="HDR_blue_nebulae-1.webp"
-        width="20" height="10"
-        rotation="0 10 0"
-        material="transparent:true; opacity:0.18; blending:additive; depthWrite:false"
-        haze="opacity:0.18">
-      </a-plane>
-    </a-entity>
+    <img id="uranus"
+      src="cHJpdmF0ZS9zci9pbWFnZXMvd2Vic2l0ZS9yMDIzLTA3LTExNjcwLWVsZW1lbnQtdDEwLnBuZw.jpeg">
 
-    <a-entity position="0 1.5 -18" floaty="amp:0.25; spd:0.11; yaw:2">
-      <a-plane
-        src="HDR_ringed_brown_dwarf.webp"
-        width="22" height="11"
-        rotation="0 -15 0"
-        material="transparent:true; opacity:0.14; blending:additive; depthWrite:false"
-        haze="opacity:0.14">
-      </a-plane>
-    </a-entity>
+    <img id="moon"
+      src="cHJpdmF0ZS9zdGdFaW12ZmlsZXMvYmlkL3d2d2YxMzA3MS5qcGVn">
+  </a-assets>
 
-    <!-- ==========================
-         REAL “PLANETS” (CUTOUTS) — Uranus + Moon
-         These are billboards (correct for cutouts).
-         ========================== -->
+  <!-- ===== SKY ===== -->
+  <a-sky src="#milkyway" rotation="0 -90 0"></a-sky>
 
-    <!-- Uranus -->
-    <a-entity position="2.4 2.0 -9.5" floaty="amp:0.18; spd:0.22; yaw:4">
-      <a-plane
-        src=""
-        width="2.6" height="2.6"
-        material="transparent:true; opacity:1; depthWrite:false"
-        billboard>
-      </a-plane>
-    </a-entity>
+  <!-- ===== CAMERA ===== -->
+  <a-entity camera look-controls wasd-controls position="0 1.6 0"></a-entity>
 
-    <!-- Moon -->
-    <a-entity position="-2.8 1.5 -8.0" floaty="amp:0.14; spd:0.26; yaw:4">
-      <a-plane
-        src=""
-        width="2.2" height="2.2"
-        material="transparent:true; opacity:1; depthWrite:false"
-        billboard>
-      </a-plane>
-    </a-entity>
+  <!-- ===== PLANETS ===== -->
 
-    <script>
-      window.addEventListener("load", () => {
-        // wire textures
-        const ur = document.querySelectorAll("a-plane")[2]; // Uranus plane
-        const mo = document.querySelectorAll("a-plane")[3]; // Moon plane
-        ur.setAttribute("src", TEX_URANUS);
-        mo.setAttribute("src", TEX_MOON);
-      });
-    </script>
+  <!-- Earth -->
+  <a-image src="#earth" position="0 2 -6" width="3" height="3"
+           material="transparent:true; alphaTest:0.1"></a-image>
 
-    <!-- Optional extra “space junk” / distant glow -->
-    <a-entity position="0 3 -25" floaty="amp:0.25; spd:0.10; yaw:1">
-      <a-sphere radius="0.12" color="#ffffff" material="emissive:#ffffff; emissiveIntensity:1; opacity:0.7; transparent:true"></a-sphere>
-    </a-entity>
+  <!-- Jupiter -->
+  <a-image src="#jupiter" position="-4 1.5 -8" width="4" height="4"
+           material="transparent:true; alphaTest:0.1"></a-image>
 
-  </a-scene>
+  <!-- Saturn -->
+  <a-image src="#saturn" position="4 1.2 -9" width="4.5" height="4.5"
+           rotation="0 20 0"
+           material="transparent:true; alphaTest:0.1"></a-image>
 
-  <div class="hud">
-    <div class="text">
-      Deep space float • Milky Way sky • Uranus + Moon • nebula haze
-      <div class="hint">Move your phone / drag to look • Tap VR when ready</div>
-    </div>
-  </div>
+  <!-- Uranus -->
+  <a-image src="#uranus" position="-2 3 -7" width="2.5" height="2.5"
+           material="transparent:true; alphaTest:0.1"></a-image>
+
+  <!-- Moon -->
+  <a-image src="#moon" position="2 3 -5" width="1.5" height="1.5"
+           material="transparent:true; alphaTest:0.1"></a-image>
+
+</a-scene>
+
+<div class="hint">
+  Deep space float · Milky Way · 5 planets · Move your phone or enter VR 🌌
+</div>
 </body>
 </html>
