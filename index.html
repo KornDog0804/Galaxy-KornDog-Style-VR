@@ -32,7 +32,6 @@
       backdrop-filter: blur(3px);
     }
 
-    /* Keep the VR button clean */
     .a-enter-vr-button {
       border-radius: 14px !important;
     }
@@ -41,7 +40,7 @@
 
 <body>
   <div class="hud">
-    Auto background swap • 45s sky drift • Planets 20s spin • unclumped
+    Auto background swap • 45s sky drift • Planets 20s spin • unclumped (rig-locked)
   </div>
 
   <a-scene
@@ -49,6 +48,7 @@
     renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
     background="color: #000"
   >
+
     <!-- CAMERA -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera
@@ -58,130 +58,141 @@
       ></a-camera>
     </a-entity>
 
-    <!-- LIGHTING (simple + stable) -->
+    <!-- LIGHTING -->
     <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
     <a-entity light="type: directional; intensity: 0.95; color: #ffffff" position="2 4 3"></a-entity>
 
     <!-- ASSETS -->
     <a-assets>
-      <!-- 2 sky JPGs (your repo names) -->
-      <img id="skyA" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous">
-      <img id="skyB" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" crossorigin="anonymous">
+      <!-- 2 sky JPGs -->
+      <img id="skyAimg" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous">
+      <img id="skyBimg" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" crossorigin="anonymous">
 
-      <!-- planet textures (_tex files in your repo) -->
-      <img id="texEarth"  src="earth_tex.jpg"  crossorigin="anonymous">
+      <!-- planet textures -->
+      <img id="texEarth"   src="earth_tex.jpg"   crossorigin="anonymous">
       <img id="texJupiter" src="jupiter_tex.jpg" crossorigin="anonymous">
-      <img id="texUranus" src="uranus_tex.jpg" crossorigin="anonymous">
-      <img id="texMoon"   src="moon_tex.jpg"   crossorigin="anonymous">
-      <img id="texSaturn" src="saturn_tex.jpg" crossorigin="anonymous">
+      <img id="texUranus"  src="uranus_tex.jpg"  crossorigin="anonymous">
+      <img id="texMoon"    src="moon_tex.jpg"    crossorigin="anonymous">
+      <img id="texSaturn"  src="saturn_tex.jpg"  crossorigin="anonymous">
     </a-assets>
 
-    <!-- SKY LAYERS (crossfade swap) -->
-    <a-sky id="skyLayerA"
-      src="#skyA"
-      rotation="0 0 0"
-      material="shader: flat; transparent: true; opacity: 1.0"
-    ></a-sky>
+    <!--
+      SKY RIG (THIS is what moves)
+      - We rotate the rig, not the sky layers.
+      - Crossfade swaps stay stable on mobile/Quest.
+    -->
+    <a-entity id="skyRig" rotation="0 0 0">
+      <a-sky id="skyLayerA"
+        src="#skyAimg"
+        rotation="0 0 0"
+        material="shader: flat; transparent: true; opacity: 1.0; side: back"
+      ></a-sky>
 
-    <a-sky id="skyLayerB"
-      src="#skyB"
-      rotation="0 0 0"
-      material="shader: flat; transparent: true; opacity: 0.0"
-    ></a-sky>
+      <a-sky id="skyLayerB"
+        src="#skyBimg"
+        rotation="0 0 0"
+        material="shader: flat; transparent: true; opacity: 0.0; side: back"
+      ></a-sky>
+    </a-entity>
 
-    <!-- PLANETS (UNCLUMPED ON PURPOSE: x/y AND z are different) -->
-    <!-- Left / Far -->
+    <!--
+      PLANETS (WIDER SPREAD + MORE DEPTH)
+      Notes:
+      - Wider X range so they don’t stack in the same band.
+      - More Z variation so the scene has depth.
+      - More Y variation so they don’t line up like a parade float.
+    -->
+
+    <!-- Far left / deep -->
     <a-sphere id="moon"
       radius="0.42"
-      position="-7.0 3.0 -12.0"
+      position="-11.0 3.6 -18.0"
       material="src: #texMoon; roughness: 1.0; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Left / Mid -->
+    <!-- Left / mid -->
     <a-sphere id="earth"
       radius="0.60"
-      position="-4.0 1.4 -8.5"
+      position="-6.2 1.2 -11.0"
       material="src: #texEarth; roughness: 0.95; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Center / Near-ish -->
+    <!-- Center / nearer -->
     <a-sphere id="jupiter"
       radius="0.95"
-      position="-0.8 2.2 -10.5"
+      position="0.0 2.7 -9.0"
       material="src: #texJupiter; roughness: 0.9; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Right / Mid -->
+    <!-- Right / deeper -->
     <a-sphere id="uranus"
       radius="0.70"
-      position="4.6 1.8 -7.8"
+      position="7.0 1.9 -15.5"
       material="src: #texUranus; roughness: 0.9; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Right / Far -->
+    <!-- Far right / mid -->
     <a-sphere id="saturn"
       radius="0.85"
-      position="7.6 2.8 -13.0"
+      position="12.0 3.2 -12.5"
       material="src: #texSaturn; roughness: 0.9; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Saturn rings (simple, stable, no wobble) -->
+    <!-- Saturn rings -->
     <a-ring
-      position="7.6 2.8 -13.0"
+      position="12.0 3.2 -12.5"
       rotation="75 0 0"
       radius-inner="1.05"
       radius-outer="1.55"
       material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double"
     ></a-ring>
 
-    <!-- SCRIPT: enforce sky drift + crossfade swap -->
+    <!-- SCRIPT: sky drift + crossfade swap (stable on Quest/mobile) -->
     <script>
       (function () {
+        const SKY_DRIFT_MS = 45000;  // visible drift speed
+        const SKY_SWAP_MS  = 45000;  // background auto swap
+        const FADE_MS      = 1600;   // crossfade time
+
+        const skyRig = document.getElementById('skyRig');
         const skyA = document.getElementById('skyLayerA');
         const skyB = document.getElementById('skyLayerB');
 
         let showingA = true;
 
-        // 45s drift that is ACTUALLY noticeable (8 degrees sweep)
-        function applyDrift(el) {
-          el.setAttribute('animation__drift', {
-            property: 'rotation',
-            dir: 'alternate',
-            dur: 45000,
-            easing: 'linear',
-            loop: true,
-            from: '0 0 0',
-            to:   '0 8 0'
-          });
-        }
-
-        // Make sure both skies ALWAYS have drift
-        applyDrift(skyA);
-        applyDrift(skyB);
+        // ✅ Drift on the RIG so it cannot get stomped by crossfades
+        // Increase Y rotation enough to be visible (12 degrees sweep)
+        skyRig.setAttribute('animation__drift', {
+          property: 'rotation',
+          dir: 'alternate',
+          dur: SKY_DRIFT_MS,
+          easing: 'linear',
+          loop: true,
+          from: '0 0 0',
+          to:   '0 12 0'
+        });
 
         function fade(inEl, outEl) {
-          // re-apply drift just in case anything tried to stomp it
-          applyDrift(inEl);
-          applyDrift(outEl);
-
-          // fade in
+          // Fade IN
           inEl.setAttribute('animation__fadein', {
             property: 'material.opacity',
+            from: 0.0,
             to: 1.0,
-            dur: 1600,
+            dur: FADE_MS,
             easing: 'easeInOutQuad'
           });
 
-          // fade out
+          // Fade OUT
           outEl.setAttribute('animation__fadeout', {
             property: 'material.opacity',
+            from: 1.0,
             to: 0.0,
-            dur: 1600,
+            dur: FADE_MS,
             easing: 'easeInOutQuad'
           });
         }
@@ -192,8 +203,7 @@
           showingA = !showingA;
         }
 
-        // swap every 45s to match your "cosmic drift" vibe
-        setInterval(swapSky, 45000);
+        setInterval(swapSky, SKY_SWAP_MS);
       })();
     </script>
 
