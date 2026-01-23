@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Cosmic Drift VR</title>
 
-  <!-- Only A-Frame. No other CDN scripts. -->
+  <!-- ONLY A-Frame. Nothing else. Keeps Quest happy. -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
@@ -17,29 +17,44 @@
       color:rgba(255,255,255,.85);
       text-shadow:0 2px 10px rgba(0,0,0,.8);
       pointer-events:none;
+      user-select:none;
     }
   </style>
 
   <script>
-    // Click sky to swap backgrounds (Quest-safe: no fades, no dual-sky)
-    AFRAME.registerComponent('sky-swap', {
+    // Quest-safe auto background swap:
+    // - ONE sky only
+    // - NO opacity fades
+    // - NO second sky
+    AFRAME.registerComponent('auto-sky-swap', {
+      schema: {
+        intervalMs: { type: 'int', default: 90000 } // 90 seconds
+      },
       init: function () {
-        const sky = this.el;
-        const srcA = '#bgA';
-        const srcB = '#bgB';
-        let usingA = true;
+        const sky = document.querySelector('#sky');
+        if (!sky) return;
 
-        sky.addEventListener('click', () => {
-          usingA = !usingA;
-          sky.setAttribute('src', usingA ? srcA : srcB);
-        });
+        const skies = ['#bgA', '#bgB'];
+        let i = 0;
+
+        // Start on bgA
+        sky.setAttribute('src', skies[i]);
+
+        // Swap on timer
+        this._timer = setInterval(() => {
+          i = (i + 1) % skies.length;
+          sky.setAttribute('src', skies[i]);
+        }, this.data.intervalMs);
+      },
+      remove: function () {
+        if (this._timer) clearInterval(this._timer);
       }
     });
   </script>
 </head>
 
 <body>
-  <div class="hud">Click the sky to swap backgrounds • 45s sky drift • 20s planet spin</div>
+  <div class="hud">Auto background swap • 45s sky drift • planets spaced • (Quest-safe)</div>
 
   <a-scene vr-mode-ui="enabled: true" background="color:#000">
     <a-assets timeout="15000">
@@ -55,57 +70,57 @@
       <img id="moonTex"    src="moon_tex.jpg">
     </a-assets>
 
-    <!-- Camera (simple = reliable VR) -->
+    <!-- Simple camera rig (reliable VR) -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera wasd-controls-enabled="false"></a-camera>
     </a-entity>
 
-    <!-- Lighting -->
-    <a-entity light="type: ambient; intensity: 0.7"></a-entity>
+    <!-- Light -->
+    <a-entity light="type: ambient; intensity: 0.70"></a-entity>
     <a-entity light="type: directional; intensity: 0.55" position="2 3 1"></a-entity>
 
     <!-- ONE SKY ONLY (Quest-safe) -->
     <a-sky
       id="sky"
+      auto-sky-swap="intervalMs: 90000"
       src="#bgA"
-      sky-swap
       rotation="0 0 0"
       material="shader: flat"
       animation="property: rotation; to: 0 360 0; dur: 45000; easing: linear; loop: true"
     ></a-sky>
 
-    <!-- PLANETS: spaced around you (ring) -->
-    <!-- Spin: 20 seconds per full rotation -->
-    <a-entity id="planets">
-      <!-- Front -->
-      <a-sphere radius="1.15" position="0 2 -12"
-        material="src:#earthTex; roughness:1; metalness:0"
+    <!-- PLANETS: spread around you (no clumping) -->
+    <!-- Spin speed: 20 seconds per full rotation (as requested) -->
+
+    <!-- Earth (front) -->
+    <a-sphere radius="1.15" position="0 2 -14"
+      material="src:#earthTex; roughness:1; metalness:0"
+      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
+
+    <!-- Jupiter (right) -->
+    <a-sphere radius="1.85" position="14 2 0"
+      material="src:#jupiterTex; roughness:1; metalness:0"
+      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
+
+    <!-- Uranus (left) -->
+    <a-sphere radius="1.35" position="-14 2 0"
+      material="src:#uranusTex; roughness:1; metalness:0"
+      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
+
+    <!-- Saturn (behind) -->
+    <a-entity position="0 2 16">
+      <a-sphere radius="1.55"
+        material="src:#saturnTex; roughness:1; metalness:0"
         animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
 
-      <!-- Right -->
-      <a-sphere radius="1.85" position="12 2 -2"
-        material="src:#jupiterTex; roughness:1; metalness:0"
-        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
-
-      <!-- Left -->
-      <a-sphere radius="1.35" position="-12 2 1"
-        material="src:#uranusTex; roughness:1; metalness:0"
-        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
-
-      <!-- Behind -->
-      <a-entity position="0 2 14">
-        <a-sphere radius="1.55"
-          material="src:#saturnTex; roughness:1; metalness:0"
-          animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
-        <a-ring radius-inner="2.05" radius-outer="2.75" rotation="75 15 0"
-          material="color:#c9c0b2; opacity:0.35; transparent:true; side:double"></a-ring>
-      </a-entity>
-
-      <!-- Up-ish -->
-      <a-sphere radius="0.65" position="3 6 -6"
-        material="src:#moonTex; roughness:1; metalness:0"
-        animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
+      <a-ring radius-inner="2.05" radius-outer="2.75" rotation="75 15 0"
+        material="color:#c9c0b2; opacity:0.35; transparent:true; side:double"></a-ring>
     </a-entity>
+
+    <!-- Moon (up/front-right) -->
+    <a-sphere radius="0.65" position="6 6 -8"
+      material="src:#moonTex; roughness:1; metalness:0"
+      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"></a-sphere>
 
   </a-scene>
 </body>
