@@ -3,47 +3,72 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift</title>
+  <title>Korndog Cosmic Drift (Locked Night Build)</title>
 
+  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
-    html, body { margin:0; height:100%; background:#000; overflow:hidden; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+    }
+
     .hud {
-      position: fixed; left: 12px; bottom: 10px; z-index: 9;
+      position: fixed;
+      left: 12px;
+      bottom: 10px;
+      z-index: 10;
       font: 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: rgba(255,255,255,.85);
-      text-shadow: 0 2px 8px rgba(0,0,0,.65);
+      text-shadow: 0 2px 10px rgba(0,0,0,.75);
       user-select: none;
       pointer-events: none;
+      padding: 6px 10px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.20);
+      backdrop-filter: blur(3px);
+    }
+
+    /* Keep the VR button clean */
+    .a-enter-vr-button {
+      border-radius: 14px !important;
     }
   </style>
 </head>
 
 <body>
-  <div class="hud">Auto background swap • 45s sky drift • Planets 20s spin • unclumped</div>
+  <div class="hud">
+    Auto background swap • 45s sky drift • Planets 20s spin • unclumped
+  </div>
 
   <a-scene
     vr-mode-ui="enabled: true"
     renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
     background="color: #000"
   >
-    <!-- Camera -->
+    <!-- CAMERA -->
     <a-entity id="rig" position="0 1.6 0">
-      <a-camera wasd-controls-enabled="false" look-controls="pointerLockEnabled: false"></a-camera>
+      <a-camera
+        wasd-controls-enabled="false"
+        look-controls="pointerLockEnabled: false"
+        fov="78"
+      ></a-camera>
     </a-entity>
 
-    <!-- Lighting (keeps planets from looking flat) -->
+    <!-- LIGHTING (simple + stable) -->
     <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
     <a-entity light="type: directional; intensity: 0.95; color: #ffffff" position="2 4 3"></a-entity>
 
-    <!-- Assets -->
+    <!-- ASSETS -->
     <a-assets>
-      <!-- your two sky JPGs -->
+      <!-- 2 sky JPGs (your repo names) -->
       <img id="skyA" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous">
       <img id="skyB" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" crossorigin="anonymous">
 
-      <!-- planet textures (the _tex ones you said you’re using) -->
+      <!-- planet textures (_tex files in your repo) -->
       <img id="texEarth"  src="earth_tex.jpg"  crossorigin="anonymous">
       <img id="texJupiter" src="jupiter_tex.jpg" crossorigin="anonymous">
       <img id="texUranus" src="uranus_tex.jpg" crossorigin="anonymous">
@@ -51,7 +76,7 @@
       <img id="texSaturn" src="saturn_tex.jpg" crossorigin="anonymous">
     </a-assets>
 
-    <!-- SKY: two layers, crossfaded -->
+    <!-- SKY LAYERS (crossfade swap) -->
     <a-sky id="skyLayerA"
       src="#skyA"
       rotation="0 0 0"
@@ -64,41 +89,57 @@
       material="shader: flat; transparent: true; opacity: 0.0"
     ></a-sky>
 
-    <!-- PLANETS (spread out, not clumped) -->
-    <!-- Left side cluster (but spaced) -->
-    <a-sphere id="moon" radius="0.42" position="-4.6 2.2 -5.8"
+    <!-- PLANETS (UNCLUMPED ON PURPOSE: x/y AND z are different) -->
+    <!-- Left / Far -->
+    <a-sphere id="moon"
+      radius="0.42"
+      position="-7.0 3.0 -12.0"
       material="src: #texMoon; roughness: 1.0; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <a-sphere id="earth" radius="0.55" position="-2.2 1.3 -4.4"
+    <!-- Left / Mid -->
+    <a-sphere id="earth"
+      radius="0.60"
+      position="-4.0 1.4 -8.5"
       material="src: #texEarth; roughness: 0.95; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Center / forward -->
-    <a-sphere id="jupiter" radius="0.85" position="0.0 2.0 -6.8"
+    <!-- Center / Near-ish -->
+    <a-sphere id="jupiter"
+      radius="0.95"
+      position="-0.8 2.2 -10.5"
       material="src: #texJupiter; roughness: 0.9; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Right side -->
-    <a-sphere id="uranus" radius="0.65" position="3.9 1.7 -5.2"
+    <!-- Right / Mid -->
+    <a-sphere id="uranus"
+      radius="0.70"
+      position="4.6 1.8 -7.8"
       material="src: #texUranus; roughness: 0.9; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <a-sphere id="saturn" radius="0.75" position="5.4 2.4 -7.4"
+    <!-- Right / Far -->
+    <a-sphere id="saturn"
+      radius="0.85"
+      position="7.6 2.8 -13.0"
       material="src: #texSaturn; roughness: 0.9; metalness: 0.0"
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Saturn rings (simple + safe) -->
-    <a-ring position="5.4 2.4 -7.4" rotation="75 0 0" radius-inner="0.95" radius-outer="1.35"
+    <!-- Saturn rings (simple, stable, no wobble) -->
+    <a-ring
+      position="7.6 2.8 -13.0"
+      rotation="75 0 0"
+      radius-inner="1.05"
+      radius-outer="1.55"
       material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double"
     ></a-ring>
 
-    <!-- Script: sky drift + background swap (45s) -->
+    <!-- SCRIPT: enforce sky drift + crossfade swap -->
     <script>
       (function () {
         const skyA = document.getElementById('skyLayerA');
@@ -106,47 +147,53 @@
 
         let showingA = true;
 
-        // Sky drift: noticeable movement in 45s (8 degrees sweep)
-        // We do it via A-Frame animation component so it works in VR and on phone.
-        function setDrift(el) {
+        // 45s drift that is ACTUALLY noticeable (8 degrees sweep)
+        function applyDrift(el) {
           el.setAttribute('animation__drift', {
             property: 'rotation',
             dir: 'alternate',
             dur: 45000,
             easing: 'linear',
             loop: true,
-            to: '0 8 0'
+            from: '0 0 0',
+            to:   '0 8 0'
           });
         }
-        setDrift(skyA);
-        setDrift(skyB);
 
-        // Smooth crossfade between the two sky layers every 45s
-        function crossfade() {
-          const inSky  = showingA ? skyB : skyA;
-          const outSky = showingA ? skyA : skyB;
+        // Make sure both skies ALWAYS have drift
+        applyDrift(skyA);
+        applyDrift(skyB);
+
+        function fade(inEl, outEl) {
+          // re-apply drift just in case anything tried to stomp it
+          applyDrift(inEl);
+          applyDrift(outEl);
 
           // fade in
-          inSky.setAttribute('animation__fadein', {
+          inEl.setAttribute('animation__fadein', {
             property: 'material.opacity',
             to: 1.0,
-            dur: 1800,
+            dur: 1600,
             easing: 'easeInOutQuad'
           });
 
           // fade out
-          outSky.setAttribute('animation__fadeout', {
+          outEl.setAttribute('animation__fadeout', {
             property: 'material.opacity',
             to: 0.0,
-            dur: 1800,
+            dur: 1600,
             easing: 'easeInOutQuad'
           });
+        }
 
+        function swapSky() {
+          if (showingA) fade(skyB, skyA);
+          else fade(skyA, skyB);
           showingA = !showingA;
         }
 
-        // swap every 45s (matches drift timing)
-        setInterval(crossfade, 45000);
+        // swap every 45s to match your "cosmic drift" vibe
+        setInterval(swapSky, 45000);
       })();
     </script>
 
