@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift (Planetarium Swirl Build)</title>
+  <title>Korndog Cosmic Drift — Planetarium Mode</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -28,7 +28,7 @@
       pointer-events: none;
       padding: 6px 10px;
       border-radius: 12px;
-      background: rgba(0,0,0,.20);
+      background: rgba(0,0,0,.25);
       backdrop-filter: blur(3px);
     }
 
@@ -40,7 +40,7 @@
 
 <body>
   <div class="hud">
-    Auto background swap • 45s planetarium swirl • Planets 20s spin • rig-locked
+    Auto background swap • Planetarium swirl • Planets spin • rig-locked
   </div>
 
   <a-scene
@@ -49,7 +49,7 @@
     background="color: #000"
   >
 
-    <!-- CAMERA -->
+    <!-- CAMERA RIG -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera
         wasd-controls-enabled="false"
@@ -64,9 +64,14 @@
 
     <!-- ASSETS -->
     <a-assets>
-      <!-- 2 sky JPGs (use your actual filenames) -->
-      <img id="skyAimg" src="skyA.jpg" crossorigin="anonymous">
-      <img id="skyBimg" src="skyB.jpg" crossorigin="anonymous">
+      <!-- EXACT background filenames (no renaming) -->
+      <img id="skyAimg"
+        src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg"
+        crossorigin="anonymous">
+
+      <img id="skyBimg"
+        src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg"
+        crossorigin="anonymous">
 
       <!-- planet textures -->
       <img id="texEarth"   src="earth_tex.jpg"   crossorigin="anonymous">
@@ -76,129 +81,99 @@
       <img id="texSaturn"  src="saturn_tex.jpg"  crossorigin="anonymous">
     </a-assets>
 
-    <!-- SKY RIG (this is what moves) -->
-    <a-entity id="skyRig" rotation="0 0 0">
-      <a-sky id="skyLayerA"
+    <!-- SKY RIG (planetarium swirl lives here) -->
+    <a-entity id="skyRig">
+      <a-sky id="skyA"
         src="#skyAimg"
-        rotation="0 0 0"
-        material="shader: flat; transparent: true; opacity: 1.0; side: back"
-      ></a-sky>
+        material="shader: flat; transparent: true; opacity: 1.0; side: back">
+      </a-sky>
 
-      <a-sky id="skyLayerB"
+      <a-sky id="skyB"
         src="#skyBimg"
-        rotation="0 0 0"
-        material="shader: flat; transparent: true; opacity: 0.0; side: back"
-      ></a-sky>
+        material="shader: flat; transparent: true; opacity: 0.0; side: back">
+      </a-sky>
     </a-entity>
 
-    <!-- PLANETS -->
-    <a-sphere id="moon"
-      radius="0.42"
-      position="-11.0 3.6 -18.0"
-      material="src: #texMoon; roughness: 1.0; metalness: 0.0"
-      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-    ></a-sphere>
+    <!-- PLANETS (wide, unclumped, deep) -->
 
-    <a-sphere id="earth"
-      radius="0.60"
-      position="-6.2 1.2 -11.0"
-      material="src: #texEarth; roughness: 0.95; metalness: 0.0"
-      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-    ></a-sphere>
+    <a-sphere radius="0.42" position="-11 3.6 -18"
+      material="src: #texMoon"
+      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
+    </a-sphere>
 
-    <a-sphere id="jupiter"
-      radius="0.95"
-      position="0.0 2.7 -9.0"
-      material="src: #texJupiter; roughness: 0.9; metalness: 0.0"
-      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-    ></a-sphere>
+    <a-sphere radius="0.6" position="-6.2 1.2 -11"
+      material="src: #texEarth"
+      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
+    </a-sphere>
 
-    <a-sphere id="uranus"
-      radius="0.70"
-      position="7.0 1.9 -15.5"
-      material="src: #texUranus; roughness: 0.9; metalness: 0.0"
-      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-    ></a-sphere>
+    <a-sphere radius="0.95" position="0 2.7 -9"
+      material="src: #texJupiter"
+      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
+    </a-sphere>
 
-    <a-sphere id="saturn"
-      radius="0.85"
-      position="12.0 3.2 -12.5"
-      material="src: #texSaturn; roughness: 0.9; metalness: 0.0"
-      animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
-    ></a-sphere>
+    <a-sphere radius="0.7" position="7 1.9 -15.5"
+      material="src: #texUranus"
+      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
+    </a-sphere>
+
+    <a-sphere radius="0.85" position="12 3.2 -12.5"
+      material="src: #texSaturn"
+      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
+    </a-sphere>
 
     <a-ring
-      position="12.0 3.2 -12.5"
+      position="12 3.2 -12.5"
       rotation="75 0 0"
       radius-inner="1.05"
       radius-outer="1.55"
-      material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double"
-    ></a-ring>
+      material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double">
+    </a-ring>
 
-    <!-- SCRIPT: Planetarium swirl + crossfade swap -->
+    <!-- SCRIPT -->
     <script>
       (function () {
-        // Timings
-        const SKY_SWAP_MS  = 45000; // background auto swap
-        const FADE_MS      = 1600;  // crossfade time
+        const SWIRL_MS = 60000;     // slow planetarium rotation
+        const SWAP_MS  = 45000;    // background swap
+        const FADE_MS  = 1600;
 
-        // Swirl feel (tweak these if you want more/less motion)
-        const YAW_DEG_PER_SEC = 0.8; // slow continuous spin around you
-        const PITCH_AMPL_DEG  = 6;   // up/down wobble amount
-        const ROLL_AMPL_DEG   = 3;   // tilt wobble amount
-        const PITCH_SPEED     = 0.18; // wobble frequency
-        const ROLL_SPEED      = 0.12; // wobble frequency
+        const rig = document.getElementById('skyRig');
+        const A = document.getElementById('skyA');
+        const B = document.getElementById('skyB');
 
-        const skyRig = document.getElementById('skyRig');
-        const skyA = document.getElementById('skyLayerA');
-        const skyB = document.getElementById('skyLayerB');
+        let showA = true;
 
-        let showingA = true;
-        let yaw = 0;
+        // 🌌 PLANETARIUM SWIRL (full rotation)
+        rig.setAttribute('animation__swirl', {
+          property: 'rotation',
+          from: '0 0 0',
+          to:   '0 360 0',
+          dur: SWIRL_MS,
+          easing: 'linear',
+          loop: true
+        });
 
         function fade(inEl, outEl) {
-          inEl.setAttribute('animation__fadein', {
+          inEl.setAttribute('animation__in', {
             property: 'material.opacity',
-            from: 0.0,
-            to: 1.0,
+            from: 0,
+            to: 1,
             dur: FADE_MS,
             easing: 'easeInOutQuad'
           });
 
-          outEl.setAttribute('animation__fadeout', {
+          outEl.setAttribute('animation__out', {
             property: 'material.opacity',
-            from: 1.0,
-            to: 0.0,
+            from: 1,
+            to: 0,
             dur: FADE_MS,
             easing: 'easeInOutQuad'
           });
         }
 
-        function swapSky() {
-          if (showingA) fade(skyB, skyA);
-          else fade(skyA, skyB);
-          showingA = !showingA;
-        }
-
-        // Planetarium swirl loop (frame-based)
-        function tick(time) {
-          // time is ms
-          const t = time / 1000;
-
-          // continuous yaw
-          yaw += YAW_DEG_PER_SEC * (1/60);
-          if (yaw > 360) yaw -= 360;
-
-          // gentle pitch/roll wobble
-          const pitch = Math.sin(t * (Math.PI * 2) * PITCH_SPEED) * PITCH_AMPL_DEG;
-          const roll  = Math.cos(t * (Math.PI * 2) * ROLL_SPEED)  * ROLL_AMPL_DEG;
-
-          skyRig.setAttribute('rotation', `${pitch} ${yaw} ${roll}`);
-          requestAnimationFrame(tick);
-        }
-
-        requestAnimationFrame(tick);
-        setInterval(swapSky, SKY_SWAP_MS);
+        setInterval(() => {
+          showA ? fade(B, A) : fade(A, B);
+          showA = !showA;
+        }, SWAP_MS);
       })();
     </script>
 
