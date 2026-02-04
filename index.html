@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift (Locked Night Build)</title>
+  <title>Korndog Cosmic Drift (Planetarium Swirl Build)</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -40,7 +40,7 @@
 
 <body>
   <div class="hud">
-    Auto background swap • 45s sky drift • Planets 20s spin • unclumped (rig-locked)
+    Auto background swap • 45s planetarium swirl • Planets 20s spin • rig-locked
   </div>
 
   <a-scene
@@ -64,9 +64,9 @@
 
     <!-- ASSETS -->
     <a-assets>
-      <!-- 2 sky JPGs -->
-      <img id="skyAimg" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous">
-      <img id="skyBimg" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" crossorigin="anonymous">
+      <!-- 2 sky JPGs (use your actual filenames) -->
+      <img id="skyAimg" src="skyA.jpg" crossorigin="anonymous">
+      <img id="skyBimg" src="skyB.jpg" crossorigin="anonymous">
 
       <!-- planet textures -->
       <img id="texEarth"   src="earth_tex.jpg"   crossorigin="anonymous">
@@ -76,11 +76,7 @@
       <img id="texSaturn"  src="saturn_tex.jpg"  crossorigin="anonymous">
     </a-assets>
 
-    <!--
-      SKY RIG (THIS is what moves)
-      - We rotate the rig, not the sky layers.
-      - Crossfade swaps stay stable on mobile/Quest.
-    -->
+    <!-- SKY RIG (this is what moves) -->
     <a-entity id="skyRig" rotation="0 0 0">
       <a-sky id="skyLayerA"
         src="#skyAimg"
@@ -95,15 +91,7 @@
       ></a-sky>
     </a-entity>
 
-    <!--
-      PLANETS (WIDER SPREAD + MORE DEPTH)
-      Notes:
-      - Wider X range so they don’t stack in the same band.
-      - More Z variation so the scene has depth.
-      - More Y variation so they don’t line up like a parade float.
-    -->
-
-    <!-- Far left / deep -->
+    <!-- PLANETS -->
     <a-sphere id="moon"
       radius="0.42"
       position="-11.0 3.6 -18.0"
@@ -111,7 +99,6 @@
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Left / mid -->
     <a-sphere id="earth"
       radius="0.60"
       position="-6.2 1.2 -11.0"
@@ -119,7 +106,6 @@
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Center / nearer -->
     <a-sphere id="jupiter"
       radius="0.95"
       position="0.0 2.7 -9.0"
@@ -127,7 +113,6 @@
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Right / deeper -->
     <a-sphere id="uranus"
       radius="0.70"
       position="7.0 1.9 -15.5"
@@ -135,7 +120,6 @@
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Far right / mid -->
     <a-sphere id="saturn"
       radius="0.85"
       position="12.0 3.2 -12.5"
@@ -143,7 +127,6 @@
       animation="property: rotation; to: 0 360 0; dur: 20000; easing: linear; loop: true"
     ></a-sphere>
 
-    <!-- Saturn rings -->
     <a-ring
       position="12.0 3.2 -12.5"
       rotation="75 0 0"
@@ -152,33 +135,28 @@
       material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double"
     ></a-ring>
 
-    <!-- SCRIPT: sky drift + crossfade swap (stable on Quest/mobile) -->
+    <!-- SCRIPT: Planetarium swirl + crossfade swap -->
     <script>
       (function () {
-        const SKY_DRIFT_MS = 45000;  // visible drift speed
-        const SKY_SWAP_MS  = 45000;  // background auto swap
-        const FADE_MS      = 1600;   // crossfade time
+        // Timings
+        const SKY_SWAP_MS  = 45000; // background auto swap
+        const FADE_MS      = 1600;  // crossfade time
+
+        // Swirl feel (tweak these if you want more/less motion)
+        const YAW_DEG_PER_SEC = 0.8; // slow continuous spin around you
+        const PITCH_AMPL_DEG  = 6;   // up/down wobble amount
+        const ROLL_AMPL_DEG   = 3;   // tilt wobble amount
+        const PITCH_SPEED     = 0.18; // wobble frequency
+        const ROLL_SPEED      = 0.12; // wobble frequency
 
         const skyRig = document.getElementById('skyRig');
         const skyA = document.getElementById('skyLayerA');
         const skyB = document.getElementById('skyLayerB');
 
         let showingA = true;
-
-        // ✅ Drift on the RIG so it cannot get stomped by crossfades
-        // Increase Y rotation enough to be visible (12 degrees sweep)
-        skyRig.setAttribute('animation__drift', {
-          property: 'rotation',
-          dir: 'alternate',
-          dur: SKY_DRIFT_MS,
-          easing: 'linear',
-          loop: true,
-          from: '0 0 0',
-          to:   '0 12 0'
-        });
+        let yaw = 0;
 
         function fade(inEl, outEl) {
-          // Fade IN
           inEl.setAttribute('animation__fadein', {
             property: 'material.opacity',
             from: 0.0,
@@ -187,7 +165,6 @@
             easing: 'easeInOutQuad'
           });
 
-          // Fade OUT
           outEl.setAttribute('animation__fadeout', {
             property: 'material.opacity',
             from: 1.0,
@@ -203,6 +180,24 @@
           showingA = !showingA;
         }
 
+        // Planetarium swirl loop (frame-based)
+        function tick(time) {
+          // time is ms
+          const t = time / 1000;
+
+          // continuous yaw
+          yaw += YAW_DEG_PER_SEC * (1/60);
+          if (yaw > 360) yaw -= 360;
+
+          // gentle pitch/roll wobble
+          const pitch = Math.sin(t * (Math.PI * 2) * PITCH_SPEED) * PITCH_AMPL_DEG;
+          const roll  = Math.cos(t * (Math.PI * 2) * ROLL_SPEED)  * ROLL_AMPL_DEG;
+
+          skyRig.setAttribute('rotation', `${pitch} ${yaw} ${roll}`);
+          requestAnimationFrame(tick);
+        }
+
+        requestAnimationFrame(tick);
         setInterval(swapSky, SKY_SWAP_MS);
       })();
     </script>
