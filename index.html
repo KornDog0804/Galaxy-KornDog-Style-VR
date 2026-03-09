@@ -134,7 +134,6 @@
   <audio
     id="audioPlayer"
     preload="metadata"
-    crossorigin="anonymous"
     playsinline
     webkit-playsinline
   ></audio>
@@ -152,8 +151,8 @@
         wasd-controls-enabled="false"
         look-controls="pointerLockEnabled: false"
         fov="78"
-        raycaster="objects: .clickable; far: 3"
-        cursor="fuse: true; fuseTimeout: 900"
+        raycaster="objects: .clickable; far: 2"
+        cursor="fuse: true; fuseTimeout: 800"
       >
         <a-cursor
           material="color: #ffffff; shader: flat"
@@ -162,7 +161,7 @@
       </a-camera>
 
       <!-- FLOATING VR CONTROL PANEL -->
-      <a-entity id="vrPanel" position="0 -0.18 -1.35">
+      <a-entity id="vrPanel" position="0 -0.10 -1.10">
         <a-plane
           width="1.65"
           height="0.88"
@@ -255,7 +254,7 @@
           color="#ffffff">
         </a-text>
 
-        <!-- Volume Row -->
+        <!-- Volume -->
         <a-text
           value="VOL"
           position="-0.62 -0.33 0.04"
@@ -309,17 +308,17 @@
       </a-entity>
     </a-entity>
 
-    <!-- Quest controllers with shorter rays -->
+    <!-- Quest controllers with shorter softer rays -->
     <a-entity
       laser-controls="hand: left"
-      raycaster="objects: .clickable; far: 3"
-      line="color: #d8d8ff; opacity: 0.55">
+      raycaster="objects: .clickable; far: 2"
+      line="color: #ffffff; opacity: 0.18">
     </a-entity>
 
     <a-entity
       laser-controls="hand: right"
-      raycaster="objects: .clickable; far: 3"
-      line="color: #d8d8ff; opacity: 0.55">
+      raycaster="objects: .clickable; far: 2"
+      line="color: #ffffff; opacity: 0.18">
     </a-entity>
 
     <!-- LIGHTING -->
@@ -436,7 +435,7 @@
         }, SWAP_MS);
       })();
 
-      // MUSIC - hardcoded + better URL formatting + better VR controls
+      // MUSIC - simplified and direct
       (function () {
         const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
@@ -505,7 +504,6 @@
 
         const audio = document.getElementById("audioPlayer");
 
-        // screen UI
         const nowPlaying = document.getElementById("nowPlaying");
         const status = document.getElementById("playerStatus");
         const playPauseBtn = document.getElementById("playPauseBtn");
@@ -513,7 +511,6 @@
         const prevBtn = document.getElementById("prevBtn");
         const volumeSlider = document.getElementById("volumeSlider");
 
-        // VR UI
         const vrNowPlaying = document.getElementById("vrNowPlaying");
         const vrStatus = document.getElementById("vrStatus");
         const vrPlayPauseBtn = document.getElementById("vrPlayPauseBtn");
@@ -525,27 +522,13 @@
         const vrVolText = document.getElementById("vrVolText");
 
         let currentIndex = 0;
-        let audioUnlocked = false;
 
-        function cleanSongName(name) {
-          return String(name || "").replace(/^\uFEFF/, "").trim();
-        }
-
-        // Match the exact working format you showed:
-        // 03%20STARSET%20-%20Frequency.mp3
         function encodeSongFile(name) {
-          return cleanSongName(name).replaceAll(" ", "%20");
+          return String(name).trim().replaceAll(" ", "%20");
         }
 
         function songUrl(name) {
           return SONG_BASE + encodeSongFile(name);
-        }
-
-        function setButtonGlow(isPlaying) {
-          const color = isPlaying ? "#8a2f6b" : "#6e2958";
-          vrPlayPauseBtn.setAttribute("color", color);
-          vrPlayPauseLabel.setAttribute("value", isPlaying ? "PAUSE" : "PLAY");
-          playPauseBtn.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
         }
 
         function setStatus(text) {
@@ -564,84 +547,59 @@
           vrVolText.setAttribute("value", `${pct}%`);
         }
 
-        function setSongSource(index) {
+        function setButtonState(isPlaying) {
+          playPauseBtn.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+          vrPlayPauseLabel.setAttribute("value", isPlaying ? "PAUSE" : "PLAY");
+          vrPlayPauseBtn.setAttribute("color", isPlaying ? "#8a2f6b" : "#6e2958");
+        }
+
+        function setSong(index) {
           currentIndex = (index + songs.length) % songs.length;
-          const name = cleanSongName(songs[currentIndex]);
-          audio.src = songUrl(name);
+          audio.src = songUrl(songs[currentIndex]);
           setNowPlaying();
         }
 
-        async function unlockAudio() {
-          if (audioUnlocked) return true;
-
-          try {
-            setSongSource(currentIndex);
-            audio.muted = true;
-            audio.volume = Math.max(0.01, parseFloat(volumeSlider.value || "0.85"));
-            await audio.play();
-            audio.pause();
-            audio.currentTime = 0;
-            audio.muted = false;
-            audioUnlocked = true;
-            setStatus("Audio unlocked");
-            return true;
-          } catch (err) {
-            console.error("Unlock failed:", err);
-            setStatus("Tap Play once more");
-            return false;
-          }
-        }
-
-        async function playCurrent() {
+        async function playSong(index = currentIndex) {
+          setSong(index);
           try {
             await audio.play();
-            setButtonGlow(true);
+            setButtonState(true);
             setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
           } catch (err) {
-            console.error("Play failed:", err);
-            setButtonGlow(false);
-            setStatus("Tap Play again");
+            console.error("Audio play failed:", err);
+            setButtonState(false);
+            setStatus("Play was blocked");
           }
         }
 
-        async function loadSong(index, autoplay = false) {
-          setSongSource(index);
-          audio.load();
-          setStatus(`Loaded ${currentIndex + 1} of ${songs.length}`);
+        async function togglePlayPause() {
+          try {
+            if (!audio.src) {
+              await playSong(currentIndex);
+              return;
+            }
 
-          if (autoplay) {
-            await playCurrent();
-          } else {
-            setButtonGlow(false);
+            if (audio.paused) {
+              await audio.play();
+              setButtonState(true);
+              setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
+            } else {
+              audio.pause();
+              setButtonState(false);
+              setStatus("Paused");
+            }
+          } catch (err) {
+            console.error("Toggle failed:", err);
+            setStatus("Play was blocked");
           }
         }
 
         async function nextSong() {
-          await loadSong(currentIndex + 1, true);
+          await playSong(currentIndex + 1);
         }
 
         async function prevSong() {
-          await loadSong(currentIndex - 1, true);
-        }
-
-        async function togglePlayPause() {
-          if (!audioUnlocked) {
-            const ok = await unlockAudio();
-            if (!ok) return;
-          }
-
-          if (!audio.src) {
-            await loadSong(currentIndex, true);
-            return;
-          }
-
-          if (audio.paused) {
-            await playCurrent();
-          } else {
-            audio.pause();
-            setButtonGlow(false);
-            setStatus("Paused");
-          }
+          await playSong(currentIndex - 1);
         }
 
         function changeVolume(amount) {
@@ -652,18 +610,15 @@
           setStatus(`Volume ${Math.round(newVol * 100)}%`);
         }
 
-        async function primeFromGesture() {
-          if (audioUnlocked) return;
-          await unlockAudio();
-        }
-
-        document.addEventListener("touchend", primeFromGesture, { once: true, passive: true });
-        document.addEventListener("click", primeFromGesture, { once: true });
-
-        // screen events
         nextBtn.addEventListener("click", nextSong);
         prevBtn.addEventListener("click", prevSong);
         playPauseBtn.addEventListener("click", togglePlayPause);
+
+        vrNextBtn.addEventListener("click", nextSong);
+        vrPrevBtn.addEventListener("click", prevSong);
+        vrPlayPauseBtn.addEventListener("click", togglePlayPause);
+        vrVolDownBtn.addEventListener("click", () => changeVolume(-0.1));
+        vrVolUpBtn.addEventListener("click", () => changeVolume(0.1));
 
         volumeSlider.addEventListener("input", () => {
           audio.volume = parseFloat(volumeSlider.value);
@@ -671,14 +626,6 @@
           setStatus(`Volume ${Math.round(audio.volume * 100)}%`);
         });
 
-        // VR events
-        vrNextBtn.addEventListener("click", nextSong);
-        vrPrevBtn.addEventListener("click", prevSong);
-        vrPlayPauseBtn.addEventListener("click", togglePlayPause);
-        vrVolDownBtn.addEventListener("click", () => changeVolume(-0.1));
-        vrVolUpBtn.addEventListener("click", () => changeVolume(0.1));
-
-        // hover feedback
         [
           vrPrevBtn,
           vrPlayPauseBtn,
@@ -705,29 +652,21 @@
         });
 
         audio.addEventListener("ended", nextSong);
-
-        audio.addEventListener("play", () => {
-          setButtonGlow(true);
-        });
-
+        audio.addEventListener("play", () => setButtonState(true));
         audio.addEventListener("pause", () => {
-          if (!audio.ended) {
-            setButtonGlow(false);
-          }
+          if (!audio.ended) setButtonState(false);
         });
 
         audio.addEventListener("error", () => {
-          const failedSong = songs[currentIndex] || "Unknown song";
-          setStatus(`Track failed: ${failedSong}`);
-          console.error("Audio failed for:", audio.src);
+          console.error("Track failed:", audio.src);
+          setStatus(`Track failed: ${songs[currentIndex]}`);
         });
 
-        // initial state
         audio.volume = parseFloat(volumeSlider.value || "0.85");
         updateVolumeText();
         setNowPlaying();
         setStatus(`Playlist loaded: ${songs.length} songs`);
-        setButtonGlow(false);
+        setButtonState(false);
       })();
     </script>
 
