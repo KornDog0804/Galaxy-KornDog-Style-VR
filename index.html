@@ -3,9 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift — Planetarium Mode</title>
+  <title>Korndog Cosmic Drift — Planetarium Mode + STARSET</title>
 
-  <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
   <style>
@@ -14,13 +13,14 @@
       height: 100%;
       background: #000;
       overflow: hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
     .hud {
       position: fixed;
       left: 12px;
       bottom: 10px;
-      z-index: 10;
+      z-index: 20;
       font: 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color: rgba(255,255,255,.85);
       text-shadow: 0 2px 10px rgba(0,0,0,.75);
@@ -32,8 +32,80 @@
       backdrop-filter: blur(3px);
     }
 
+    .player-ui {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      z-index: 30;
+      width: min(92vw, 360px);
+      color: #fff;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      padding: 12px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    .player-title {
+      font-size: 13px;
+      opacity: .75;
+      margin-bottom: 6px;
+    }
+
+    .now-playing {
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.25;
+      margin-bottom: 10px;
+      word-break: break-word;
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .controls button {
+      flex: 1;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 14px;
+      background: rgba(255,255,255,.12);
+      color: #fff;
+    }
+
+    .controls button:active {
+      transform: scale(.98);
+    }
+
+    .volume-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      opacity: .92;
+    }
+
+    .volume-wrap input[type="range"] {
+      flex: 1;
+    }
+
+    .status {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: .75;
+    }
+
     .a-enter-vr-button {
       border-radius: 14px !important;
+    }
+
+    audio {
+      display: none;
     }
   </style>
 </head>
@@ -43,13 +115,32 @@
     Auto background swap • Planetarium swirl • Planets spin • rig-locked
   </div>
 
+  <div class="player-ui">
+    <div class="player-title">Brandi’s Universe • STARSET Cloud Player</div>
+    <div class="now-playing" id="nowPlaying">Loading playlist...</div>
+
+    <div class="controls">
+      <button id="prevBtn">⏮ Prev</button>
+      <button id="playPauseBtn">▶ Play</button>
+      <button id="nextBtn">Next ⏭</button>
+    </div>
+
+    <div class="volume-wrap">
+      <span>Vol</span>
+      <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.85" />
+    </div>
+
+    <div class="status" id="playerStatus">Waiting on playlist...</div>
+  </div>
+
+  <audio id="audioPlayer" preload="auto" crossorigin="anonymous"></audio>
+
   <a-scene
     vr-mode-ui="enabled: true"
     renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
     background="color: #000"
   >
 
-    <!-- CAMERA RIG -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera
         wasd-controls-enabled="false"
@@ -58,13 +149,10 @@
       ></a-camera>
     </a-entity>
 
-    <!-- LIGHTING -->
     <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
     <a-entity light="type: directional; intensity: 0.95; color: #ffffff" position="2 4 3"></a-entity>
 
-    <!-- ASSETS -->
     <a-assets>
-      <!-- EXACT background filenames (no renaming) -->
       <img id="skyAimg"
         src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg"
         crossorigin="anonymous">
@@ -73,7 +161,6 @@
         src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg"
         crossorigin="anonymous">
 
-      <!-- planet textures -->
       <img id="texEarth"   src="earth_tex.jpg"   crossorigin="anonymous">
       <img id="texJupiter" src="jupiter_tex.jpg" crossorigin="anonymous">
       <img id="texUranus"  src="uranus_tex.jpg"  crossorigin="anonymous">
@@ -81,7 +168,6 @@
       <img id="texSaturn"  src="saturn_tex.jpg"  crossorigin="anonymous">
     </a-assets>
 
-    <!-- SKY RIG (planetarium swirl lives here) -->
     <a-entity id="skyRig">
       <a-sky id="skyA"
         src="#skyAimg"
@@ -93,8 +179,6 @@
         material="shader: flat; transparent: true; opacity: 0.0; side: back">
       </a-sky>
     </a-entity>
-
-    <!-- PLANETS (wide, unclumped, deep) -->
 
     <a-sphere radius="0.42" position="-11 3.6 -18"
       material="src: #texMoon"
@@ -129,12 +213,11 @@
       material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double">
     </a-ring>
 
-    <!-- SCRIPT -->
     <script>
       (function () {
-        const SWIRL_MS = 60000;     // slow planetarium rotation
-        const SWAP_MS  = 45000;    // background swap
-        const FADE_MS  = 1600;
+        const SWIRL_MS = 60000;
+        const SWAP_MS = 45000;
+        const FADE_MS = 1600;
 
         const rig = document.getElementById('skyRig');
         const A = document.getElementById('skyA');
@@ -142,11 +225,10 @@
 
         let showA = true;
 
-        // 🌌 PLANETARIUM SWIRL (full rotation)
         rig.setAttribute('animation__swirl', {
           property: 'rotation',
           from: '0 0 0',
-          to:   '0 360 0',
+          to: '0 360 0',
           dur: SWIRL_MS,
           easing: 'linear',
           loop: true
@@ -174,6 +256,133 @@
           showA ? fade(B, A) : fade(A, B);
           showA = !showA;
         }, SWAP_MS);
+      })();
+
+      (function () {
+        const PLAYLIST_URL = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/playlist_fixed.json";
+        const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
+
+        const audio = document.getElementById("audioPlayer");
+        const nowPlaying = document.getElementById("nowPlaying");
+        const status = document.getElementById("playerStatus");
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const prevBtn = document.getElementById("prevBtn");
+        const volumeSlider = document.getElementById("volumeSlider");
+
+        let songs = [];
+        let currentIndex = 0;
+        let playlistReady = false;
+
+        volumeSlider.addEventListener("input", () => {
+          audio.volume = parseFloat(volumeSlider.value);
+        });
+        audio.volume = parseFloat(volumeSlider.value);
+
+        function setNowPlaying() {
+          if (!songs.length) {
+            nowPlaying.textContent = "No songs loaded";
+            return;
+          }
+          nowPlaying.textContent = songs[currentIndex];
+        }
+
+        function loadSong(index, autoplay = true) {
+          if (!songs.length) return;
+          currentIndex = (index + songs.length) % songs.length;
+          const rawName = songs[currentIndex];
+          const encodedName = encodeURIComponent(rawName).replace(/%2F/g, "/");
+          audio.src = SONG_BASE + encodedName;
+          setNowPlaying();
+          status.textContent = "Loaded track " + (currentIndex + 1) + " of " + songs.length;
+
+          if (autoplay) {
+            audio.play()
+              .then(() => {
+                playPauseBtn.textContent = "⏸ Pause";
+                status.textContent = "Playing track " + (currentIndex + 1) + " of " + songs.length;
+              })
+              .catch(() => {
+                playPauseBtn.textContent = "▶ Play";
+                status.textContent = "Tap Play to start audio";
+              });
+          } else {
+            playPauseBtn.textContent = "▶ Play";
+          }
+        }
+
+        function nextSong() {
+          if (!playlistReady) return;
+          loadSong(currentIndex + 1, true);
+        }
+
+        function prevSong() {
+          if (!playlistReady) return;
+          loadSong(currentIndex - 1, true);
+        }
+
+        function togglePlayPause() {
+          if (!playlistReady) return;
+
+          if (!audio.src) {
+            loadSong(currentIndex, true);
+            return;
+          }
+
+          if (audio.paused) {
+            audio.play()
+              .then(() => {
+                playPauseBtn.textContent = "⏸ Pause";
+                status.textContent = "Playing track " + (currentIndex + 1) + " of " + songs.length;
+              })
+              .catch(() => {
+                status.textContent = "Playback blocked until user taps again";
+              });
+          } else {
+            audio.pause();
+            playPauseBtn.textContent = "▶ Play";
+            status.textContent = "Paused";
+          }
+        }
+
+        nextBtn.addEventListener("click", nextSong);
+        prevBtn.addEventListener("click", prevSong);
+        playPauseBtn.addEventListener("click", togglePlayPause);
+
+        audio.addEventListener("ended", () => {
+          nextSong();
+        });
+
+        audio.addEventListener("play", () => {
+          playPauseBtn.textContent = "⏸ Pause";
+        });
+
+        audio.addEventListener("pause", () => {
+          if (!audio.ended) {
+            playPauseBtn.textContent = "▶ Play";
+          }
+        });
+
+        fetch(PLAYLIST_URL, { cache: "no-store" })
+          .then(res => {
+            if (!res.ok) throw new Error("Playlist fetch failed: " + res.status);
+            return res.json();
+          })
+          .then(data => {
+            if (!data.songs || !Array.isArray(data.songs) || !data.songs.length) {
+              throw new Error("Playlist JSON has no songs array");
+            }
+
+            songs = data.songs;
+            playlistReady = true;
+            setNowPlaying();
+            status.textContent = "Playlist loaded: " + songs.length + " songs";
+          })
+          .catch(err => {
+            console.error(err);
+            nowPlaying.textContent = "Playlist failed to load";
+            status.textContent = err.message;
+          });
       })();
     </script>
 
