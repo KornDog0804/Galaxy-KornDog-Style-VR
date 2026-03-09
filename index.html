@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift — Planetarium Mode + STARSET</title>
+  <title>Korndog Cosmic Drift — Planetarium Mode + STARSET VR</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
@@ -113,12 +113,13 @@
 
 <body>
   <div class="hud">
-    Auto background swap • Planetarium swirl • Planets spin • rig-locked
+    Auto background swap • Planetarium swirl • Planets spin • rig-locked • STARSET hardcoded
   </div>
 
+  <!-- SCREEN CONTROLS -->
   <div class="player-ui">
     <div class="player-title">Brandi’s Universe • STARSET Cloud Player</div>
-    <div class="now-playing" id="nowPlaying">Loading playlist...</div>
+    <div class="now-playing" id="nowPlaying">Loading hardcoded playlist...</div>
 
     <div class="controls">
       <button id="prevBtn">⏮ Prev</button>
@@ -131,7 +132,7 @@
       <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.85" />
     </div>
 
-    <div class="status" id="playerStatus">Looking for playlist...</div>
+    <div class="status" id="playerStatus">Preparing player...</div>
   </div>
 
   <audio id="audioPlayer" preload="auto" crossorigin="anonymous"></audio>
@@ -142,17 +143,178 @@
     background="color: #000"
   >
 
+    <!-- CAMERA RIG -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera
+        id="camera"
         wasd-controls-enabled="false"
         look-controls="pointerLockEnabled: false"
         fov="78"
-      ></a-camera>
+      >
+        <!-- mobile / desktop cursor -->
+        <a-cursor
+          raycaster="objects: .clickable"
+          material="color: white; shader: flat"
+          geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.012">
+        </a-cursor>
+      </a-camera>
+
+      <!-- FLOATING VR CONTROL PANEL -->
+      <a-entity id="vrPanel" position="0 -0.35 -1.6">
+        <a-plane
+          width="1.35"
+          height="0.62"
+          color="#120814"
+          opacity="0.78"
+          material="transparent: true; shader: flat"
+          radius="0.04">
+        </a-plane>
+
+        <a-text
+          id="vrTitle"
+          value="STARSET VR PLAYER"
+          position="0 0.22 0.01"
+          align="center"
+          width="1.7"
+          color="#ffffff">
+        </a-text>
+
+        <a-text
+          id="vrNowPlaying"
+          value="Loading songs..."
+          position="0 0.10 0.01"
+          align="center"
+          width="1.22"
+          color="#f3f3f3"
+          wrap-count="28">
+        </a-text>
+
+        <a-text
+          id="vrStatus"
+          value="Preparing player..."
+          position="0 -0.02 0.01"
+          align="center"
+          width="1.2"
+          color="#d0d0d0"
+          wrap-count="34">
+        </a-text>
+
+        <!-- Buttons -->
+        <a-plane
+          id="vrPrevBtn"
+          class="clickable"
+          position="-0.38 -0.18 0.02"
+          width="0.28"
+          height="0.12"
+          color="#5a2246"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="PREV"
+          position="-0.38 -0.18 0.03"
+          align="center"
+          width="0.9"
+          color="#ffffff">
+        </a-text>
+
+        <a-plane
+          id="vrPlayPauseBtn"
+          class="clickable"
+          position="0 -0.18 0.02"
+          width="0.32"
+          height="0.12"
+          color="#6e2958"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          id="vrPlayPauseLabel"
+          value="PLAY"
+          position="0 -0.18 0.03"
+          align="center"
+          width="0.9"
+          color="#ffffff">
+        </a-text>
+
+        <a-plane
+          id="vrNextBtn"
+          class="clickable"
+          position="0.38 -0.18 0.02"
+          width="0.28"
+          height="0.12"
+          color="#5a2246"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="NEXT"
+          position="0.38 -0.18 0.03"
+          align="center"
+          width="0.9"
+          color="#ffffff">
+        </a-text>
+
+        <!-- Volume -->
+        <a-text
+          value="VOL -"
+          position="-0.44 -0.32 0.03"
+          align="center"
+          width="0.65"
+          color="#ffffff">
+        </a-text>
+
+        <a-plane
+          id="vrVolDownBtn"
+          class="clickable"
+          position="-0.26 -0.32 0.02"
+          width="0.14"
+          height="0.10"
+          color="#3b3b3b"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="-"
+          position="-0.26 -0.32 0.03"
+          align="center"
+          width="0.8"
+          color="#ffffff">
+        </a-text>
+
+        <a-plane
+          id="vrVolUpBtn"
+          class="clickable"
+          position="0.26 -0.32 0.02"
+          width="0.14"
+          height="0.10"
+          color="#3b3b3b"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="+"
+          position="0.26 -0.32 0.03"
+          align="center"
+          width="0.8"
+          color="#ffffff">
+        </a-text>
+
+        <a-text
+          id="vrVolText"
+          value="85%"
+          position="0 -0.32 0.03"
+          align="center"
+          width="0.8"
+          color="#ffffff">
+        </a-text>
+      </a-entity>
     </a-entity>
 
+    <!-- VR controllers for Quest -->
+    <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
+    <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+
+    <!-- LIGHTING -->
     <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
     <a-entity light="type: directional; intensity: 0.95; color: #ffffff" position="2 4 3"></a-entity>
 
+    <!-- ASSETS -->
     <a-assets>
       <img id="skyAimg"
         src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg"
@@ -169,6 +331,7 @@
       <img id="texSaturn"  src="saturn_tex.jpg"  crossorigin="anonymous">
     </a-assets>
 
+    <!-- SKY RIG -->
     <a-entity id="skyRig">
       <a-sky id="skyA"
         src="#skyAimg"
@@ -181,6 +344,7 @@
       </a-sky>
     </a-entity>
 
+    <!-- PLANETS -->
     <a-sphere radius="0.42" position="-11 3.6 -18"
       material="src: #texMoon"
       animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
@@ -215,7 +379,7 @@
     </a-ring>
 
     <script>
-      // VISUALS - untouched behavior
+      // VISUALS - preserved
       (function () {
         const SWIRL_MS = 60000;
         const SWAP_MS = 45000;
@@ -260,16 +424,76 @@
         }, SWAP_MS);
       })();
 
-      // MUSIC - tougher and less picky
+      // MUSIC - hardcoded, no fetch drama
       (function () {
-        const PLAYLIST_URLS = [
-          "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/playlist.json",
-          "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/playlist_fixed.json"
-        ];
-
         const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
+        const songs = [
+          "01 STARSET - A BRIEF HISTORY OF THE FUTURE.mp3",
+          "01 STARSET - praesens.mp3",
+          "01 STARSET - The Order.mp3",
+          "01 STARSET - UNVEILING THE ARCHITECTURE.mp3",
+          "02 STARSET - DEGENERATE.mp3",
+          "02 STARSET - MANIFEST.mp3",
+          "02 STARSET - Satellite.mp3",
+          "02 STARSET - THE BREACH.mp3",
+          "03 STARSET - ECHO.mp3",
+          "03 STARSET - Frequency.mp3",
+          "03 STARSET - OTHERWORLDLY.mp3",
+          "03 STARSET - SILOS.mp3",
+          "04 STARSET - Die For You.mp3",
+          "04 STARSET - ICARUS.mp3",
+          "04 STARSET - rise of messenger.mp3",
+          "04 STARSET - WHERE THE SKIES END.mp3",
+          "05 STARSET - DARK THINGS.mp3",
+          "05 STARSET - EARTHRISE.mp3",
+          "05 STARSET - PERFECT MACHINE.mp3",
+          "05 STARSET - Ricochet.mp3",
+          "06 STARSET - LEAVING THIS WORLD BEHIND.mp3",
+          "06 STARSET - SHATTERED DREAMS.mp3",
+          "06 STARSET - Starlight.mp3",
+          "06 STARSET - TELEKINETIC.mp3",
+          "07 STARSET - DEVOLUTION.mp3",
+          "07 STARSET - Into The Unknown.mp3",
+          "07 STARSET - STRATOSPHERE.mp3",
+          "07 STARSET - temple of milton.mp3",
+          "08 STARSET - ANNIHILATED LOVE.mp3",
+          "08 STARSET - BRAVE NEW WORLD.mp3",
+          "08 STARSET - FAULTLINE.mp3",
+          "08 STARSET - Gravity Of You.mp3",
+          "09 STARSET - ALCHEMY.mp3",
+          "09 STARSET - Back To The Earth.mp3",
+          "09 STARSET - DYSTOPIA.mp3",
+          "09 STARSET - SOLSTICE.mp3",
+          "10 STARSET - DISAPPEAR.mp3",
+          "10 STARSET - HEAD OVER HEELS.mp3",
+          "10 STARSET - Last To Fall.mp3",
+          "10 STARSET - TRIALS.mp3",
+          "11 STARSET - Bringing It Down.mp3",
+          "11 STARSET - SWAY.mp3",
+          "11 STARSET - THIS ENDLESS ENDEAVOR.mp3",
+          "11 STARSET - WAKING UP.mp3",
+          "12 STARSET - OTHER WORLDS THAN THESE.mp3",
+          "12 STARSET - SYMBIOTIC.mp3",
+          "12 STARSET - the antihero's journey.mp3",
+          "12 STARSET - Unbecoming.mp3",
+          "13 STARSET - DIVING BELL.mp3",
+          "13 STARSET - DREAMCATCHER.mp3",
+          "13 STARSET - Monster.mp3",
+          "13 STARSET - TOKSIK.mp3",
+          "14 STARSET - at his altar.mp3",
+          "14 STARSET - Telepathic.mp3",
+          "14 STARSET - TUNNELVISION.mp3",
+          "15 STARSET - AD ASTRA.mp3",
+          "15 STARSET - Everglow.mp3",
+          "15 STARSET - INFECTED.mp3",
+          "16 STARSET - requiem of the order.mp3",
+          "16 STARSET - SOMETHING WICKED.mp3"
+        ];
+
         const audio = document.getElementById("audioPlayer");
+
+        // screen UI
         const nowPlaying = document.getElementById("nowPlaying");
         const status = document.getElementById("playerStatus");
         const playPauseBtn = document.getElementById("playPauseBtn");
@@ -277,42 +501,55 @@
         const prevBtn = document.getElementById("prevBtn");
         const volumeSlider = document.getElementById("volumeSlider");
 
-        let songs = [];
+        // VR UI
+        const vrNowPlaying = document.getElementById("vrNowPlaying");
+        const vrStatus = document.getElementById("vrStatus");
+        const vrPlayPauseBtn = document.getElementById("vrPlayPauseBtn");
+        const vrPlayPauseLabel = document.getElementById("vrPlayPauseLabel");
+        const vrPrevBtn = document.getElementById("vrPrevBtn");
+        const vrNextBtn = document.getElementById("vrNextBtn");
+        const vrVolDownBtn = document.getElementById("vrVolDownBtn");
+        const vrVolUpBtn = document.getElementById("vrVolUpBtn");
+        const vrVolText = document.getElementById("vrVolText");
+
         let currentIndex = 0;
-        let playlistReady = false;
-
-        audio.volume = parseFloat(volumeSlider.value || "0.85");
-
-        volumeSlider.addEventListener("input", () => {
-          audio.volume = parseFloat(volumeSlider.value);
-        });
 
         function cleanSongName(name) {
-          return String(name || "")
-            .replace(/^\uFEFF/, "")
-            .trim();
+          return String(name || "").replace(/^\uFEFF/, "").trim();
         }
 
         function encodeSongFile(name) {
-          return encodeURIComponent(cleanSongName(name))
-            .replace(/%2F/g, "/");
+          return encodeURIComponent(cleanSongName(name)).replace(/%2F/g, "/");
         }
 
         function songUrl(name) {
           return SONG_BASE + encodeSongFile(name);
         }
 
+        function setButtonGlow(isPlaying) {
+          const color = isPlaying ? "#8a2f6b" : "#6e2958";
+          vrPlayPauseBtn.setAttribute("color", color);
+          vrPlayPauseLabel.setAttribute("value", isPlaying ? "PAUSE" : "PLAY");
+          playPauseBtn.textContent = isPlaying ? "⏸ Pause" : "▶ Play";
+        }
+
+        function setStatus(text) {
+          status.textContent = text;
+          vrStatus.setAttribute("value", text);
+        }
+
         function setNowPlaying() {
-          if (!songs.length) {
-            nowPlaying.textContent = "No songs loaded";
-            return;
-          }
-          nowPlaying.textContent = songs[currentIndex];
+          const title = songs[currentIndex] || "No songs loaded";
+          nowPlaying.textContent = title;
+          vrNowPlaying.setAttribute("value", title);
+        }
+
+        function updateVolumeText() {
+          const pct = Math.round(audio.volume * 100);
+          vrVolText.setAttribute("value", `${pct}%`);
         }
 
         function loadSong(index, autoplay = false) {
-          if (!songs.length) return;
-
           currentIndex = (index + songs.length) % songs.length;
           const name = cleanSongName(songs[currentIndex]);
 
@@ -320,37 +557,33 @@
           audio.load();
 
           setNowPlaying();
-          status.textContent = `Loaded ${currentIndex + 1} of ${songs.length}`;
+          setStatus(`Loaded ${currentIndex + 1} of ${songs.length}`);
 
           if (autoplay) {
             audio.play()
               .then(() => {
-                playPauseBtn.textContent = "⏸ Pause";
-                status.textContent = `Playing ${currentIndex + 1} of ${songs.length}`;
+                setButtonGlow(true);
+                setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
               })
               .catch((err) => {
                 console.error("Play blocked:", err);
-                playPauseBtn.textContent = "▶ Play";
-                status.textContent = "Tap Play to start audio";
+                setButtonGlow(false);
+                setStatus("Tap Play to start audio");
               });
           } else {
-            playPauseBtn.textContent = "▶ Play";
+            setButtonGlow(false);
           }
         }
 
         function nextSong() {
-          if (!playlistReady) return;
           loadSong(currentIndex + 1, true);
         }
 
         function prevSong() {
-          if (!playlistReady) return;
           loadSong(currentIndex - 1, true);
         }
 
         function togglePlayPause() {
-          if (!playlistReady) return;
-
           if (!audio.src) {
             loadSong(currentIndex, true);
             return;
@@ -359,94 +592,94 @@
           if (audio.paused) {
             audio.play()
               .then(() => {
-                playPauseBtn.textContent = "⏸ Pause";
-                status.textContent = `Playing ${currentIndex + 1} of ${songs.length}`;
+                setButtonGlow(true);
+                setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
               })
               .catch((err) => {
                 console.error("Play failed:", err);
-                status.textContent = "Tap Play again";
+                setStatus("Tap Play again");
               });
           } else {
             audio.pause();
-            playPauseBtn.textContent = "▶ Play";
-            status.textContent = "Paused";
+            setButtonGlow(false);
+            setStatus("Paused");
           }
         }
 
-        async function fetchPlaylistText(url) {
-          const res = await fetch(url, {
-            method: "GET",
-            cache: "no-store"
-          });
-
-          if (!res.ok) {
-            throw new Error(`Playlist fetch failed: ${res.status}`);
-          }
-
-          return await res.text();
+        function changeVolume(amount) {
+          const newVol = Math.max(0, Math.min(1, audio.volume + amount));
+          audio.volume = newVol;
+          volumeSlider.value = newVol.toFixed(2);
+          updateVolumeText();
+          setStatus(`Volume ${Math.round(newVol * 100)}%`);
         }
 
-        function parsePlaylistText(text) {
-          const cleaned = text.replace(/^\uFEFF/, "").trim();
-          const data = JSON.parse(cleaned);
-
-          if (!data.songs || !Array.isArray(data.songs) || !data.songs.length) {
-            throw new Error("Playlist JSON has no songs array");
-          }
-
-          return data.songs.map(cleanSongName).filter(Boolean);
-        }
-
-        async function loadPlaylist() {
-          let lastError = null;
-
-          for (const url of PLAYLIST_URLS) {
-            try {
-              status.textContent = `Trying playlist: ${url.split('/').pop()}`;
-              const text = await fetchPlaylistText(url);
-              const parsedSongs = parsePlaylistText(text);
-
-              songs = parsedSongs;
-              playlistReady = true;
-              currentIndex = 0;
-
-              setNowPlaying();
-              status.textContent = `Playlist loaded: ${songs.length} songs`;
-              console.log("Playlist loaded from:", url);
-              return;
-            } catch (err) {
-              console.error("Playlist attempt failed:", url, err);
-              lastError = err;
-            }
-          }
-
-          nowPlaying.textContent = "Playlist failed to load";
-          status.textContent = lastError ? lastError.message : "Unknown playlist error";
-        }
-
+        // screen events
         nextBtn.addEventListener("click", nextSong);
         prevBtn.addEventListener("click", prevSong);
         playPauseBtn.addEventListener("click", togglePlayPause);
 
+        volumeSlider.addEventListener("input", () => {
+          audio.volume = parseFloat(volumeSlider.value);
+          updateVolumeText();
+          setStatus(`Volume ${Math.round(audio.volume * 100)}%`);
+        });
+
+        // VR events
+        vrNextBtn.addEventListener("click", nextSong);
+        vrPrevBtn.addEventListener("click", prevSong);
+        vrPlayPauseBtn.addEventListener("click", togglePlayPause);
+        vrVolDownBtn.addEventListener("click", () => changeVolume(-0.1));
+        vrVolUpBtn.addEventListener("click", () => changeVolume(0.1));
+
+        // hover feedback
+        [
+          vrPrevBtn,
+          vrPlayPauseBtn,
+          vrNextBtn,
+          vrVolDownBtn,
+          vrVolUpBtn
+        ].forEach(el => {
+          const baseColor = el.getAttribute("color");
+
+          el.addEventListener("mouseenter", () => {
+            el.setAttribute("opacity", "0.85");
+          });
+
+          el.addEventListener("mouseleave", () => {
+            el.setAttribute("opacity", "1");
+            if (el === vrPlayPauseBtn) {
+              el.setAttribute("color", audio.paused ? "#6e2958" : "#8a2f6b");
+            } else {
+              el.setAttribute("color", baseColor);
+            }
+          });
+        });
+
         audio.addEventListener("ended", nextSong);
 
         audio.addEventListener("play", () => {
-          playPauseBtn.textContent = "⏸ Pause";
+          setButtonGlow(true);
         });
 
         audio.addEventListener("pause", () => {
           if (!audio.ended) {
-            playPauseBtn.textContent = "▶ Play";
+            setButtonGlow(false);
           }
         });
 
         audio.addEventListener("error", () => {
           const failedSong = songs[currentIndex] || "Unknown song";
-          status.textContent = `Track failed: ${failedSong}`;
+          setStatus(`Track failed: ${failedSong}`);
           console.error("Audio failed for:", audio.src);
         });
 
-        loadPlaylist();
+        // initial state
+        audio.volume = parseFloat(volumeSlider.value || "0.85");
+        updateVolumeText();
+        setNowPlaying();
+        setStatus(`Playlist loaded: ${songs.length} songs`);
+        setButtonGlow(false);
       })();
     </script>
 
