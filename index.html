@@ -98,6 +98,7 @@
       margin-top: 8px;
       font-size: 12px;
       opacity: .75;
+      min-height: 16px;
     }
 
     .a-enter-vr-button {
@@ -130,7 +131,7 @@
       <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.85" />
     </div>
 
-    <div class="status" id="playerStatus">Waiting on playlist...</div>
+    <div class="status" id="playerStatus">Looking for playlist...</div>
   </div>
 
   <audio id="audioPlayer" preload="auto" crossorigin="anonymous"></audio>
@@ -214,6 +215,7 @@
     </a-ring>
 
     <script>
+      // VISUALS - untouched behavior
       (function () {
         const SWIRL_MS = 60000;
         const SWAP_MS = 45000;
@@ -258,8 +260,13 @@
         }, SWAP_MS);
       })();
 
+      // MUSIC - tougher and less picky
       (function () {
-        const PLAYLIST_URL = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/playlist_fixed.json";
+        const PLAYLIST_URLS = [
+          "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/playlist.json",
+          "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/playlist_fixed.json"
+        ];
+
         const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
         const audio = document.getElementById("audioPlayer");
@@ -274,10 +281,26 @@
         let currentIndex = 0;
         let playlistReady = false;
 
+        audio.volume = parseFloat(volumeSlider.value || "0.85");
+
         volumeSlider.addEventListener("input", () => {
           audio.volume = parseFloat(volumeSlider.value);
         });
-        audio.volume = parseFloat(volumeSlider.value);
+
+        function cleanSongName(name) {
+          return String(name || "")
+            .replace(/^\uFEFF/, "")
+            .trim();
+        }
+
+        function encodeSongFile(name) {
+          return encodeURIComponent(cleanSongName(name))
+            .replace(/%2F/g, "/");
+        }
+
+        function songUrl(name) {
+          return SONG_BASE + encodeSongFile(name);
+        }
 
         function setNowPlaying() {
           if (!songs.length) {
@@ -287,22 +310,26 @@
           nowPlaying.textContent = songs[currentIndex];
         }
 
-        function loadSong(index, autoplay = true) {
+        function loadSong(index, autoplay = false) {
           if (!songs.length) return;
+
           currentIndex = (index + songs.length) % songs.length;
-          const rawName = songs[currentIndex];
-          const encodedName = encodeURIComponent(rawName).replace(/%2F/g, "/");
-          audio.src = SONG_BASE + encodedName;
+          const name = cleanSongName(songs[currentIndex]);
+
+          audio.src = songUrl(name);
+          audio.load();
+
           setNowPlaying();
-          status.textContent = "Loaded track " + (currentIndex + 1) + " of " + songs.length;
+          status.textContent = `Loaded ${currentIndex + 1} of ${songs.length}`;
 
           if (autoplay) {
             audio.play()
               .then(() => {
                 playPauseBtn.textContent = "⏸ Pause";
-                status.textContent = "Playing track " + (currentIndex + 1) + " of " + songs.length;
+                status.textContent = `Playing ${currentIndex + 1} of ${songs.length}`;
               })
-              .catch(() => {
+              .catch((err) => {
+                console.error("Play blocked:", err);
                 playPauseBtn.textContent = "▶ Play";
                 status.textContent = "Tap Play to start audio";
               });
@@ -333,10 +360,11 @@
             audio.play()
               .then(() => {
                 playPauseBtn.textContent = "⏸ Pause";
-                status.textContent = "Playing track " + (currentIndex + 1) + " of " + songs.length;
+                status.textContent = `Playing ${currentIndex + 1} of ${songs.length}`;
               })
-              .catch(() => {
-                status.textContent = "Playback blocked until user taps again";
+              .catch((err) => {
+                console.error("Play failed:", err);
+                status.textContent = "Tap Play again";
               });
           } else {
             audio.pause();
@@ -345,13 +373,62 @@
           }
         }
 
+        async function fetchPlaylistText(url) {
+          const res = await fetch(url, {
+            method: "GET",
+            cache: "no-store"
+          });
+
+          if (!res.ok) {
+            throw new Error(`Playlist fetch failed: ${res.status}`);
+          }
+
+          return await res.text();
+        }
+
+        function parsePlaylistText(text) {
+          const cleaned = text.replace(/^\uFEFF/, "").trim();
+          const data = JSON.parse(cleaned);
+
+          if (!data.songs || !Array.isArray(data.songs) || !data.songs.length) {
+            throw new Error("Playlist JSON has no songs array");
+          }
+
+          return data.songs.map(cleanSongName).filter(Boolean);
+        }
+
+        async function loadPlaylist() {
+          let lastError = null;
+
+          for (const url of PLAYLIST_URLS) {
+            try {
+              status.textContent = `Trying playlist: ${url.split('/').pop()}`;
+              const text = await fetchPlaylistText(url);
+              const parsedSongs = parsePlaylistText(text);
+
+              songs = parsedSongs;
+              playlistReady = true;
+              currentIndex = 0;
+
+              setNowPlaying();
+              status.textContent = `Playlist loaded: ${songs.length} songs`;
+              console.log("Playlist loaded from:", url);
+              return;
+            } catch (err) {
+              console.error("Playlist attempt failed:", url, err);
+              lastError = err;
+            }
+          }
+
+          nowPlaying.textContent = "Playlist failed to load";
+          status.textContent = lastError ? lastError.message : "Unknown playlist error";
+        }
+
         nextBtn.addEventListener("click", nextSong);
         prevBtn.addEventListener("click", prevSong);
         playPauseBtn.addEventListener("click", togglePlayPause);
 
-        audio.addEventListener("ended", () => {
-          nextSong();
-        });
+        audio.addEventListener("ended", nextSong);
 
         audio.addEventListener("play", () => {
           playPauseBtn.textContent = "⏸ Pause";
@@ -363,26 +440,13 @@
           }
         });
 
-        fetch(PLAYLIST_URL, { cache: "no-store" })
-          .then(res => {
-            if (!res.ok) throw new Error("Playlist fetch failed: " + res.status);
-            return res.json();
-          })
-          .then(data => {
-            if (!data.songs || !Array.isArray(data.songs) || !data.songs.length) {
-              throw new Error("Playlist JSON has no songs array");
-            }
+        audio.addEventListener("error", () => {
+          const failedSong = songs[currentIndex] || "Unknown song";
+          status.textContent = `Track failed: ${failedSong}`;
+          console.error("Audio failed for:", audio.src);
+        });
 
-            songs = data.songs;
-            playlistReady = true;
-            setNowPlaying();
-            status.textContent = "Playlist loaded: " + songs.length + " songs";
-          })
-          .catch(err => {
-            console.error(err);
-            nowPlaying.textContent = "Playlist failed to load";
-            status.textContent = err.message;
-          });
+        loadPlaylist();
       })();
     </script>
 
