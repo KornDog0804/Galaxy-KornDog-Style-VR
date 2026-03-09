@@ -78,10 +78,6 @@
       color: #fff;
     }
 
-    .controls button:active {
-      transform: scale(.98);
-    }
-
     .volume-wrap {
       display: flex;
       align-items: center;
@@ -135,7 +131,13 @@
     <div class="status" id="playerStatus">Preparing player...</div>
   </div>
 
-  <audio id="audioPlayer" preload="auto" crossorigin="anonymous"></audio>
+  <audio
+    id="audioPlayer"
+    preload="metadata"
+    crossorigin="anonymous"
+    playsinline
+    webkit-playsinline
+  ></audio>
 
   <a-scene
     vr-mode-ui="enabled: true"
@@ -150,165 +152,175 @@
         wasd-controls-enabled="false"
         look-controls="pointerLockEnabled: false"
         fov="78"
+        raycaster="objects: .clickable; far: 3"
+        cursor="fuse: true; fuseTimeout: 900"
       >
-        <!-- mobile / desktop cursor -->
         <a-cursor
-          raycaster="objects: .clickable"
-          material="color: white; shader: flat"
-          geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.012">
+          material="color: #ffffff; shader: flat"
+          geometry="primitive: ring; radiusInner: 0.010; radiusOuter: 0.016">
         </a-cursor>
       </a-camera>
 
       <!-- FLOATING VR CONTROL PANEL -->
-      <a-entity id="vrPanel" position="0 -0.35 -1.6">
+      <a-entity id="vrPanel" position="0 -0.18 -1.35">
         <a-plane
-          width="1.35"
-          height="0.62"
+          width="1.65"
+          height="0.88"
           color="#120814"
-          opacity="0.78"
-          material="transparent: true; shader: flat"
-          radius="0.04">
+          opacity="0.84"
+          material="transparent: true; shader: flat">
         </a-plane>
 
         <a-text
           id="vrTitle"
           value="STARSET VR PLAYER"
-          position="0 0.22 0.01"
+          position="0 0.30 0.02"
           align="center"
-          width="1.7"
+          width="2.2"
           color="#ffffff">
         </a-text>
 
         <a-text
           id="vrNowPlaying"
           value="Loading songs..."
-          position="0 0.10 0.01"
+          position="0 0.16 0.02"
           align="center"
-          width="1.22"
+          width="1.6"
           color="#f3f3f3"
-          wrap-count="28">
+          wrap-count="26">
         </a-text>
 
         <a-text
           id="vrStatus"
           value="Preparing player..."
-          position="0 -0.02 0.01"
+          position="0 0.03 0.02"
           align="center"
-          width="1.2"
+          width="1.45"
           color="#d0d0d0"
-          wrap-count="34">
+          wrap-count="30">
         </a-text>
 
-        <!-- Buttons -->
+        <!-- Prev -->
         <a-plane
           id="vrPrevBtn"
           class="clickable"
-          position="-0.38 -0.18 0.02"
-          width="0.28"
-          height="0.12"
+          position="-0.48 -0.14 0.03"
+          width="0.34"
+          height="0.14"
           color="#5a2246"
           material="shader: flat">
         </a-plane>
         <a-text
           value="PREV"
-          position="-0.38 -0.18 0.03"
+          position="-0.48 -0.14 0.04"
           align="center"
-          width="0.9"
+          width="1.0"
           color="#ffffff">
         </a-text>
 
+        <!-- Play -->
         <a-plane
           id="vrPlayPauseBtn"
           class="clickable"
-          position="0 -0.18 0.02"
-          width="0.32"
-          height="0.12"
+          position="0 -0.14 0.03"
+          width="0.40"
+          height="0.14"
           color="#6e2958"
           material="shader: flat">
         </a-plane>
         <a-text
           id="vrPlayPauseLabel"
           value="PLAY"
-          position="0 -0.18 0.03"
+          position="0 -0.14 0.04"
           align="center"
-          width="0.9"
+          width="1.1"
           color="#ffffff">
         </a-text>
 
+        <!-- Next -->
         <a-plane
           id="vrNextBtn"
           class="clickable"
-          position="0.38 -0.18 0.02"
-          width="0.28"
-          height="0.12"
+          position="0.48 -0.14 0.03"
+          width="0.34"
+          height="0.14"
           color="#5a2246"
           material="shader: flat">
         </a-plane>
         <a-text
           value="NEXT"
-          position="0.38 -0.18 0.03"
+          position="0.48 -0.14 0.04"
           align="center"
-          width="0.9"
+          width="1.0"
           color="#ffffff">
         </a-text>
 
-        <!-- Volume -->
+        <!-- Volume Row -->
         <a-text
-          value="VOL -"
-          position="-0.44 -0.32 0.03"
+          value="VOL"
+          position="-0.62 -0.33 0.04"
           align="center"
-          width="0.65"
+          width="0.7"
           color="#ffffff">
         </a-text>
 
         <a-plane
           id="vrVolDownBtn"
           class="clickable"
-          position="-0.26 -0.32 0.02"
-          width="0.14"
-          height="0.10"
+          position="-0.28 -0.33 0.03"
+          width="0.20"
+          height="0.12"
           color="#3b3b3b"
           material="shader: flat">
         </a-plane>
         <a-text
           value="-"
-          position="-0.26 -0.32 0.03"
+          position="-0.28 -0.33 0.04"
           align="center"
-          width="0.8"
-          color="#ffffff">
-        </a-text>
-
-        <a-plane
-          id="vrVolUpBtn"
-          class="clickable"
-          position="0.26 -0.32 0.02"
-          width="0.14"
-          height="0.10"
-          color="#3b3b3b"
-          material="shader: flat">
-        </a-plane>
-        <a-text
-          value="+"
-          position="0.26 -0.32 0.03"
-          align="center"
-          width="0.8"
+          width="1.0"
           color="#ffffff">
         </a-text>
 
         <a-text
           id="vrVolText"
           value="85%"
-          position="0 -0.32 0.03"
+          position="0 -0.33 0.04"
           align="center"
-          width="0.8"
+          width="0.9"
+          color="#ffffff">
+        </a-text>
+
+        <a-plane
+          id="vrVolUpBtn"
+          class="clickable"
+          position="0.28 -0.33 0.03"
+          width="0.20"
+          height="0.12"
+          color="#3b3b3b"
+          material="shader: flat">
+        </a-plane>
+        <a-text
+          value="+"
+          position="0.28 -0.33 0.04"
+          align="center"
+          width="1.0"
           color="#ffffff">
         </a-text>
       </a-entity>
     </a-entity>
 
-    <!-- VR controllers for Quest -->
-    <a-entity laser-controls="hand: left" raycaster="objects: .clickable"></a-entity>
-    <a-entity laser-controls="hand: right" raycaster="objects: .clickable"></a-entity>
+    <!-- Quest controllers with shorter rays -->
+    <a-entity
+      laser-controls="hand: left"
+      raycaster="objects: .clickable; far: 3"
+      line="color: #d8d8ff; opacity: 0.55">
+    </a-entity>
+
+    <a-entity
+      laser-controls="hand: right"
+      raycaster="objects: .clickable; far: 3"
+      line="color: #d8d8ff; opacity: 0.55">
+    </a-entity>
 
     <!-- LIGHTING -->
     <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
@@ -424,7 +436,7 @@
         }, SWAP_MS);
       })();
 
-      // MUSIC - hardcoded, no fetch drama
+      // MUSIC - hardcoded + better URL formatting + better VR controls
       (function () {
         const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
@@ -513,13 +525,16 @@
         const vrVolText = document.getElementById("vrVolText");
 
         let currentIndex = 0;
+        let audioUnlocked = false;
 
         function cleanSongName(name) {
           return String(name || "").replace(/^\uFEFF/, "").trim();
         }
 
+        // Match the exact working format you showed:
+        // 03%20STARSET%20-%20Frequency.mp3
         function encodeSongFile(name) {
-          return encodeURIComponent(cleanSongName(name)).replace(/%2F/g, "/");
+          return cleanSongName(name).replaceAll(" ", "%20");
         }
 
         function songUrl(name) {
@@ -549,56 +564,79 @@
           vrVolText.setAttribute("value", `${pct}%`);
         }
 
-        function loadSong(index, autoplay = false) {
+        function setSongSource(index) {
           currentIndex = (index + songs.length) % songs.length;
           const name = cleanSongName(songs[currentIndex]);
-
           audio.src = songUrl(name);
-          audio.load();
-
           setNowPlaying();
+        }
+
+        async function unlockAudio() {
+          if (audioUnlocked) return true;
+
+          try {
+            setSongSource(currentIndex);
+            audio.muted = true;
+            audio.volume = Math.max(0.01, parseFloat(volumeSlider.value || "0.85"));
+            await audio.play();
+            audio.pause();
+            audio.currentTime = 0;
+            audio.muted = false;
+            audioUnlocked = true;
+            setStatus("Audio unlocked");
+            return true;
+          } catch (err) {
+            console.error("Unlock failed:", err);
+            setStatus("Tap Play once more");
+            return false;
+          }
+        }
+
+        async function playCurrent() {
+          try {
+            await audio.play();
+            setButtonGlow(true);
+            setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
+          } catch (err) {
+            console.error("Play failed:", err);
+            setButtonGlow(false);
+            setStatus("Tap Play again");
+          }
+        }
+
+        async function loadSong(index, autoplay = false) {
+          setSongSource(index);
+          audio.load();
           setStatus(`Loaded ${currentIndex + 1} of ${songs.length}`);
 
           if (autoplay) {
-            audio.play()
-              .then(() => {
-                setButtonGlow(true);
-                setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
-              })
-              .catch((err) => {
-                console.error("Play blocked:", err);
-                setButtonGlow(false);
-                setStatus("Tap Play to start audio");
-              });
+            await playCurrent();
           } else {
             setButtonGlow(false);
           }
         }
 
-        function nextSong() {
-          loadSong(currentIndex + 1, true);
+        async function nextSong() {
+          await loadSong(currentIndex + 1, true);
         }
 
-        function prevSong() {
-          loadSong(currentIndex - 1, true);
+        async function prevSong() {
+          await loadSong(currentIndex - 1, true);
         }
 
-        function togglePlayPause() {
+        async function togglePlayPause() {
+          if (!audioUnlocked) {
+            const ok = await unlockAudio();
+            if (!ok) return;
+          }
+
           if (!audio.src) {
-            loadSong(currentIndex, true);
+            await loadSong(currentIndex, true);
             return;
           }
 
           if (audio.paused) {
-            audio.play()
-              .then(() => {
-                setButtonGlow(true);
-                setStatus(`Playing ${currentIndex + 1} of ${songs.length}`);
-              })
-              .catch((err) => {
-                console.error("Play failed:", err);
-                setStatus("Tap Play again");
-              });
+            await playCurrent();
           } else {
             audio.pause();
             setButtonGlow(false);
@@ -613,6 +651,14 @@
           updateVolumeText();
           setStatus(`Volume ${Math.round(newVol * 100)}%`);
         }
+
+        async function primeFromGesture() {
+          if (audioUnlocked) return;
+          await unlockAudio();
+        }
+
+        document.addEventListener("touchend", primeFromGesture, { once: true, passive: true });
+        document.addEventListener("click", primeFromGesture, { once: true });
 
         // screen events
         nextBtn.addEventListener("click", nextSong);
@@ -643,10 +689,12 @@
           const baseColor = el.getAttribute("color");
 
           el.addEventListener("mouseenter", () => {
-            el.setAttribute("opacity", "0.85");
+            el.setAttribute("scale", "1.06 1.06 1");
+            el.setAttribute("opacity", "0.88");
           });
 
           el.addEventListener("mouseleave", () => {
+            el.setAttribute("scale", "1 1 1");
             el.setAttribute("opacity", "1");
             if (el === vrPlayPauseBtn) {
               el.setAttribute("color", audio.paused ? "#6e2958" : "#8a2f6b");
