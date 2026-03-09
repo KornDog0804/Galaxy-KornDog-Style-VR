@@ -109,13 +109,13 @@
 
 <body>
   <div class="hud">
-    Auto background swap • Planetarium swirl • Planets spin • rig-locked • STARSET hardcoded
+    Auto background swap • Planetarium swirl • Planets spin • STARSET visualizer mode
   </div>
 
   <!-- SCREEN CONTROLS -->
   <div class="player-ui">
     <div class="player-title">Brandi’s Universe • STARSET Cloud Player</div>
-    <div class="now-playing" id="nowPlaying">Loading hardcoded playlist...</div>
+    <div class="now-playing" id="nowPlaying">Loading playlist...</div>
 
     <div class="controls">
       <button id="prevBtn">⏮ Prev</button>
@@ -388,6 +388,31 @@
       radius-outer="1.55"
       material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double">
     </a-ring>
+
+    <!-- WINAMP VISUAL LAYER -->
+    <a-entity id="visualRig">
+      <a-entity id="starfieldFX"></a-entity>
+      <a-entity id="burstFX"></a-entity>
+
+      <a-sphere
+        id="pulseShell"
+        radius="38"
+        position="0 1.6 0"
+        material="shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0">
+      </a-sphere>
+
+      <a-entity id="eqPanel" position="-1.35 0.35 -2.2">
+        <a-plane width="1.15" height="0.8" color="#0a0610" opacity="0.82"></a-plane>
+        <a-text
+          value="WINAMP COSMIC EQ"
+          position="0 0.28 0.02"
+          align="center"
+          width="1.8"
+          color="#d7ff6a">
+        </a-text>
+        <a-entity id="eqBars" position="-0.42 -0.18 0.03"></a-entity>
+      </a-entity>
+    </a-entity>
 
     <script>
       // VISUALS - preserved
@@ -667,6 +692,189 @@
         setNowPlaying();
         setStatus(`Playlist loaded: ${songs.length} songs`);
         setButtonState(false);
+      })();
+
+      // WINAMP STYLE VISUALIZER LAYER
+      (function () {
+        const audio = document.getElementById("audioPlayer");
+        const starfieldFX = document.getElementById("starfieldFX");
+        const burstFX = document.getElementById("burstFX");
+        const pulseShell = document.getElementById("pulseShell");
+        const eqBars = document.getElementById("eqBars");
+
+        if (!audio || !starfieldFX || !burstFX || !pulseShell || !eqBars) return;
+
+        // Build EQ bars once
+        const bars = [];
+        for (let i = 0; i < 12; i++) {
+          const bar = document.createElement("a-box");
+          bar.setAttribute("width", "0.05");
+          bar.setAttribute("depth", "0.04");
+          bar.setAttribute("height", "0.12");
+          bar.setAttribute("color", i < 4 ? "#7cff5b" : i < 8 ? "#ffd84d" : "#ff4fd8");
+          bar.setAttribute("position", `${i * 0.08} 0 0`);
+          eqBars.appendChild(bar);
+          bars.push(bar);
+        }
+
+        function currentSongName() {
+          const src = audio.src || "";
+          try {
+            return decodeURIComponent(src.split("/").pop() || "").toLowerCase();
+          } catch {
+            return src.toLowerCase();
+          }
+        }
+
+        function getMood(song = "") {
+          if (
+            song.includes("manifest") ||
+            song.includes("breach") ||
+            song.includes("frequency") ||
+            song.includes("degen") ||
+            song.includes("devolution") ||
+            song.includes("trials") ||
+            song.includes("infected")
+          ) {
+            return { speed: 1.55, burstRate: 0.06, pulse: 0.12, chaos: 1.0, color: "#ff4fd8" };
+          }
+
+          if (
+            song.includes("earthrise") ||
+            song.includes("starlight") ||
+            song.includes("everglow") ||
+            song.includes("telepathic") ||
+            song.includes("perfect machine") ||
+            song.includes("satellite")
+          ) {
+            return { speed: 0.58, burstRate: 0.018, pulse: 0.05, chaos: 0.35, color: "#7ad7ff" };
+          }
+
+          if (
+            song.includes("monster") ||
+            song.includes("telekinetic") ||
+            song.includes("alchemy") ||
+            song.includes("dystopia") ||
+            song.includes("toksik") ||
+            song.includes("brave new world")
+          ) {
+            return { speed: 1.25, burstRate: 0.045, pulse: 0.09, chaos: 0.82, color: "#ff7a7a" };
+          }
+
+          return { speed: 0.9, burstRate: 0.028, pulse: 0.07, chaos: 0.55, color: "#d66bff" };
+        }
+
+        const stars = [];
+
+        function makeStar() {
+          const star = document.createElement("a-sphere");
+          const x = (Math.random() * 24) - 12;
+          const y = 4 + Math.random() * 10;
+          const z = -6 - Math.random() * 24;
+          const r = 0.015 + Math.random() * 0.03;
+
+          star.setAttribute("radius", r.toFixed(3));
+          star.setAttribute("position", `${x} ${y} ${z}`);
+          star.setAttribute("material", "shader: flat; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1");
+          starfieldFX.appendChild(star);
+
+          stars.push({
+            el: star,
+            x, y, z,
+            vy: 0.006 + Math.random() * 0.02,
+            vx: (Math.random() - 0.5) * 0.01
+          });
+        }
+
+        for (let i = 0; i < 70; i++) makeStar();
+
+        function makeBurst(color = "#ffd2fa") {
+          const burst = document.createElement("a-sphere");
+          const x = (Math.random() * 18) - 9;
+          const y = (Math.random() * 8) + 1;
+          const z = -8 - Math.random() * 18;
+
+          burst.setAttribute("radius", "0.08");
+          burst.setAttribute("position", `${x} ${y} ${z}`);
+          burst.setAttribute("material", `shader: flat; color: ${color}; transparent: true; opacity: 0.65`);
+          burstFX.appendChild(burst);
+
+          let scale = 0.2;
+          let opacity = 0.65;
+
+          function anim() {
+            scale += 0.08;
+            opacity -= 0.03;
+            burst.setAttribute("scale", `${scale} ${scale} ${scale}`);
+            burst.setAttribute("material", `shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(opacity, 0)}`);
+            if (opacity > 0) {
+              requestAnimationFrame(anim);
+            } else {
+              burst.remove();
+            }
+          }
+
+          requestAnimationFrame(anim);
+        }
+
+        let t = 0;
+
+        function tick() {
+          const playing = !audio.paused && !audio.ended && !!audio.src;
+          const mood = getMood(currentSongName());
+
+          // falling stars
+          for (const s of stars) {
+            if (playing) {
+              s.y -= s.vy * mood.speed;
+              s.x += s.vx * mood.chaos;
+            }
+
+            if (s.y < -2.5 || s.x < -14 || s.x > 14) {
+              s.x = (Math.random() * 24) - 12;
+              s.y = 5 + Math.random() * 10;
+              s.z = -6 - Math.random() * 24;
+            }
+
+            s.el.setAttribute("position", `${s.x} ${s.y} ${s.z}`);
+          }
+
+          // pulsing shell
+          if (playing) {
+            const pulse = (Math.sin(t * 0.08) * 0.5 + 0.5) * mood.pulse;
+            pulseShell.setAttribute(
+              "material",
+              `shader: flat; color: ${mood.color}; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
+            );
+          } else {
+            pulseShell.setAttribute(
+              "material",
+              "shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0"
+            );
+          }
+
+          // EQ bars
+          bars.forEach((bar, i) => {
+            const base = playing ? 0.08 : 0.04;
+            const wobble = playing
+              ? (Math.sin((t * 0.12) + i * 0.6) * 0.22 + 0.24) * mood.speed
+              : 0.02;
+            const h = Math.max(base + wobble, 0.03);
+
+            bar.setAttribute("height", h.toFixed(3));
+            bar.setAttribute("position", `${i * 0.08} ${(h / 2) - 0.02} 0`);
+          });
+
+          // random bursts
+          if (playing && Math.random() < mood.burstRate) {
+            makeBurst(mood.color);
+          }
+
+          t += 1;
+          requestAnimationFrame(tick);
+        }
+
+        tick();
       })();
     </script>
 
