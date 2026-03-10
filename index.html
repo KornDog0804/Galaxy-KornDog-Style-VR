@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Korndog Cosmic Drift — Planetarium Mode + STARSET VR</title>
+  <title>Brandi's Universe — STARSET VR Step 1</title>
 
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
@@ -22,13 +22,13 @@
       bottom: 10px;
       z-index: 20;
       font: 14px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      color: rgba(255,255,255,.85);
+      color: rgba(255,255,255,.88);
       text-shadow: 0 2px 10px rgba(0,0,0,.75);
       user-select: none;
       pointer-events: none;
       padding: 6px 10px;
       border-radius: 12px;
-      background: rgba(0,0,0,.25);
+      background: rgba(0,0,0,.28);
       backdrop-filter: blur(3px);
     }
 
@@ -97,6 +97,37 @@
       min-height: 16px;
     }
 
+    .move-pad {
+      position: fixed;
+      left: 12px;
+      bottom: 74px;
+      z-index: 30;
+      width: 150px;
+      height: 150px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: 1fr 1fr 1fr;
+      gap: 6px;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .move-pad button {
+      border: 0;
+      border-radius: 14px;
+      background: rgba(0,0,0,.42);
+      color: #fff;
+      font-weight: 800;
+      font-size: 18px;
+      backdrop-filter: blur(6px);
+      min-height: 42px;
+    }
+
+    .move-pad .blank {
+      visibility: hidden;
+      pointer-events: none;
+    }
+
     .a-enter-vr-button {
       border-radius: 14px !important;
     }
@@ -109,10 +140,9 @@
 
 <body>
   <div class="hud">
-    Auto background swap • Planetarium swirl • Planets spin • STARSET visualizer mode
+    Step 1 • movement • cleaner sky • wider stars • better panel layout
   </div>
 
-  <!-- SCREEN CONTROLS -->
   <div class="player-ui">
     <div class="player-title">Brandi’s Universe • STARSET Cloud Player</div>
     <div class="now-playing" id="nowPlaying">Loading playlist...</div>
@@ -131,6 +161,21 @@
     <div class="status" id="playerStatus">Preparing player...</div>
   </div>
 
+  <!-- Phone / desktop movement -->
+  <div class="move-pad" aria-label="movement controls">
+    <button class="blank"></button>
+    <button id="moveForwardBtn">▲</button>
+    <button class="blank"></button>
+
+    <button id="moveLeftBtn">◀</button>
+    <button class="blank"></button>
+    <button id="moveRightBtn">▶</button>
+
+    <button class="blank"></button>
+    <button id="moveBackBtn">▼</button>
+    <button class="blank"></button>
+  </div>
+
   <audio
     id="audioPlayer"
     preload="metadata"
@@ -143,25 +188,18 @@
     renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true"
     background="color: #000"
   >
-
-    <!-- CAMERA RIG -->
+    <!-- Main rig -->
     <a-entity id="rig" position="0 1.6 0">
       <a-camera
         id="camera"
-        wasd-controls-enabled="false"
+        wasd-controls-enabled="true"
         look-controls="pointerLockEnabled: false"
         fov="78"
-        raycaster="objects: .clickable; far: 2.5"
-        cursor="fuse: true; fuseTimeout: 800"
-      >
-        <a-cursor
-          material="color: #ffffff; shader: flat"
-          geometry="primitive: ring; radiusInner: 0.010; radiusOuter: 0.016">
-        </a-cursor>
-      </a-camera>
+        raycaster="objects: .clickable; far: 3"
+      ></a-camera>
 
-      <!-- FLOATING VR CONTROL PANEL -->
-      <a-entity id="vrPanel" position="0 -0.10 -1.10">
+      <!-- Floating VR controls -->
+      <a-entity id="vrPanel" position="0 0.02 -1.18" rotation="0 0 0">
         <a-plane
           width="1.65"
           height="0.88"
@@ -170,252 +208,99 @@
           material="transparent: true; shader: flat">
         </a-plane>
 
-        <a-text
-          id="vrTitle"
-          value="STARSET VR PLAYER"
-          position="0 0.30 0.02"
-          align="center"
-          width="2.2"
-          color="#ffffff">
-        </a-text>
+        <a-text id="vrTitle" value="STARSET VR PLAYER" position="0 0.30 0.02" align="center" width="2.2" color="#ffffff"></a-text>
+        <a-text id="vrNowPlaying" value="Loading songs..." position="0 0.16 0.02" align="center" width="1.55" color="#f3f3f3" wrap-count="26"></a-text>
+        <a-text id="vrStatus" value="Preparing player..." position="0 0.03 0.02" align="center" width="1.45" color="#d0d0d0" wrap-count="30"></a-text>
 
-        <a-text
-          id="vrNowPlaying"
-          value="Loading songs..."
-          position="0 0.16 0.02"
-          align="center"
-          width="1.6"
-          color="#f3f3f3"
-          wrap-count="26">
-        </a-text>
+        <a-plane id="vrPrevBtn" class="clickable" position="-0.48 -0.14 0.03" width="0.34" height="0.14" color="#5a2246" material="shader: flat"></a-plane>
+        <a-text value="PREV" position="-0.48 -0.14 0.04" align="center" width="1.0" color="#ffffff"></a-text>
 
-        <a-text
-          id="vrStatus"
-          value="Preparing player..."
-          position="0 0.03 0.02"
-          align="center"
-          width="1.45"
-          color="#d0d0d0"
-          wrap-count="30">
-        </a-text>
+        <a-plane id="vrPlayPauseBtn" class="clickable" position="0 -0.14 0.03" width="0.40" height="0.14" color="#6e2958" material="shader: flat"></a-plane>
+        <a-text id="vrPlayPauseLabel" value="PLAY" position="0 -0.14 0.04" align="center" width="1.1" color="#ffffff"></a-text>
 
-        <!-- Prev -->
-        <a-plane
-          id="vrPrevBtn"
-          class="clickable"
-          position="-0.48 -0.14 0.03"
-          width="0.34"
-          height="0.14"
-          color="#5a2246"
-          material="shader: flat">
-        </a-plane>
-        <a-text
-          value="PREV"
-          position="-0.48 -0.14 0.04"
-          align="center"
-          width="1.0"
-          color="#ffffff">
-        </a-text>
+        <a-plane id="vrNextBtn" class="clickable" position="0.48 -0.14 0.03" width="0.34" height="0.14" color="#5a2246" material="shader: flat"></a-plane>
+        <a-text value="NEXT" position="0.48 -0.14 0.04" align="center" width="1.0" color="#ffffff"></a-text>
 
-        <!-- Play -->
-        <a-plane
-          id="vrPlayPauseBtn"
-          class="clickable"
-          position="0 -0.14 0.03"
-          width="0.40"
-          height="0.14"
-          color="#6e2958"
-          material="shader: flat">
-        </a-plane>
-        <a-text
-          id="vrPlayPauseLabel"
-          value="PLAY"
-          position="0 -0.14 0.04"
-          align="center"
-          width="1.1"
-          color="#ffffff">
-        </a-text>
+        <a-text value="VOL" position="-0.62 -0.33 0.04" align="center" width="0.7" color="#ffffff"></a-text>
 
-        <!-- Next -->
-        <a-plane
-          id="vrNextBtn"
-          class="clickable"
-          position="0.48 -0.14 0.03"
-          width="0.34"
-          height="0.14"
-          color="#5a2246"
-          material="shader: flat">
-        </a-plane>
-        <a-text
-          value="NEXT"
-          position="0.48 -0.14 0.04"
-          align="center"
-          width="1.0"
-          color="#ffffff">
-        </a-text>
+        <a-plane id="vrVolDownBtn" class="clickable" position="-0.28 -0.33 0.03" width="0.20" height="0.12" color="#3b3b3b" material="shader: flat"></a-plane>
+        <a-text value="-" position="-0.28 -0.33 0.04" align="center" width="1.0" color="#ffffff"></a-text>
 
-        <!-- Volume -->
-        <a-text
-          value="VOL"
-          position="-0.62 -0.33 0.04"
-          align="center"
-          width="0.7"
-          color="#ffffff">
-        </a-text>
+        <a-text id="vrVolText" value="85%" position="0 -0.33 0.04" align="center" width="0.9" color="#ffffff"></a-text>
 
-        <a-plane
-          id="vrVolDownBtn"
-          class="clickable"
-          position="-0.28 -0.33 0.03"
-          width="0.20"
-          height="0.12"
-          color="#3b3b3b"
-          material="shader: flat">
-        </a-plane>
-        <a-text
-          value="-"
-          position="-0.28 -0.33 0.04"
-          align="center"
-          width="1.0"
-          color="#ffffff">
-        </a-text>
-
-        <a-text
-          id="vrVolText"
-          value="85%"
-          position="0 -0.33 0.04"
-          align="center"
-          width="0.9"
-          color="#ffffff">
-        </a-text>
-
-        <a-plane
-          id="vrVolUpBtn"
-          class="clickable"
-          position="0.28 -0.33 0.03"
-          width="0.20"
-          height="0.12"
-          color="#3b3b3b"
-          material="shader: flat">
-        </a-plane>
-        <a-text
-          value="+"
-          position="0.28 -0.33 0.04"
-          align="center"
-          width="1.0"
-          color="#ffffff">
-        </a-text>
+        <a-plane id="vrVolUpBtn" class="clickable" position="0.28 -0.33 0.03" width="0.20" height="0.12" color="#3b3b3b" material="shader: flat"></a-plane>
+        <a-text value="+" position="0.28 -0.33 0.04" align="center" width="1.0" color="#ffffff"></a-text>
       </a-entity>
     </a-entity>
 
-    <!-- Beat Saber style sabers -->
-    <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .clickable; far: 2.5">
+    <!-- Saber pointers -->
+    <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .clickable; far: 3">
       <a-cylinder
-        position="0 0 -0.45"
-        radius="0.012"
-        height="0.9"
+        position="0 0 -0.28"
+        radius="0.008"
+        height="0.55"
         color="#ff2a6d"
-        opacity="0.9"
+        opacity="0.94"
         material="shader: flat; transparent: true"
         rotation="90 0 0">
       </a-cylinder>
       <a-sphere
-        position="0 0 -0.9"
-        radius="0.028"
-        color="#ff9ac2"
-        opacity="0.95"
+        position="0 0 -0.56"
+        radius="0.018"
+        color="#ffb3cf"
+        opacity="0.96"
         material="shader: flat; transparent: true">
       </a-sphere>
     </a-entity>
 
-    <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .clickable; far: 2.5">
+    <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .clickable; far: 3">
       <a-cylinder
-        position="0 0 -0.45"
-        radius="0.012"
-        height="0.9"
+        position="0 0 -0.28"
+        radius="0.008"
+        height="0.55"
         color="#35d0ff"
-        opacity="0.9"
+        opacity="0.94"
         material="shader: flat; transparent: true"
         rotation="90 0 0">
       </a-cylinder>
       <a-sphere
-        position="0 0 -0.9"
-        radius="0.028"
-        color="#a8ecff"
-        opacity="0.95"
+        position="0 0 -0.56"
+        radius="0.018"
+        color="#b8f3ff"
+        opacity="0.96"
         material="shader: flat; transparent: true">
       </a-sphere>
     </a-entity>
 
-    <!-- LIGHTING -->
+    <!-- Lighting -->
     <a-entity light="type: ambient; intensity: 0.55; color: #ffffff"></a-entity>
     <a-entity light="type: directional; intensity: 0.95; color: #ffffff" position="2 4 3"></a-entity>
 
-    <!-- ASSETS -->
+    <!-- Assets -->
     <a-assets>
-      <img id="skyAimg"
-        src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg"
-        crossorigin="anonymous">
-
-      <img id="skyBimg"
-        src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg"
-        crossorigin="anonymous">
-
-      <img id="texEarth"   src="earth_tex.jpg"   crossorigin="anonymous">
+      <img id="skyAimg" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg" crossorigin="anonymous">
+      <img id="skyBimg" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg" crossorigin="anonymous">
+      <img id="texEarth" src="earth_tex.jpg" crossorigin="anonymous">
       <img id="texJupiter" src="jupiter_tex.jpg" crossorigin="anonymous">
-      <img id="texUranus"  src="uranus_tex.jpg"  crossorigin="anonymous">
-      <img id="texMoon"    src="moon_tex.jpg"    crossorigin="anonymous">
-      <img id="texSaturn"  src="saturn_tex.jpg"  crossorigin="anonymous">
+      <img id="texUranus" src="uranus_tex.jpg" crossorigin="anonymous">
+      <img id="texMoon" src="moon_tex.jpg" crossorigin="anonymous">
+      <img id="texSaturn" src="saturn_tex.jpg" crossorigin="anonymous">
     </a-assets>
 
-    <!-- SKY RIG -->
+    <!-- Clean sky, one at a time -->
     <a-entity id="skyRig">
-      <a-sky id="skyA"
-        src="#skyAimg"
-        material="shader: flat; transparent: true; opacity: 1.0; side: back">
-      </a-sky>
-
-      <a-sky id="skyB"
-        src="#skyBimg"
-        material="shader: flat; transparent: true; opacity: 0.0; side: back">
-      </a-sky>
+      <a-sky id="mainSky" src="#skyAimg" material="shader: flat; side: back"></a-sky>
     </a-entity>
 
-    <!-- PLANETS -->
-    <a-sphere radius="0.42" position="-11 3.6 -18"
-      material="src: #texMoon"
-      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
-    </a-sphere>
+    <!-- Planets -->
+    <a-sphere radius="0.42" position="-11 3.6 -18" material="src: #texMoon" animation="property: rotation; to: 0 360 0; dur: 20000; loop: true"></a-sphere>
+    <a-sphere radius="0.6" position="-6.2 1.2 -11" material="src: #texEarth" animation="property: rotation; to: 0 360 0; dur: 20000; loop: true"></a-sphere>
+    <a-sphere radius="0.95" position="0 2.7 -9" material="src: #texJupiter" animation="property: rotation; to: 0 360 0; dur: 20000; loop: true"></a-sphere>
+    <a-sphere radius="0.7" position="7 1.9 -15.5" material="src: #texUranus" animation="property: rotation; to: 0 360 0; dur: 20000; loop: true"></a-sphere>
+    <a-sphere radius="0.85" position="12 3.2 -12.5" material="src: #texSaturn" animation="property: rotation; to: 0 360 0; dur: 20000; loop: true"></a-sphere>
+    <a-ring position="12 3.2 -12.5" rotation="75 0 0" radius-inner="1.05" radius-outer="1.55" material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double"></a-ring>
 
-    <a-sphere radius="0.6" position="-6.2 1.2 -11"
-      material="src: #texEarth"
-      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
-    </a-sphere>
-
-    <a-sphere radius="0.95" position="0 2.7 -9"
-      material="src: #texJupiter"
-      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
-    </a-sphere>
-
-    <a-sphere radius="0.7" position="7 1.9 -15.5"
-      material="src: #texUranus"
-      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
-    </a-sphere>
-
-    <a-sphere radius="0.85" position="12 3.2 -12.5"
-      material="src: #texSaturn"
-      animation="property: rotation; to: 0 360 0; dur: 20000; loop: true">
-    </a-sphere>
-
-    <a-ring
-      position="12 3.2 -12.5"
-      rotation="75 0 0"
-      radius-inner="1.05"
-      radius-outer="1.55"
-      material="color: #c9b8a6; opacity: 0.35; transparent: true; side: double">
-    </a-ring>
-
-    <!-- WINAMP VISUAL LAYER -->
+    <!-- Visual layer -->
     <a-entity id="visualRig">
       <a-entity id="starfieldFX"></a-entity>
       <a-entity id="burstFX"></a-entity>
@@ -427,31 +312,118 @@
         material="shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0">
       </a-sphere>
 
-      <!-- moved separate from main player -->
-      <a-entity id="eqPanel" position="-1.95 1.00 -2.5">
-        <a-plane width="0.95" height="0.68" color="#0a0610" opacity="0.82"></a-plane>
-        <a-text
-          value="WINAMP COSMIC EQ"
-          position="0 0.22 0.02"
-          align="center"
-          width="1.5"
-          color="#d7ff6a">
-        </a-text>
-        <a-entity id="eqBars" position="-0.34 -0.17 0.03"></a-entity>
+      <a-entity id="eqPanel" position="-2.55 1.18 -3.1" rotation="0 16 0">
+        <a-plane width="0.82" height="0.56" color="#0a0610" opacity="0.82"></a-plane>
+        <a-text value="WINAMP COSMIC EQ" position="0 0.20 0.02" align="center" width="1.34" color="#d7ff6a"></a-text>
+        <a-entity id="eqBars" position="-0.28 -0.16 0.03"></a-entity>
       </a-entity>
     </a-entity>
 
     <script>
+      // Movement component
+      AFRAME.registerComponent('rig-locomotion', {
+        init: function () {
+          this.move = { x: 0, z: 0 };
+          this.thumbstick = { x: 0, y: 0 };
+          this.speed = 2.2;
+
+          const leftHand = document.getElementById('leftHand');
+          const rightHand = document.getElementById('rightHand');
+
+          const onThumb = (evt) => {
+            const d = evt.detail || {};
+            this.thumbstick.x = d.x || 0;
+            this.thumbstick.y = d.y || 0;
+          };
+
+          const onThumbEnd = () => {
+            this.thumbstick.x = 0;
+            this.thumbstick.y = 0;
+          };
+
+          if (leftHand) {
+            leftHand.addEventListener('thumbstickmoved', onThumb);
+            leftHand.addEventListener('thumbsticktouchend', onThumbEnd);
+          }
+
+          if (rightHand) {
+            rightHand.addEventListener('thumbstickmoved', onThumb);
+            rightHand.addEventListener('thumbsticktouchend', onThumbEnd);
+          }
+
+          window.__setRigMove = (x, z) => {
+            this.move.x = x;
+            this.move.z = z;
+          };
+        },
+
+        tick: function (time, delta) {
+          const dt = delta / 1000;
+          const camera = document.getElementById('camera');
+          if (!camera) return;
+
+          let inputX = this.move.x + this.thumbstick.x;
+          let inputZ = this.move.z + this.thumbstick.y;
+
+          if (Math.abs(inputX) < 0.08) inputX = 0;
+          if (Math.abs(inputZ) < 0.08) inputZ = 0;
+          if (!inputX && !inputZ) return;
+
+          const rot = camera.object3D.rotation.y;
+          const forwardX = -Math.sin(rot);
+          const forwardZ = -Math.cos(rot);
+          const rightX = Math.cos(rot);
+          const rightZ = -Math.sin(rot);
+
+          const moveX = (rightX * inputX + forwardX * inputZ) * this.speed * dt;
+          const moveZ = (rightZ * inputX + forwardZ * inputZ) * this.speed * dt;
+
+          this.el.object3D.position.x += moveX;
+          this.el.object3D.position.z += moveZ;
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const rig = document.getElementById('rig');
+        if (rig) rig.setAttribute('rig-locomotion', '');
+
+        const bindHold = (id, x, z) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+
+          const start = (e) => {
+            e.preventDefault();
+            if (window.__setRigMove) window.__setRigMove(x, z);
+          };
+
+          const end = (e) => {
+            e.preventDefault();
+            if (window.__setRigMove) window.__setRigMove(0, 0);
+          };
+
+          el.addEventListener('touchstart', start, { passive: false });
+          el.addEventListener('touchend', end, { passive: false });
+          el.addEventListener('touchcancel', end, { passive: false });
+          el.addEventListener('mousedown', start);
+          el.addEventListener('mouseup', end);
+          el.addEventListener('mouseleave', end);
+        };
+
+        bindHold('moveForwardBtn', 0, -1);
+        bindHold('moveBackBtn', 0, 1);
+        bindHold('moveLeftBtn', -1, 0);
+        bindHold('moveRightBtn', 1, 0);
+      });
+
+      // Sky swirl + clean sky swap
       (function () {
         const SWIRL_MS = 60000;
         const SWAP_MS = 45000;
-        const FADE_MS = 1600;
 
         const rig = document.getElementById('skyRig');
-        const A = document.getElementById('skyA');
-        const B = document.getElementById('skyB');
-
-        let showA = true;
+        const mainSky = document.getElementById('mainSky');
+        const skyImages = ['#skyAimg', '#skyBimg'];
+        let currentSky = 0;
 
         rig.setAttribute('animation__swirl', {
           property: 'rotation',
@@ -462,30 +434,13 @@
           loop: true
         });
 
-        function fade(inEl, outEl) {
-          inEl.setAttribute('animation__in', {
-            property: 'material.opacity',
-            from: 0,
-            to: 1,
-            dur: FADE_MS,
-            easing: 'easeInOutQuad'
-          });
-
-          outEl.setAttribute('animation__out', {
-            property: 'material.opacity',
-            from: 1,
-            to: 0,
-            dur: FADE_MS,
-            easing: 'easeInOutQuad'
-          });
-        }
-
         setInterval(() => {
-          showA ? fade(B, A) : fade(A, B);
-          showA = !showA;
+          currentSky = (currentSky + 1) % skyImages.length;
+          mainSky.setAttribute('src', skyImages[currentSky]);
         }, SWAP_MS);
       })();
 
+      // Music
       (function () {
         const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
@@ -709,6 +664,7 @@
         setButtonState(false);
       })();
 
+      // Wider universe visual spread
       (function () {
         const audio = document.getElementById("audioPlayer");
         const starfieldFX = document.getElementById("starfieldFX");
@@ -725,7 +681,7 @@
           bar.setAttribute("depth", "0.04");
           bar.setAttribute("height", "0.12");
           bar.setAttribute("color", i < 4 ? "#7cff5b" : i < 8 ? "#ffd84d" : "#ff4fd8");
-          bar.setAttribute("position", `${i * 0.065} 0 0`);
+          bar.setAttribute("position", `${i * 0.055} 0 0`);
           eqBars.appendChild(bar);
           bars.push(bar);
         }
@@ -780,9 +736,9 @@
         const stars = [];
         function makeStar() {
           const star = document.createElement("a-sphere");
-          const x = (Math.random() * 24) - 12;
-          const y = 4 + Math.random() * 10;
-          const z = -6 - Math.random() * 24;
+          const x = (Math.random() * 48) - 24;
+          const y = (Math.random() * 20) - 6;
+          const z = (Math.random() * -48) - 6;
           const r = 0.012 + Math.random() * 0.022;
 
           star.setAttribute("radius", r.toFixed(3));
@@ -798,13 +754,13 @@
           });
         }
 
-        for (let i = 0; i < 70; i++) makeStar();
+        for (let i = 0; i < 120; i++) makeStar();
 
         function makeBurst(color = "#ffd2fa") {
           const burst = document.createElement("a-sphere");
-          const x = (Math.random() * 18) - 9;
-          const y = (Math.random() * 8) + 1;
-          const z = -8 - Math.random() * 18;
+          const x = (Math.random() * 30) - 15;
+          const y = (Math.random() * 12) - 2;
+          const z = -8 - Math.random() * 28;
 
           burst.setAttribute("radius", "0.08");
           burst.setAttribute("position", `${x} ${y} ${z}`);
@@ -840,10 +796,10 @@
               s.x += s.vx * mood.chaos;
             }
 
-            if (s.y < -2.5 || s.x < -14 || s.x > 14) {
-              s.x = (Math.random() * 24) - 12;
-              s.y = 5 + Math.random() * 10;
-              s.z = -6 - Math.random() * 24;
+            if (s.y < -8 || s.x < -28 || s.x > 28) {
+              s.x = (Math.random() * 48) - 24;
+              s.y = (Math.random() * 20) - 6;
+              s.z = (Math.random() * -48) - 6;
             }
 
             s.el.setAttribute("position", `${s.x} ${s.y} ${s.z}`);
@@ -870,7 +826,7 @@
             const h = Math.max(base + wobble, 0.03);
 
             bar.setAttribute("height", h.toFixed(3));
-            bar.setAttribute("position", `${i * 0.065} ${(h / 2) - 0.02} 0`);
+            bar.setAttribute("position", `${i * 0.055} ${(h / 2) - 0.02} 0`);
           });
 
           if (playing && Math.random() < mood.burstRate) {
@@ -884,7 +840,6 @@
         tick();
       })();
     </script>
-
   </a-scene>
 </body>
 </html>
