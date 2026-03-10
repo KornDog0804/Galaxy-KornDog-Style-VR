@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Brandi's Universe</title>
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -14,33 +16,33 @@ margin:0;
 height:100%;
 background:black;
 overflow:hidden;
-font-family:Arial, sans-serif;
+font-family:Arial;
 color:white;
 }
 
 .player{
 position:fixed;
-right:10px;
-bottom:10px;
-z-index:9999;
+right:12px;
+bottom:12px;
 width:340px;
 background:rgba(0,0,0,.6);
 padding:14px;
 border-radius:12px;
 backdrop-filter:blur(8px);
 border:1px solid rgba(255,255,255,.15);
+z-index:9999;
 }
 
 .player-title{
 font-size:13px;
-opacity:.8;
-margin-bottom:6px;
+opacity:.85;
+margin-bottom:8px;
 }
 
 #song{
 font-weight:bold;
 font-size:14px;
-margin-bottom:8px;
+margin-bottom:10px;
 }
 
 .controls{
@@ -80,7 +82,7 @@ Brandi’s Universe • STARSET Cloud Player
 
 <div id="song">Ready</div>
 
-<audio id="audio" controls style="width:100%;" crossorigin="anonymous"></audio>
+<audio id="audio" controls preload="metadata" playsinline webkit-playsinline style="width:100%;"></audio>
 
 <div class="controls">
 <button id="prev">Prev</button>
@@ -200,7 +202,9 @@ const song=document.getElementById("song");
 let index=0;
 
 function url(name){
-return BASE+name.replaceAll(" ","%20");
+
+return BASE + name.replaceAll(" ","%20");
+
 }
 
 function load(n){
@@ -246,6 +250,7 @@ audio.play();
 audio.volume=.8;
 
 load(0);
+
 
 /* background swap */
 
