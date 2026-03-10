@@ -151,7 +151,7 @@
         wasd-controls-enabled="false"
         look-controls="pointerLockEnabled: false"
         fov="78"
-        raycaster="objects: .clickable; far: 2"
+        raycaster="objects: .clickable; far: 2.5"
         cursor="fuse: true; fuseTimeout: 800"
       >
         <a-cursor
@@ -308,17 +308,43 @@
       </a-entity>
     </a-entity>
 
-    <!-- Quest controllers with shorter softer rays -->
-    <a-entity
-      laser-controls="hand: left"
-      raycaster="objects: .clickable; far: 2"
-      line="color: #ffffff; opacity: 0.18">
+    <!-- Beat Saber style sabers -->
+    <a-entity id="leftHand" laser-controls="hand: left" raycaster="objects: .clickable; far: 2.5">
+      <a-cylinder
+        position="0 0 -0.45"
+        radius="0.012"
+        height="0.9"
+        color="#ff2a6d"
+        opacity="0.9"
+        material="shader: flat; transparent: true"
+        rotation="90 0 0">
+      </a-cylinder>
+      <a-sphere
+        position="0 0 -0.9"
+        radius="0.028"
+        color="#ff9ac2"
+        opacity="0.95"
+        material="shader: flat; transparent: true">
+      </a-sphere>
     </a-entity>
 
-    <a-entity
-      laser-controls="hand: right"
-      raycaster="objects: .clickable; far: 2"
-      line="color: #ffffff; opacity: 0.18">
+    <a-entity id="rightHand" laser-controls="hand: right" raycaster="objects: .clickable; far: 2.5">
+      <a-cylinder
+        position="0 0 -0.45"
+        radius="0.012"
+        height="0.9"
+        color="#35d0ff"
+        opacity="0.9"
+        material="shader: flat; transparent: true"
+        rotation="90 0 0">
+      </a-cylinder>
+      <a-sphere
+        position="0 0 -0.9"
+        radius="0.028"
+        color="#a8ecff"
+        opacity="0.95"
+        material="shader: flat; transparent: true">
+      </a-sphere>
     </a-entity>
 
     <!-- LIGHTING -->
@@ -401,21 +427,21 @@
         material="shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0">
       </a-sphere>
 
-      <a-entity id="eqPanel" position="-1.35 0.35 -2.2">
-        <a-plane width="1.15" height="0.8" color="#0a0610" opacity="0.82"></a-plane>
+      <!-- moved separate from main player -->
+      <a-entity id="eqPanel" position="-1.95 1.00 -2.5">
+        <a-plane width="0.95" height="0.68" color="#0a0610" opacity="0.82"></a-plane>
         <a-text
           value="WINAMP COSMIC EQ"
-          position="0 0.28 0.02"
+          position="0 0.22 0.02"
           align="center"
-          width="1.8"
+          width="1.5"
           color="#d7ff6a">
         </a-text>
-        <a-entity id="eqBars" position="-0.42 -0.18 0.03"></a-entity>
+        <a-entity id="eqBars" position="-0.34 -0.17 0.03"></a-entity>
       </a-entity>
     </a-entity>
 
     <script>
-      // VISUALS - preserved
       (function () {
         const SWIRL_MS = 60000;
         const SWAP_MS = 45000;
@@ -460,7 +486,6 @@
         }, SWAP_MS);
       })();
 
-      // MUSIC - simplified and direct
       (function () {
         const SONG_BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
@@ -528,14 +553,12 @@
         ];
 
         const audio = document.getElementById("audioPlayer");
-
         const nowPlaying = document.getElementById("nowPlaying");
         const status = document.getElementById("playerStatus");
         const playPauseBtn = document.getElementById("playPauseBtn");
         const nextBtn = document.getElementById("nextBtn");
         const prevBtn = document.getElementById("prevBtn");
         const volumeSlider = document.getElementById("volumeSlider");
-
         const vrNowPlaying = document.getElementById("vrNowPlaying");
         const vrStatus = document.getElementById("vrStatus");
         const vrPlayPauseBtn = document.getElementById("vrPlayPauseBtn");
@@ -651,20 +674,12 @@
           setStatus(`Volume ${Math.round(audio.volume * 100)}%`);
         });
 
-        [
-          vrPrevBtn,
-          vrPlayPauseBtn,
-          vrNextBtn,
-          vrVolDownBtn,
-          vrVolUpBtn
-        ].forEach(el => {
+        [vrPrevBtn, vrPlayPauseBtn, vrNextBtn, vrVolDownBtn, vrVolUpBtn].forEach(el => {
           const baseColor = el.getAttribute("color");
-
           el.addEventListener("mouseenter", () => {
-            el.setAttribute("scale", "1.06 1.06 1");
-            el.setAttribute("opacity", "0.88");
+            el.setAttribute("scale", "1.08 1.08 1");
+            el.setAttribute("opacity", "0.92");
           });
-
           el.addEventListener("mouseleave", () => {
             el.setAttribute("scale", "1 1 1");
             el.setAttribute("opacity", "1");
@@ -694,7 +709,6 @@
         setButtonState(false);
       })();
 
-      // WINAMP STYLE VISUALIZER LAYER
       (function () {
         const audio = document.getElementById("audioPlayer");
         const starfieldFX = document.getElementById("starfieldFX");
@@ -704,15 +718,14 @@
 
         if (!audio || !starfieldFX || !burstFX || !pulseShell || !eqBars) return;
 
-        // Build EQ bars once
         const bars = [];
         for (let i = 0; i < 12; i++) {
           const bar = document.createElement("a-box");
-          bar.setAttribute("width", "0.05");
+          bar.setAttribute("width", "0.045");
           bar.setAttribute("depth", "0.04");
           bar.setAttribute("height", "0.12");
           bar.setAttribute("color", i < 4 ? "#7cff5b" : i < 8 ? "#ffd84d" : "#ff4fd8");
-          bar.setAttribute("position", `${i * 0.08} 0 0`);
+          bar.setAttribute("position", `${i * 0.065} 0 0`);
           eqBars.appendChild(bar);
           bars.push(bar);
         }
@@ -736,7 +749,7 @@
             song.includes("trials") ||
             song.includes("infected")
           ) {
-            return { speed: 1.55, burstRate: 0.06, pulse: 0.12, chaos: 1.0, color: "#ff4fd8" };
+            return { speed: 1.25, burstRate: 0.05, pulse: 0.10, chaos: 0.9, color: "#ff4fd8" };
           }
 
           if (
@@ -747,7 +760,7 @@
             song.includes("perfect machine") ||
             song.includes("satellite")
           ) {
-            return { speed: 0.58, burstRate: 0.018, pulse: 0.05, chaos: 0.35, color: "#7ad7ff" };
+            return { speed: 0.42, burstRate: 0.015, pulse: 0.04, chaos: 0.28, color: "#7ad7ff" };
           }
 
           if (
@@ -758,20 +771,19 @@
             song.includes("toksik") ||
             song.includes("brave new world")
           ) {
-            return { speed: 1.25, burstRate: 0.045, pulse: 0.09, chaos: 0.82, color: "#ff7a7a" };
+            return { speed: 0.95, burstRate: 0.035, pulse: 0.08, chaos: 0.65, color: "#ff7a7a" };
           }
 
-          return { speed: 0.9, burstRate: 0.028, pulse: 0.07, chaos: 0.55, color: "#d66bff" };
+          return { speed: 0.62, burstRate: 0.022, pulse: 0.06, chaos: 0.45, color: "#d66bff" };
         }
 
         const stars = [];
-
         function makeStar() {
           const star = document.createElement("a-sphere");
           const x = (Math.random() * 24) - 12;
           const y = 4 + Math.random() * 10;
           const z = -6 - Math.random() * 24;
-          const r = 0.015 + Math.random() * 0.03;
+          const r = 0.012 + Math.random() * 0.022;
 
           star.setAttribute("radius", r.toFixed(3));
           star.setAttribute("position", `${x} ${y} ${z}`);
@@ -781,8 +793,8 @@
           stars.push({
             el: star,
             x, y, z,
-            vy: 0.006 + Math.random() * 0.02,
-            vx: (Math.random() - 0.5) * 0.01
+            vy: 0.002 + Math.random() * 0.006,
+            vx: (Math.random() - 0.5) * 0.004
           });
         }
 
@@ -796,15 +808,15 @@
 
           burst.setAttribute("radius", "0.08");
           burst.setAttribute("position", `${x} ${y} ${z}`);
-          burst.setAttribute("material", `shader: flat; color: ${color}; transparent: true; opacity: 0.65`);
+          burst.setAttribute("material", `shader: flat; color: ${color}; transparent: true; opacity: 0.55`);
           burstFX.appendChild(burst);
 
           let scale = 0.2;
-          let opacity = 0.65;
+          let opacity = 0.55;
 
           function anim() {
-            scale += 0.08;
-            opacity -= 0.03;
+            scale += 0.06;
+            opacity -= 0.025;
             burst.setAttribute("scale", `${scale} ${scale} ${scale}`);
             burst.setAttribute("material", `shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(opacity, 0)}`);
             if (opacity > 0) {
@@ -818,12 +830,10 @@
         }
 
         let t = 0;
-
         function tick() {
           const playing = !audio.paused && !audio.ended && !!audio.src;
           const mood = getMood(currentSongName());
 
-          // falling stars
           for (const s of stars) {
             if (playing) {
               s.y -= s.vy * mood.speed;
@@ -839,7 +849,6 @@
             s.el.setAttribute("position", `${s.x} ${s.y} ${s.z}`);
           }
 
-          // pulsing shell
           if (playing) {
             const pulse = (Math.sin(t * 0.08) * 0.5 + 0.5) * mood.pulse;
             pulseShell.setAttribute(
@@ -853,19 +862,17 @@
             );
           }
 
-          // EQ bars
           bars.forEach((bar, i) => {
-            const base = playing ? 0.08 : 0.04;
+            const base = playing ? 0.07 : 0.035;
             const wobble = playing
-              ? (Math.sin((t * 0.12) + i * 0.6) * 0.22 + 0.24) * mood.speed
-              : 0.02;
+              ? (Math.sin((t * 0.12) + i * 0.6) * 0.16 + 0.18) * mood.speed
+              : 0.015;
             const h = Math.max(base + wobble, 0.03);
 
             bar.setAttribute("height", h.toFixed(3));
-            bar.setAttribute("position", `${i * 0.08} ${(h / 2) - 0.02} 0`);
+            bar.setAttribute("position", `${i * 0.065} ${(h / 2) - 0.02} 0`);
           });
 
-          // random bursts
           if (playing && Math.random() < mood.burstRate) {
             makeBurst(mood.color);
           }
