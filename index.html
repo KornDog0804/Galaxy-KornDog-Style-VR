@@ -8,34 +8,84 @@
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
 <style>
-body{
-margin:0;
-background:black;
-font-family:Arial;
-color:white;
+html, body {
+  margin: 0;
+  height: 100%;
+  background: black;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  color: white;
 }
 
-.player{
-position:fixed;
-right:10px;
-bottom:10px;
-background:#111;
-padding:12px;
-border-radius:10px;
+.player {
+  position: fixed;
+  right: 10px;
+  bottom: 10px;
+  z-index: 9999;
+  width: min(92vw, 360px);
+  background: rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
-button{
-margin:4px;
-padding:8px 12px;
-border-radius:6px;
-border:none;
-background:#333;
-color:white;
-font-weight:bold;
+.player-title {
+  font-size: 13px;
+  opacity: .75;
+  margin-bottom: 6px;
 }
 
-button:hover{
-background:#555;
+#song {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.controls button {
+  flex: 1;
+}
+
+button {
+  padding: 10px 8px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,.12);
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+button:hover {
+  background: rgba(255,255,255,.22);
+}
+
+.volume-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  opacity: .92;
+}
+
+.volume-wrap input[type="range"] {
+  flex: 1;
+}
+
+#status {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: .8;
+  min-height: 16px;
 }
 </style>
 </head>
@@ -43,126 +93,205 @@ background:#555;
 <body>
 
 <div class="player">
+  <div class="player-title">Brandi’s Universe • STARSET Cloud Player</div>
 
-<div id="song">Ready</div>
+  <div id="song">Ready</div>
 
-<button onclick="prev()">Prev</button>
-<button onclick="play()">Play</button>
-<button onclick="next()">Next</button>
+  <div class="controls">
+    <button id="prevBtn">⏮ Prev</button>
+    <button id="playBtn">▶ Play</button>
+    <button id="nextBtn">Next ⏭</button>
+  </div>
 
-<br>
+  <div class="volume-wrap">
+    <span>Vol</span>
+    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8">
+  </div>
 
-<input id="volume" type="range" min="0" max="1" step="0.01" value="0.8">
-
+  <div id="status">Playlist loaded</div>
 </div>
 
-<audio id="audio"></audio>
+<audio id="audio" preload="metadata" playsinline webkit-playsinline crossorigin="anonymous"></audio>
 
 <a-scene background="color:#000">
 
-<a-assets>
+  <a-assets>
+    <img id="sky1" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
+    <img id="sky2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
+  </a-assets>
 
-<img id="sky1" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
+  <a-sky id="sky" src="#sky1"></a-sky>
 
-<img id="sky2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
-
-</a-assets>
-
-<a-sky id="sky" src="#sky1"></a-sky>
-
-<a-entity light="type:ambient;intensity:1"></a-entity>
+  <a-entity light="type:ambient;intensity:1"></a-entity>
 
 </a-scene>
 
 <script>
-
-const BASE =
-"https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
+const BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
 const songs = [
+  "01 STARSET - A BRIEF HISTORY OF THE FUTURE.mp3",
+  "01 STARSET - praesens.mp3",
+  "01 STARSET - The Order.mp3",
+  "01 STARSET - UNVEILING THE ARCHITECTURE.mp3",
 
-"03 STARSET - Frequency.mp3",
-"02 STARSET - MANIFEST.mp3",
-"05 STARSET - EARTHRISE.mp3"
+  "02 STARSET - DEGENERATE.mp3",
+  "02 STARSET - MANIFEST.mp3",
+  "02 STARSET - Satellite.mp3",
+  "02 STARSET - THE BREACH.mp3",
 
+  "03 STARSET - ECHO.mp3",
+  "03 STARSET - Frequency.mp3",
+  "03 STARSET - OTHERWORLDLY.mp3",
+  "03 STARSET - SILOS.mp3",
+
+  "04 STARSET - Die For You.mp3",
+  "04 STARSET - ICARUS.mp3",
+  "04 STARSET - rise of messenger.mp3",
+  "04 STARSET - WHERE THE SKIES END.mp3",
+
+  "05 STARSET - DARK THINGS.mp3",
+  "05 STARSET - EARTHRISE.mp3",
+  "05 STARSET - PERFECT MACHINE.mp3",
+  "05 STARSET - Ricochet.mp3",
+
+  "06 STARSET - LEAVING THIS WORLD BEHIND.mp3",
+  "06 STARSET - SHATTERED DREAMS.mp3",
+  "06 STARSET - Starlight.mp3",
+  "06 STARSET - TELEKINETIC.mp3",
+
+  "07 STARSET - DEVOLUTION.mp3",
+  "07 STARSET - Into The Unknown.mp3",
+  "07 STARSET - STRATOSPHERE.mp3",
+  "07 STARSET - temple of milton.mp3",
+
+  "08 STARSET - ANNIHILATED LOVE.mp3",
+  "08 STARSET - BRAVE NEW WORLD.mp3",
+  "08 STARSET - FAULTLINE.mp3",
+  "08 STARSET - Gravity Of You.mp3",
+
+  "09 STARSET - ALCHEMY.mp3",
+  "09 STARSET - Back To The Earth.mp3",
+  "09 STARSET - DYSTOPIA.mp3",
+  "09 STARSET - SOLSTICE.mp3",
+
+  "10 STARSET - DISAPPEAR.mp3",
+  "10 STARSET - HEAD OVER HEELS.mp3",
+  "10 STARSET - Last To Fall.mp3",
+  "10 STARSET - TRIALS.mp3",
+
+  "11 STARSET - Bringing It Down.mp3",
+  "11 STARSET - SWAY.mp3",
+  "11 STARSET - THIS ENDLESS ENDEAVOR.mp3",
+  "11 STARSET - WAKING UP.mp3",
+
+  "12 STARSET - OTHER WORLDS THAN THESE.mp3",
+  "12 STARSET - SYMBIOTIC.mp3",
+  "12 STARSET - the antihero's journey.mp3",
+  "12 STARSET - Unbecoming.mp3",
+
+  "13 STARSET - DIVING BELL.mp3",
+  "13 STARSET - DREAMCATCHER.mp3",
+  "13 STARSET - Monster.mp3",
+  "13 STARSET - TOKSIK.mp3",
+
+  "14 STARSET - at his altar.mp3",
+  "14 STARSET - Telepathic.mp3",
+  "14 STARSET - TUNNELVISION.mp3",
+
+  "15 STARSET - AD ASTRA.mp3",
+  "15 STARSET - Everglow.mp3",
+  "15 STARSET - INFECTED.mp3",
+
+  "16 STARSET - requiem of the order.mp3",
+  "16 STARSET - SOMETHING WICKED.mp3"
 ];
 
 const audio = document.getElementById("audio");
 const songText = document.getElementById("song");
+const statusText = document.getElementById("status");
 const volume = document.getElementById("volume");
+const playBtn = document.getElementById("playBtn");
+const nextBtn = document.getElementById("nextBtn");
+const prevBtn = document.getElementById("prevBtn");
 
 let index = 0;
 
-function url(name){
-
-return BASE + name.replaceAll(" ","%20");
-
+function url(name) {
+  return BASE + name.replaceAll(" ", "%20");
 }
 
-function load(n){
-
-index = (n + songs.length) % songs.length;
-
-audio.src = url(songs[index]);
-
-songText.innerText = songs[index];
-
+function load(n) {
+  index = (n + songs.length) % songs.length;
+  audio.src = url(songs[index]);
+  songText.innerText = songs[index];
+  statusText.innerText = `Loaded ${index + 1} of ${songs.length}`;
 }
 
-async function play(){
+async function playSong() {
+  if (!audio.src) load(index);
 
-if(!audio.src) load(index);
-
-try{
-
-await audio.play();
-
-}catch(e){
-
-console.log(e);
-
+  try {
+    await audio.play();
+    playBtn.innerText = "⏸ Pause";
+    statusText.innerText = `Playing ${index + 1} of ${songs.length}`;
+  } catch (e) {
+    console.log(e);
+    statusText.innerText = "Tap Play again";
+  }
 }
 
+async function togglePlay() {
+  if (!audio.src) {
+    await playSong();
+    return;
+  }
+
+  if (audio.paused) {
+    await playSong();
+  } else {
+    audio.pause();
+    playBtn.innerText = "▶ Play";
+    statusText.innerText = "Paused";
+  }
 }
 
-function next(){
-
-load(index + 1);
-
-play();
-
+async function next() {
+  load(index + 1);
+  await playSong();
 }
 
-function prev(){
-
-load(index - 1);
-
-play();
-
+async function prev() {
+  load(index - 1);
+  await playSong();
 }
 
-volume.addEventListener("input",()=>{
+playBtn.addEventListener("click", togglePlay);
+nextBtn.addEventListener("click", next);
+prevBtn.addEventListener("click", prev);
 
-audio.volume = volume.value;
-
+volume.addEventListener("input", () => {
+  audio.volume = parseFloat(volume.value);
 });
 
+audio.addEventListener("ended", next);
+
+audio.addEventListener("error", () => {
+  statusText.innerText = "Track failed to load";
+  console.log("Audio error on:", audio.src);
+});
+
+audio.volume = parseFloat(volume.value);
 load(0);
 
 /* background swap */
+const sky = document.getElementById("sky");
+let toggle = true;
 
-const sky=document.getElementById("sky");
-
-let toggle=true;
-
-setInterval(()=>{
-
-sky.setAttribute("src", toggle ? "#sky2" : "#sky1");
-
-toggle=!toggle;
-
-},45000);
-
+setInterval(() => {
+  sky.setAttribute("src", toggle ? "#sky2" : "#sky1");
+  toggle = !toggle;
+}, 45000);
 </script>
 
 </body>
