@@ -4,97 +4,80 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Brandi's Universe</title>
-
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
 <style>
-html, body {
-  margin: 0;
-  height: 100%;
-  background: black;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-  color: white;
+html,body{
+  margin:0;
+  height:100%;
+  background:#000;
+  overflow:hidden;
+  font-family:Arial,sans-serif;
+  color:#fff;
 }
-
-.player {
-  position: fixed;
-  right: 10px;
-  bottom: 10px;
-  z-index: 9999;
-  width: min(92vw, 360px);
-  background: rgba(0,0,0,.55);
-  backdrop-filter: blur(10px);
-  padding: 12px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,.12);
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+.player{
+  position:fixed;
+  right:10px;
+  bottom:10px;
+  z-index:9999;
+  width:min(92vw,360px);
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(10px);
+  padding:12px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
-
-.player-title {
-  font-size: 13px;
-  opacity: .75;
-  margin-bottom: 6px;
+.player-title{
+  font-size:13px;
+  opacity:.75;
+  margin-bottom:6px;
 }
-
-#song {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.25;
-  margin-bottom: 10px;
-  word-break: break-word;
+#song{
+  font-size:14px;
+  font-weight:700;
+  line-height:1.25;
+  margin-bottom:10px;
+  word-break:break-word;
 }
-
-.controls {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
+.controls{
+  display:flex;
+  gap:8px;
+  margin-bottom:10px;
 }
-
-.controls button {
-  flex: 1;
+.controls button{
+  flex:1;
 }
-
-button {
-  padding: 10px 8px;
-  border-radius: 10px;
-  border: none;
-  background: rgba(255,255,255,.12);
-  color: white;
-  font-weight: bold;
-  font-size: 14px;
+button{
+  padding:10px 8px;
+  border-radius:10px;
+  border:none;
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  font-weight:bold;
+  font-size:14px;
 }
-
-button:hover {
-  background: rgba(255,255,255,.22);
+.volume-wrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  opacity:.92;
 }
-
-.volume-wrap {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  opacity: .92;
+.volume-wrap input[type="range"]{
+  flex:1;
 }
-
-.volume-wrap input[type="range"] {
-  flex: 1;
-}
-
-#status {
-  margin-top: 8px;
-  font-size: 12px;
-  opacity: .8;
-  min-height: 16px;
+#status{
+  margin-top:8px;
+  font-size:12px;
+  opacity:.8;
+  min-height:16px;
 }
 </style>
 </head>
-
 <body>
 
 <div class="player">
   <div class="player-title">Brandi’s Universe • STARSET Cloud Player</div>
-
   <div id="song">Ready</div>
 
   <div class="controls">
@@ -114,16 +97,13 @@ button:hover {
 <audio id="audio" preload="metadata" playsinline webkit-playsinline crossorigin="anonymous"></audio>
 
 <a-scene background="color:#000">
-
   <a-assets>
     <img id="sky1" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
     <img id="sky2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
   </a-assets>
 
   <a-sky id="sky" src="#sky1"></a-sky>
-
   <a-entity light="type:ambient;intensity:1"></a-entity>
-
 </a-scene>
 
 <script>
@@ -217,51 +197,55 @@ const prevBtn = document.getElementById("prevBtn");
 
 let index = 0;
 
-function url(name) {
-  return BASE + name.replaceAll(" ", "%20");
+audio.muted = false;
+audio.defaultMuted = false;
+audio.volume = parseFloat(volume.value);
+
+function url(name){
+  return BASE + name.replaceAll(" ","%20");
 }
 
-function load(n) {
+function load(n){
   index = (n + songs.length) % songs.length;
   audio.src = url(songs[index]);
   songText.innerText = songs[index];
   statusText.innerText = `Loaded ${index + 1} of ${songs.length}`;
 }
 
-async function playSong() {
-  if (!audio.src) load(index);
+async function playSong(){
+  if(!audio.src) load(index);
 
-  try {
+  try{
     await audio.play();
     playBtn.innerText = "⏸ Pause";
     statusText.innerText = `Playing ${index + 1} of ${songs.length}`;
-  } catch (e) {
-    console.log(e);
+  }catch(e){
+    console.log("PLAY ERROR:", e);
     statusText.innerText = "Tap Play again";
   }
 }
 
-async function togglePlay() {
-  if (!audio.src) {
+async function togglePlay(){
+  if(!audio.src){
     await playSong();
     return;
   }
 
-  if (audio.paused) {
+  if(audio.paused){
     await playSong();
-  } else {
+  }else{
     audio.pause();
     playBtn.innerText = "▶ Play";
     statusText.innerText = "Paused";
   }
 }
 
-async function next() {
+async function next(){
   load(index + 1);
   await playSong();
 }
 
-async function prev() {
+async function prev(){
   load(index - 1);
   await playSong();
 }
@@ -272,19 +256,30 @@ prevBtn.addEventListener("click", prev);
 
 volume.addEventListener("input", () => {
   audio.volume = parseFloat(volume.value);
+  statusText.innerText = `Volume ${Math.round(audio.volume * 100)}%`;
 });
 
 audio.addEventListener("ended", next);
 
-audio.addEventListener("error", () => {
-  statusText.innerText = "Track failed to load";
-  console.log("Audio error on:", audio.src);
+audio.addEventListener("loadedmetadata", () => {
+  console.log("loadedmetadata:", audio.src);
 });
 
-audio.volume = parseFloat(volume.value);
+audio.addEventListener("canplay", () => {
+  console.log("canplay:", audio.src);
+});
+
+audio.addEventListener("play", () => {
+  console.log("play event:", audio.src);
+});
+
+audio.addEventListener("error", () => {
+  console.log("audio error:", audio.src, audio.error);
+  statusText.innerText = "Track failed to load";
+});
+
 load(0);
 
-/* background swap */
 const sky = document.getElementById("sky");
 let toggle = true;
 
