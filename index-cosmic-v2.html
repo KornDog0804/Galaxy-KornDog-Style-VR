@@ -1,83 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Brandi's Universe — Cosmic v2</title>
 
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
 <style>
-html,body{
-  margin:0;
-  height:100%;
-  background:black;
-  overflow:hidden;
-  font-family:Arial,sans-serif;
-  color:white;
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+  color: #fff;
 }
 
-.player{
-  position:fixed;
-  right:12px;
-  bottom:12px;
-  width:340px;
-  background:rgba(0,0,0,.62);
-  padding:14px;
-  border-radius:12px;
-  backdrop-filter:blur(8px);
-  border:1px solid rgba(255,255,255,.15);
-  z-index:9999;
-  box-shadow:0 10px 30px rgba(0,0,0,.35);
+.player {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  width: 340px;
+  background: rgba(0,0,0,.62);
+  padding: 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  z-index: 9999;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
-.player-title{
-  font-size:13px;
-  opacity:.85;
-  margin-bottom:8px;
+.player-title {
+  font-size: 13px;
+  opacity: .85;
+  margin-bottom: 8px;
 }
 
-#song{
-  font-weight:bold;
-  font-size:14px;
-  margin-bottom:10px;
-  line-height:1.25;
-  word-break:break-word;
+#song {
+  font-weight: bold;
+  font-size: 14px;
+  margin-bottom: 10px;
+  line-height: 1.25;
+  word-break: break-word;
 }
 
-.controls{
-  display:flex;
-  gap:8px;
-  margin-top:8px;
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 
-button{
-  flex:1;
-  padding:10px;
-  border-radius:8px;
-  border:none;
-  background:#222;
-  color:white;
-  font-weight:bold;
+button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #222;
+  color: #fff;
+  font-weight: bold;
 }
 
-button:hover{
-  background:#444;
+button:hover {
+  background: #444;
 }
 
-.volume{
-  margin-top:8px;
+.volume {
+  margin-top: 8px;
 }
 
-#status{
-  margin-top:8px;
-  font-size:12px;
-  opacity:.85;
-  min-height:16px;
+#status {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: .85;
+  min-height: 16px;
+}
+
+audio {
+  width: 100%;
 }
 </style>
 </head>
-
 <body>
 
 <div class="player">
@@ -85,7 +88,7 @@ button:hover{
 
   <div id="song">Ready</div>
 
-  <audio id="audio" controls preload="metadata" playsinline webkit-playsinline style="width:100%;"></audio>
+  <audio id="audio" controls preload="metadata" playsinline webkit-playsinline></audio>
 
   <div class="controls">
     <button id="prev">Prev</button>
@@ -94,376 +97,412 @@ button:hover{
 
   <div class="volume">
     Volume
-    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8">
+    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" />
   </div>
 
-  <div id="status">Cosmic show armed</div>
+  <div id="status">Universe online</div>
 </div>
 
 <a-scene background="color:#000">
   <a-assets>
-    <img id="sky1" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
-    <img id="sky2" src="space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
+    <!-- original working backgrounds -->
+    <img id="sky1" src="./space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
+    <img id="sky2" src="./space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
+
+    <!-- new repo assets -->
+    <img id="nebula1" src="./nebula-overlay-1.jpg">
+    <img id="nebula2" src="./nebula-overlay-2.png">
+    <img id="starfieldOverlay" src="./starfield-overlay.png">
+    <img id="glowBurst" src="./glow-burst.png">
+    <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
-  <a-sky id="sky" src="#sky1"></a-sky>
-  <a-entity light="type:ambient;intensity:1"></a-entity>
+  <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-  <!-- background fx only -->
-  <a-entity id="starfieldFar"></a-entity>
-  <a-entity id="starfieldMid"></a-entity>
-  <a-entity id="dustFX"></a-entity>
-  <a-entity id="meteorFX"></a-entity>
-  <a-entity id="burstFX"></a-entity>
+  <!-- camera stays still, universe moves around you -->
+  <a-entity id="cameraRig" position="0 1.6 0">
+    <a-camera></a-camera>
+  </a-entity>
 
-  <a-sphere
-    id="pulseShell"
-    radius="34"
-    position="0 0 0"
-    material="shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0">
-  </a-sphere>
+  <!-- whole universe rig rotates slowly for planetarium feel -->
+  <a-entity id="universeRig">
+    <a-sky id="sky" src="#sky1"></a-sky>
+
+    <!-- far star sparkle layer -->
+    <a-plane
+      id="starsFar"
+      src="#starfieldOverlay"
+      position="0 8 -48"
+      width="120"
+      height="70"
+      material="shader: flat; transparent: true; opacity: 0.30; alphaTest: 0.02">
+    </a-plane>
+
+    <a-plane
+      id="starsFarRight"
+      src="#starfieldOverlay"
+      position="40 2 -34"
+      rotation="0 -38 0"
+      width="70"
+      height="46"
+      material="shader: flat; transparent: true; opacity: 0.22; alphaTest: 0.02">
+    </a-plane>
+
+    <a-plane
+      id="starsFarLeft"
+      src="#starfieldOverlay"
+      position="-40 6 -34"
+      rotation="0 38 0"
+      width="70"
+      height="46"
+      material="shader: flat; transparent: true; opacity: 0.22; alphaTest: 0.02">
+    </a-plane>
+
+    <!-- hero nebula landmark -->
+    <a-plane
+      id="bubbleNebula"
+      src="#nebula1"
+      position="-22 10 -58"
+      rotation="0 24 0"
+      width="24"
+      height="24"
+      material="shader: flat; transparent: true; opacity: 0.90">
+    </a-plane>
+
+    <!-- drifting transparent fog layer -->
+    <a-plane
+      id="fogMain"
+      src="#nebula2"
+      position="0 4 -24"
+      width="42"
+      height="26"
+      material="shader: flat; transparent: true; opacity: 0.34; alphaTest: 0.02">
+    </a-plane>
+
+    <a-plane
+      id="fogRight"
+      src="#nebula2"
+      position="18 -1 -19"
+      rotation="0 -26 0"
+      width="24"
+      height="18"
+      material="shader: flat; transparent: true; opacity: 0.22; alphaTest: 0.02">
+    </a-plane>
+
+    <a-plane
+      id="fogLeft"
+      src="#nebula2"
+      position="-18 6 -20"
+      rotation="0 26 0"
+      width="22"
+      height="16"
+      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02">
+    </a-plane>
+
+    <!-- mid hero cloud scene using same jpg as a dramatic plate -->
+    <a-plane
+      id="heroCloud"
+      src="#nebula1"
+      position="18 7 -44"
+      rotation="0 -18 0"
+      width="26"
+      height="26"
+      material="shader: flat; transparent: true; opacity: 0.36">
+    </a-plane>
+
+    <!-- burst flash on track changes -->
+    <a-plane
+      id="burstPlane"
+      src="#glowBurst"
+      position="0 2 -9"
+      width="11"
+      height="11"
+      visible="false"
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02">
+    </a-plane>
+
+    <!-- meteor, animated in JS -->
+    <a-plane
+      id="meteorPlane"
+      src="#meteorStreak"
+      position="0 0 -18"
+      width="10"
+      height="5"
+      visible="false"
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02">
+    </a-plane>
+  </a-entity>
 </a-scene>
 
 <script>
-const BASE="https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
+/* --------------------------
+   MUSIC / PLAYER (kept stable)
+--------------------------- */
+const BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
-const songs=[
-"01 STARSET - A BRIEF HISTORY OF THE FUTURE.mp3",
-"01 STARSET - praesens.mp3",
-"01 STARSET - The Order.mp3",
-"01 STARSET - UNVEILING THE ARCHITECTURE.mp3",
-"02 STARSET - DEGENERATE.mp3",
-"02 STARSET - MANIFEST.mp3",
-"02 STARSET - Satellite.mp3",
-"02 STARSET - THE BREACH.mp3",
-"03 STARSET - ECHO.mp3",
-"03 STARSET - Frequency.mp3",
-"03 STARSET - OTHERWORLDLY.mp3",
-"03 STARSET - SILOS.mp3",
-"04 STARSET - Die For You.mp3",
-"04 STARSET - ICARUS.mp3",
-"04 STARSET - rise of messenger.mp3",
-"04 STARSET - WHERE THE SKIES END.mp3",
-"05 STARSET - DARK THINGS.mp3",
-"05 STARSET - EARTHRISE.mp3",
-"05 STARSET - PERFECT MACHINE.mp3",
-"05 STARSET - Ricochet.mp3",
-"06 STARSET - LEAVING THIS WORLD BEHIND.mp3",
-"06 STARSET - SHATTERED DREAMS.mp3",
-"06 STARSET - Starlight.mp3",
-"06 STARSET - TELEKINETIC.mp3",
-"07 STARSET - DEVOLUTION.mp3",
-"07 STARSET - Into The Unknown.mp3",
-"07 STARSET - STRATOSPHERE.mp3",
-"07 STARSET - temple of milton.mp3",
-"08 STARSET - ANNIHILATED LOVE.mp3",
-"08 STARSET - BRAVE NEW WORLD.mp3",
-"08 STARSET - FAULTLINE.mp3",
-"08 STARSET - Gravity Of You.mp3",
-"09 STARSET - ALCHEMY.mp3",
-"09 STARSET - Back To The Earth.mp3",
-"09 STARSET - DYSTOPIA.mp3",
-"09 STARSET - SOLSTICE.mp3",
-"10 STARSET - DISAPPEAR.mp3",
-"10 STARSET - HEAD OVER HEELS.mp3",
-"10 STARSET - Last To Fall.mp3",
-"10 STARSET - TRIALS.mp3",
-"11 STARSET - Bringing It Down.mp3",
-"11 STARSET - SWAY.mp3",
-"11 STARSET - THIS ENDLESS ENDEAVOR.mp3",
-"11 STARSET - WAKING UP.mp3",
-"12 STARSET - OTHER WORLDS THAN THESE.mp3",
-"12 STARSET - SYMBIOTIC.mp3",
-"12 STARSET - the antihero's journey.mp3",
-"12 STARSET - Unbecoming.mp3",
-"13 STARSET - DIVING BELL.mp3",
-"13 STARSET - DREAMCATCHER.mp3",
-"13 STARSET - Monster.mp3",
-"13 STARSET - TOKSIK.mp3",
-"14 STARSET - at his altar.mp3",
-"14 STARSET - Telepathic.mp3",
-"14 STARSET - TUNNELVISION.mp3",
-"15 STARSET - AD ASTRA.mp3",
-"15 STARSET - Everglow.mp3",
-"15 STARSET - INFECTED.mp3",
-"16 STARSET - requiem of the order.mp3",
-"16 STARSET - SOMETHING WICKED.mp3"
+const songs = [
+  "01 STARSET - A BRIEF HISTORY OF THE FUTURE.mp3",
+  "01 STARSET - praesens.mp3",
+  "01 STARSET - The Order.mp3",
+  "01 STARSET - UNVEILING THE ARCHITECTURE.mp3",
+  "02 STARSET - DEGENERATE.mp3",
+  "02 STARSET - MANIFEST.mp3",
+  "02 STARSET - Satellite.mp3",
+  "02 STARSET - THE BREACH.mp3",
+  "03 STARSET - ECHO.mp3",
+  "03 STARSET - Frequency.mp3",
+  "03 STARSET - OTHERWORLDLY.mp3",
+  "03 STARSET - SILOS.mp3",
+  "04 STARSET - Die For You.mp3",
+  "04 STARSET - ICARUS.mp3",
+  "04 STARSET - rise of messenger.mp3",
+  "04 STARSET - WHERE THE SKIES END.mp3",
+  "05 STARSET - DARK THINGS.mp3",
+  "05 STARSET - EARTHRISE.mp3",
+  "05 STARSET - PERFECT MACHINE.mp3",
+  "05 STARSET - Ricochet.mp3",
+  "06 STARSET - LEAVING THIS WORLD BEHIND.mp3",
+  "06 STARSET - SHATTERED DREAMS.mp3",
+  "06 STARSET - Starlight.mp3",
+  "06 STARSET - TELEKINETIC.mp3",
+  "07 STARSET - DEVOLUTION.mp3",
+  "07 STARSET - Into The Unknown.mp3",
+  "07 STARSET - STRATOSPHERE.mp3",
+  "07 STARSET - temple of milton.mp3",
+  "08 STARSET - ANNIHILATED LOVE.mp3",
+  "08 STARSET - BRAVE NEW WORLD.mp3",
+  "08 STARSET - FAULTLINE.mp3",
+  "08 STARSET - Gravity Of You.mp3",
+  "09 STARSET - ALCHEMY.mp3",
+  "09 STARSET - Back To The Earth.mp3",
+  "09 STARSET - DYSTOPIA.mp3",
+  "09 STARSET - SOLSTICE.mp3",
+  "10 STARSET - DISAPPEAR.mp3",
+  "10 STARSET - HEAD OVER HEELS.mp3",
+  "10 STARSET - Last To Fall.mp3",
+  "10 STARSET - TRIALS.mp3",
+  "11 STARSET - Bringing It Down.mp3",
+  "11 STARSET - SWAY.mp3",
+  "11 STARSET - THIS ENDLESS ENDEAVOR.mp3",
+  "11 STARSET - WAKING UP.mp3",
+  "12 STARSET - OTHER WORLDS THAN THESE.mp3",
+  "12 STARSET - SYMBIOTIC.mp3",
+  "12 STARSET - the antihero's journey.mp3",
+  "12 STARSET - Unbecoming.mp3",
+  "13 STARSET - DIVING BELL.mp3",
+  "13 STARSET - DREAMCATCHER.mp3",
+  "13 STARSET - Monster.mp3",
+  "13 STARSET - TOKSIK.mp3",
+  "14 STARSET - at his altar.mp3",
+  "14 STARSET - Telepathic.mp3",
+  "14 STARSET - TUNNELVISION.mp3",
+  "15 STARSET - AD ASTRA.mp3",
+  "15 STARSET - Everglow.mp3",
+  "15 STARSET - INFECTED.mp3",
+  "16 STARSET - requiem of the order.mp3",
+  "16 STARSET - SOMETHING WICKED.mp3"
 ];
 
-const audio=document.getElementById("audio");
-const song=document.getElementById("song");
-const statusText=document.getElementById("status");
+const audio = document.getElementById("audio");
+const song = document.getElementById("song");
+const statusText = document.getElementById("status");
 
-let index=0;
+let index = 0;
 
-function url(name){
-  return BASE + name.replaceAll(" ","%20");
+function url(name) {
+  return BASE + name.replaceAll(" ", "%20");
 }
 
-function load(n){
-  index=(n+songs.length)%songs.length;
-  audio.src=url(songs[index]);
-  song.innerText=songs[index];
-  statusText.innerText=`Loaded ${index+1} of ${songs.length}`;
-  triggerSongBurst();
+function load(n) {
+  index = (n + songs.length) % songs.length;
+  audio.src = url(songs[index]);
+  song.innerText = songs[index];
+  statusText.innerText = `Loaded ${index + 1} of ${songs.length}`;
+  triggerBurst();
 }
 
-document.getElementById("next").onclick=()=>{
-  load(index+1);
+document.getElementById("next").onclick = () => {
+  load(index + 1);
   audio.play();
 };
 
-document.getElementById("prev").onclick=()=>{
-  load(index-1);
+document.getElementById("prev").onclick = () => {
+  load(index - 1);
   audio.play();
 };
 
-document.getElementById("volume").oninput=(e)=>{
-  audio.volume=e.target.value;
+document.getElementById("volume").oninput = (e) => {
+  audio.volume = e.target.value;
 };
 
-audio.addEventListener("ended",()=>{
-  load(index+1);
+audio.addEventListener("ended", () => {
+  load(index + 1);
   audio.play();
 });
 
-audio.addEventListener("play",()=>{
-  statusText.innerText=`Playing ${index+1} of ${songs.length}`;
+audio.addEventListener("play", () => {
+  statusText.innerText = `Playing ${index + 1} of ${songs.length}`;
 });
 
-audio.addEventListener("pause",()=>{
-  if(!audio.ended) statusText.innerText="Paused";
+audio.addEventListener("pause", () => {
+  if (!audio.ended) statusText.innerText = "Paused";
 });
 
-audio.addEventListener("error",()=>{
-  statusText.innerText="Track failed to load";
+audio.addEventListener("error", () => {
+  statusText.innerText = "Track failed to load";
 });
 
-audio.volume=.8;
+audio.volume = 0.8;
 load(0);
 
-/* background swap */
-const sky=document.getElementById("sky");
-let toggle=true;
-setInterval(()=>{
-  sky.setAttribute("src",toggle?"#sky2":"#sky1");
-  toggle=!toggle;
-},45000);
+/* --------------------------
+   VISUALS
+--------------------------- */
+const universeRig = document.getElementById("universeRig");
+const sky = document.getElementById("sky");
 
-/* --------- MAGIC SHOW --------- */
-const starfieldFar=document.getElementById("starfieldFar");
-const starfieldMid=document.getElementById("starfieldMid");
-const dustFX=document.getElementById("dustFX");
-const meteorFX=document.getElementById("meteorFX");
-const burstFX=document.getElementById("burstFX");
-const pulseShell=document.getElementById("pulseShell");
+const starsFar = document.getElementById("starsFar");
+const starsFarRight = document.getElementById("starsFarRight");
+const starsFarLeft = document.getElementById("starsFarLeft");
 
-const farStars=[];
-const midStars=[];
-const dust=[];
+const fogMain = document.getElementById("fogMain");
+const fogRight = document.getElementById("fogRight");
+const fogLeft = document.getElementById("fogLeft");
+const heroCloud = document.getElementById("heroCloud");
+const bubbleNebula = document.getElementById("bubbleNebula");
 
-function makeFarStar(){
-  const s=document.createElement("a-sphere");
-  const x=(Math.random()*120)-60;
-  const y=(Math.random()*60)-30;
-  const z=(Math.random()*120)-60;
-  const r=0.035+Math.random()*0.05;
-  s.setAttribute("radius",r.toFixed(3));
-  s.setAttribute("position",`${x} ${y} ${z}`);
-  s.setAttribute("material","shader: flat; color: #ffffff; transparent: true; opacity: 0.85");
-  starfieldFar.appendChild(s);
+const burstPlane = document.getElementById("burstPlane");
+const meteorPlane = document.getElementById("meteorPlane");
 
-  farStars.push({
-    el:s,x,y,z,
-    vx:(Math.random()-0.5)*0.003,
-    vy:(Math.random()-0.5)*0.003
-  });
+/* background swap kept from working build */
+let toggle = true;
+setInterval(() => {
+  sky.setAttribute("src", toggle ? "#sky2" : "#sky1");
+  toggle = !toggle;
+}, 45000);
+
+/* slow sky rotation = planetarium feel */
+let universeY = 0;
+let cloudPhase = 0;
+let meteorActive = false;
+
+function triggerBurst() {
+  burstPlane.setAttribute("visible", true);
+
+  let opacity = 0.65;
+  let scale = 0.55;
+
+  function animateBurst() {
+    scale += 0.08;
+    opacity -= 0.03;
+
+    burstPlane.setAttribute("scale", `${scale} ${scale} 1`);
+    burstPlane.setAttribute(
+      "material",
+      `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02`
+    );
+
+    if (opacity > 0) {
+      requestAnimationFrame(animateBurst);
+    } else {
+      burstPlane.setAttribute("visible", false);
+      burstPlane.setAttribute("scale", "1 1 1");
+      burstPlane.setAttribute(
+        "material",
+        "shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02"
+      );
+    }
+  }
+
+  requestAnimationFrame(animateBurst);
 }
 
-function makeMidStar(){
-  const s=document.createElement("a-sphere");
-  const x=(Math.random()*40)-20;
-  const y=(Math.random()*24)-12;
-  const z=-8-(Math.random()*18);
-  const r=0.05+Math.random()*0.09;
-  const colors=["#ffffff","#9fe8ff","#ff7de8"];
-  const color=colors[Math.floor(Math.random()*colors.length)];
-  s.setAttribute("radius",r.toFixed(3));
-  s.setAttribute("position",`${x} ${y} ${z}`);
-  s.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.92`);
-  starfieldMid.appendChild(s);
+function launchMeteor() {
+  if (meteorActive) return;
+  meteorActive = true;
 
-  midStars.push({
-    el:s,x,y,z,
-    vx:(Math.random()-0.5)*0.009,
-    vy:(Math.random()-0.5)*0.009
-  });
-}
+  let x = -18;
+  let y = 12 + Math.random() * 6;
+  let z = -18 - Math.random() * 8;
+  let opacity = 0.95;
+  const angle = -18 - Math.random() * 18;
 
-function makeDust(){
-  const p=document.createElement("a-sphere");
-  const x=(Math.random()*34)-17;
-  const y=(Math.random()*18)-9;
-  const z=-6-(Math.random()*14);
-  const r=0.06+Math.random()*0.08;
-  p.setAttribute("radius",r.toFixed(3));
-  p.setAttribute("position",`${x} ${y} ${z}`);
-  p.setAttribute("material","shader: flat; color: #7ad7ff; transparent: true; opacity: 0.15");
-  dustFX.appendChild(p);
+  meteorPlane.setAttribute("visible", true);
+  meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
+  meteorPlane.setAttribute("rotation", `0 0 ${angle}`);
+  meteorPlane.setAttribute("scale", "0.9 0.9 1");
+  meteorPlane.setAttribute(
+    "material",
+    `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02`
+  );
 
-  dust.push({
-    el:p,x,y,z,
-    vx:(Math.random()-0.5)*0.005,
-    vy:(Math.random()-0.5)*0.005
-  });
-}
+  function animateMeteor() {
+    x += 0.42;
+    y -= 0.18;
+    opacity -= 0.018;
 
-function makeMeteor(color="#ff4fd8"){
-  const meteor=document.createElement("a-cylinder");
-  let x=(Math.random()*26)-13;
-  let y=10+Math.random()*6;
-  let z=-10-(Math.random()*12);
-  let opacity=0.98;
+    meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
+    meteorPlane.setAttribute(
+      "material",
+      `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02`
+    );
 
-  meteor.setAttribute("radius","0.045");
-  meteor.setAttribute("height","2.8");
-  meteor.setAttribute("rotation","45 0 0");
-  meteor.setAttribute("position",`${x} ${y} ${z}`);
-  meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.98`);
-  meteorFX.appendChild(meteor);
-
-  function animateMeteor(){
-    x+=0.28;
-    y-=0.22;
-    opacity-=0.03;
-    meteor.setAttribute("position",`${x} ${y} ${z}`);
-    meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(opacity,0)}`);
-    if(opacity>0){
+    if (opacity > 0) {
       requestAnimationFrame(animateMeteor);
-    }else{
-      meteor.remove();
+    } else {
+      meteorPlane.setAttribute("visible", false);
+      meteorActive = false;
     }
   }
 
   requestAnimationFrame(animateMeteor);
 }
 
-function triggerSongBurst(){
-  for(let i=0;i<12;i++){
-    const burst=document.createElement("a-sphere");
-    const x=(Math.random()*26)-13;
-    const y=(Math.random()*14)-7;
-    const z=-7-(Math.random()*10);
-    const color=Math.random()>0.5 ? "#ff4fd8" : "#37d6ff";
+/* launch a meteor every so often */
+setInterval(() => {
+  launchMeteor();
+}, 9000 + Math.floor(Math.random() * 5000));
 
-    burst.setAttribute("radius","0.12");
-    burst.setAttribute("position",`${x} ${y} ${z}`);
-    burst.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.65`);
-    burstFX.appendChild(burst);
+function animateUniverse() {
+  const playing = !audio.paused && !audio.ended && !!audio.src;
 
-    let scale=0.22;
-    let opacity=0.65;
+  /* planetarium motion */
+  universeY += playing ? 0.010 : 0.004;
+  universeRig.setAttribute("rotation", `0 ${universeY} 0`);
 
-    function anim(){
-      scale+=0.12;
-      opacity-=0.03;
-      burst.setAttribute("scale",`${scale} ${scale} ${scale}`);
-      burst.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(opacity,0)}`);
-      if(opacity>0){
-        requestAnimationFrame(anim);
-      }else{
-        burst.remove();
-      }
-    }
-    requestAnimationFrame(anim);
-  }
+  /* drifting layers */
+  cloudPhase += playing ? 0.010 : 0.004;
+
+  const fogX = Math.sin(cloudPhase * 0.7) * 2.8;
+  const fogY = 4 + Math.cos(cloudPhase * 0.45) * 0.8;
+  fogMain.setAttribute("position", `${fogX.toFixed(2)} ${fogY.toFixed(2)} -24`);
+
+  const rightX = 18 + Math.sin(cloudPhase * 0.55) * 1.7;
+  const rightY = -1 + Math.cos(cloudPhase * 0.50) * 0.7;
+  fogRight.setAttribute("position", `${rightX.toFixed(2)} ${rightY.toFixed(2)} -19`);
+
+  const leftX = -18 + Math.cos(cloudPhase * 0.6) * 1.5;
+  const leftY = 6 + Math.sin(cloudPhase * 0.5) * 0.6;
+  fogLeft.setAttribute("position", `${leftX.toFixed(2)} ${leftY.toFixed(2)} -20`);
+
+  const cloudX = 18 + Math.sin(cloudPhase * 0.22) * 1.2;
+  const cloudY = 7 + Math.cos(cloudPhase * 0.18) * 1.0;
+  heroCloud.setAttribute("position", `${cloudX.toFixed(2)} ${cloudY.toFixed(2)} -44`);
+
+  /* slight hero object breathing */
+  const bubbleScale = 1 + Math.sin(cloudPhase * 0.22) * 0.03;
+  bubbleNebula.setAttribute("scale", `${bubbleScale.toFixed(3)} ${bubbleScale.toFixed(3)} 1`);
+
+  /* subtle sparkle layer shimmer */
+  const starsOpacity = playing ? 0.34 + (Math.sin(cloudPhase * 2.2) * 0.03) : 0.26;
+  starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starsOpacity.toFixed(3)}; alphaTest: 0.02`);
+  starsFarRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starsOpacity * 0.72).toFixed(3)}; alphaTest: 0.02`);
+  starsFarLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starsOpacity * 0.72).toFixed(3)}; alphaTest: 0.02`);
+
+  requestAnimationFrame(animateUniverse);
 }
 
-/* spawn gradually so mobile doesn't choke */
-let farCount=0;
-let midCount=0;
-let dustCount=0;
-
-const farSpawner=setInterval(()=>{
-  makeFarStar();
-  farCount++;
-  if(farCount>=140) clearInterval(farSpawner);
-},35);
-
-const midSpawner=setInterval(()=>{
-  makeMidStar();
-  midCount++;
-  if(midCount>=45) clearInterval(midSpawner);
-},80);
-
-const dustSpawner=setInterval(()=>{
-  makeDust();
-  dustCount++;
-  if(dustCount>=38) clearInterval(dustSpawner);
-},110);
-
-let t=0;
-function animateCosmos(){
-  const playing=!audio.paused && !audio.ended && !!audio.src;
-  const farSpeed=playing?1.2:0.35;
-  const midSpeed=playing?1.7:0.45;
-  const dustSpeed=playing?0.9:0.25;
-
-  farStars.forEach((s)=>{
-    s.x+=s.vx*farSpeed;
-    s.y+=s.vy*farSpeed;
-    if(s.x<-62) s.x=62;
-    if(s.x>62) s.x=-62;
-    if(s.y<-32) s.y=32;
-    if(s.y>32) s.y=-32;
-    s.el.setAttribute("position",`${s.x} ${s.y} ${s.z}`);
-  });
-
-  midStars.forEach((s)=>{
-    s.x+=s.vx*midSpeed;
-    s.y+=s.vy*midSpeed;
-    if(s.x<-22) s.x=22;
-    if(s.x>22) s.x=-22;
-    if(s.y<-13) s.y=13;
-    if(s.y>13) s.y=-13;
-    s.el.setAttribute("position",`${s.x} ${s.y} ${s.z}`);
-  });
-
-  dust.forEach((p)=>{
-    p.x+=p.vx*dustSpeed;
-    p.y+=p.vy*dustSpeed;
-    if(p.x<-18) p.x=18;
-    if(p.x>18) p.x=-18;
-    if(p.y<-10) p.y=10;
-    if(p.y>10) p.y=-10;
-    p.el.setAttribute("position",`${p.x} ${p.y} ${p.z}`);
-  });
-
-  if(playing){
-    const pulse=(Math.sin(t*0.09)*0.5+0.5)*0.18;
-    pulseShell.setAttribute(
-      "material",
-      `shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
-    );
-    if(Math.random()<0.03){
-      makeMeteor(Math.random()>0.5 ? "#ff4fd8" : "#37d6ff");
-    }
-  }else{
-    const idle=(Math.sin(t*0.05)*0.5+0.5)*0.05;
-    pulseShell.setAttribute(
-      "material",
-      `shader: flat; color: #37d6ff; side: back; transparent: true; opacity: ${idle.toFixed(3)}`
-    );
-    if(Math.random()<0.008){
-      makeMeteor("#ffffff");
-    }
-  }
-
-  t+=1;
-  requestAnimationFrame(animateCosmos);
-}
-
-animateCosmos();
+animateUniverse();
 </script>
 
 </body>
