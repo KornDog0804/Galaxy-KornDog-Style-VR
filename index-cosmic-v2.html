@@ -105,138 +105,133 @@ audio {
 
 <a-scene background="color:#000">
   <a-assets>
-    <!-- original working backgrounds -->
+    <!-- locked base working backgrounds -->
     <img id="sky1" src="./space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
     <img id="sky2" src="./space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
 
-    <!-- new repo assets -->
+    <!-- safe assets -->
     <img id="nebula1" src="./nebula-overlay-1.jpg">
     <img id="nebula2" src="./nebula-overlay-2.png">
     <img id="starfieldOverlay" src="./starfield-overlay.png">
-    <img id="glowBurst" src="./glow-burst.png">
     <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
   <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-  <!-- camera stays still, universe moves around you -->
   <a-entity id="cameraRig" position="0 1.6 0">
     <a-camera></a-camera>
   </a-entity>
 
-  <!-- whole universe rig rotates slowly for planetarium feel -->
+  <!-- universe rig -->
   <a-entity id="universeRig">
     <a-sky id="sky" src="#sky1"></a-sky>
 
-    <!-- far star sparkle layer -->
+    <!-- far sparkle depth -->
     <a-plane
       id="starsFar"
       src="#starfieldOverlay"
-      position="0 8 -48"
-      width="120"
-      height="70"
-      material="shader: flat; transparent: true; opacity: 0.30; alphaTest: 0.02">
+      position="0 10 -52"
+      width="135"
+      height="78"
+      material="shader: flat; transparent: true; opacity: 0.24; alphaTest: 0.02">
     </a-plane>
 
     <a-plane
-      id="starsFarRight"
+      id="starsLeft"
       src="#starfieldOverlay"
-      position="40 2 -34"
-      rotation="0 -38 0"
-      width="70"
-      height="46"
-      material="shader: flat; transparent: true; opacity: 0.22; alphaTest: 0.02">
-    </a-plane>
-
-    <a-plane
-      id="starsFarLeft"
-      src="#starfieldOverlay"
-      position="-40 6 -34"
+      position="-42 10 -38"
       rotation="0 38 0"
-      width="70"
-      height="46"
-      material="shader: flat; transparent: true; opacity: 0.22; alphaTest: 0.02">
+      width="78"
+      height="48"
+      material="shader: flat; transparent: true; opacity: 0.16; alphaTest: 0.02">
     </a-plane>
 
-    <!-- hero nebula landmark -->
+    <a-plane
+      id="starsRight"
+      src="#starfieldOverlay"
+      position="42 6 -38"
+      rotation="0 -38 0"
+      width="78"
+      height="48"
+      material="shader: flat; transparent: true; opacity: 0.16; alphaTest: 0.02">
+    </a-plane>
+
+    <!-- dramatic distant nebula landmark -->
     <a-plane
       id="bubbleNebula"
       src="#nebula1"
-      position="-22 10 -58"
-      rotation="0 24 0"
-      width="24"
-      height="24"
-      material="shader: flat; transparent: true; opacity: 0.90">
+      position="-24 12 -62"
+      rotation="0 22 0"
+      width="26"
+      height="26"
+      material="shader: flat; transparent: true; opacity: 0.92">
     </a-plane>
 
-    <!-- drifting transparent fog layer -->
+    <!-- main safe drifting purple nebula -->
     <a-plane
       id="fogMain"
       src="#nebula2"
-      position="0 4 -24"
-      width="42"
-      height="26"
-      material="shader: flat; transparent: true; opacity: 0.34; alphaTest: 0.02">
-    </a-plane>
-
-    <a-plane
-      id="fogRight"
-      src="#nebula2"
-      position="18 -1 -19"
-      rotation="0 -26 0"
-      width="24"
-      height="18"
-      material="shader: flat; transparent: true; opacity: 0.22; alphaTest: 0.02">
+      position="0 6 -26"
+      width="34"
+      height="22"
+      material="shader: flat; transparent: true; opacity: 0.42; alphaTest: 0.02; blending: additive">
     </a-plane>
 
     <a-plane
       id="fogLeft"
       src="#nebula2"
-      position="-18 6 -20"
-      rotation="0 26 0"
-      width="22"
-      height="16"
-      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02">
+      position="-18 9 -22"
+      rotation="0 24 0"
+      width="18"
+      height="14"
+      material="shader: flat; transparent: true; opacity: 0.24; alphaTest: 0.02; blending: additive">
     </a-plane>
 
-    <!-- mid hero cloud scene using same jpg as a dramatic plate -->
     <a-plane
-      id="heroCloud"
-      src="#nebula1"
-      position="18 7 -44"
+      id="fogRight"
+      src="#nebula2"
+      position="18 3 -22"
+      rotation="0 -24 0"
+      width="18"
+      height="14"
+      material="shader: flat; transparent: true; opacity: 0.24; alphaTest: 0.02; blending: additive">
+    </a-plane>
+
+    <!-- extra distant nebula glow -->
+    <a-plane
+      id="fogFar"
+      src="#nebula2"
+      position="20 16 -54"
       rotation="0 -18 0"
       width="26"
-      height="26"
-      material="shader: flat; transparent: true; opacity: 0.36">
+      height="20"
+      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02; blending: additive">
     </a-plane>
 
-    <!-- burst flash on track changes -->
-    <a-plane
-      id="burstPlane"
-      src="#glowBurst"
-      position="0 2 -9"
-      width="11"
-      height="11"
-      visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02">
-    </a-plane>
-
-    <!-- meteor, animated in JS -->
+    <!-- meteor -->
     <a-plane
       id="meteorPlane"
       src="#meteorStreak"
-      position="0 0 -18"
-      width="10"
-      height="5"
+      position="-20 14 -24"
+      width="9"
+      height="4"
       visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02">
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
     </a-plane>
+
+    <!-- subtle universe pulse -->
+    <a-sphere
+      id="pulseShell"
+      radius="36"
+      position="0 0 0"
+      material="shader: flat; color: #8f63ff; side: back; transparent: true; opacity: 0.0">
+    </a-sphere>
   </a-entity>
 </a-scene>
 
 <script>
 /* --------------------------
-   MUSIC / PLAYER (kept stable)
+   MUSIC / PLAYER (unchanged logic style)
 --------------------------- */
 const BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
@@ -318,7 +313,6 @@ function load(n) {
   audio.src = url(songs[index]);
   song.innerText = songs[index];
   statusText.innerText = `Loaded ${index + 1} of ${songs.length}`;
-  triggerBurst();
 }
 
 document.getElementById("next").onclick = () => {
@@ -362,89 +356,57 @@ const universeRig = document.getElementById("universeRig");
 const sky = document.getElementById("sky");
 
 const starsFar = document.getElementById("starsFar");
-const starsFarRight = document.getElementById("starsFarRight");
-const starsFarLeft = document.getElementById("starsFarLeft");
+const starsLeft = document.getElementById("starsLeft");
+const starsRight = document.getElementById("starsRight");
 
 const fogMain = document.getElementById("fogMain");
-const fogRight = document.getElementById("fogRight");
 const fogLeft = document.getElementById("fogLeft");
-const heroCloud = document.getElementById("heroCloud");
+const fogRight = document.getElementById("fogRight");
+const fogFar = document.getElementById("fogFar");
 const bubbleNebula = document.getElementById("bubbleNebula");
 
-const burstPlane = document.getElementById("burstPlane");
 const meteorPlane = document.getElementById("meteorPlane");
+const pulseShell = document.getElementById("pulseShell");
 
-/* background swap kept from working build */
+/* keep the working base background swap */
 let toggle = true;
 setInterval(() => {
   sky.setAttribute("src", toggle ? "#sky2" : "#sky1");
   toggle = !toggle;
 }, 45000);
 
-/* slow sky rotation = planetarium feel */
 let universeY = 0;
-let cloudPhase = 0;
+let motionPhase = 0;
 let meteorActive = false;
-
-function triggerBurst() {
-  burstPlane.setAttribute("visible", true);
-
-  let opacity = 0.65;
-  let scale = 0.55;
-
-  function animateBurst() {
-    scale += 0.08;
-    opacity -= 0.03;
-
-    burstPlane.setAttribute("scale", `${scale} ${scale} 1`);
-    burstPlane.setAttribute(
-      "material",
-      `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02`
-    );
-
-    if (opacity > 0) {
-      requestAnimationFrame(animateBurst);
-    } else {
-      burstPlane.setAttribute("visible", false);
-      burstPlane.setAttribute("scale", "1 1 1");
-      burstPlane.setAttribute(
-        "material",
-        "shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02"
-      );
-    }
-  }
-
-  requestAnimationFrame(animateBurst);
-}
 
 function launchMeteor() {
   if (meteorActive) return;
   meteorActive = true;
 
-  let x = -18;
-  let y = 12 + Math.random() * 6;
-  let z = -18 - Math.random() * 8;
+  let x = -26;
+  let y = 16 + Math.random() * 5;
+  let z = -22 - Math.random() * 10;
   let opacity = 0.95;
-  const angle = -18 - Math.random() * 18;
+  const angle = -18 - Math.random() * 14;
 
   meteorPlane.setAttribute("visible", true);
   meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
   meteorPlane.setAttribute("rotation", `0 0 ${angle}`);
-  meteorPlane.setAttribute("scale", "0.9 0.9 1");
+  meteorPlane.setAttribute("scale", "1 1 1");
   meteorPlane.setAttribute(
     "material",
-    `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02`
+    `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02; blending: additive`
   );
 
   function animateMeteor() {
-    x += 0.42;
-    y -= 0.18;
+    x += 0.48;
+    y -= 0.20;
     opacity -= 0.018;
 
     meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
     meteorPlane.setAttribute(
       "material",
-      `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02`
+      `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02; blending: additive`
     );
 
     if (opacity > 0) {
@@ -458,46 +420,53 @@ function launchMeteor() {
   requestAnimationFrame(animateMeteor);
 }
 
-/* launch a meteor every so often */
+/* occasional meteor */
 setInterval(() => {
   launchMeteor();
-}, 9000 + Math.floor(Math.random() * 5000));
+}, 10000 + Math.floor(Math.random() * 5000));
 
 function animateUniverse() {
   const playing = !audio.paused && !audio.ended && !!audio.src;
 
-  /* planetarium motion */
+  /* slow planetarium rotation */
   universeY += playing ? 0.010 : 0.004;
   universeRig.setAttribute("rotation", `0 ${universeY} 0`);
 
-  /* drifting layers */
-  cloudPhase += playing ? 0.010 : 0.004;
+  /* layered drift */
+  motionPhase += playing ? 0.010 : 0.004;
 
-  const fogX = Math.sin(cloudPhase * 0.7) * 2.8;
-  const fogY = 4 + Math.cos(cloudPhase * 0.45) * 0.8;
-  fogMain.setAttribute("position", `${fogX.toFixed(2)} ${fogY.toFixed(2)} -24`);
+  const fogMainX = Math.sin(motionPhase * 0.70) * 2.6;
+  const fogMainY = 6 + Math.cos(motionPhase * 0.42) * 0.7;
+  fogMain.setAttribute("position", `${fogMainX.toFixed(2)} ${fogMainY.toFixed(2)} -26`);
 
-  const rightX = 18 + Math.sin(cloudPhase * 0.55) * 1.7;
-  const rightY = -1 + Math.cos(cloudPhase * 0.50) * 0.7;
-  fogRight.setAttribute("position", `${rightX.toFixed(2)} ${rightY.toFixed(2)} -19`);
+  const fogLeftX = -18 + Math.cos(motionPhase * 0.56) * 1.6;
+  const fogLeftY = 9 + Math.sin(motionPhase * 0.50) * 0.6;
+  fogLeft.setAttribute("position", `${fogLeftX.toFixed(2)} ${fogLeftY.toFixed(2)} -22`);
 
-  const leftX = -18 + Math.cos(cloudPhase * 0.6) * 1.5;
-  const leftY = 6 + Math.sin(cloudPhase * 0.5) * 0.6;
-  fogLeft.setAttribute("position", `${leftX.toFixed(2)} ${leftY.toFixed(2)} -20`);
+  const fogRightX = 18 + Math.sin(motionPhase * 0.54) * 1.6;
+  const fogRightY = 3 + Math.cos(motionPhase * 0.48) * 0.6;
+  fogRight.setAttribute("position", `${fogRightX.toFixed(2)} ${fogRightY.toFixed(2)} -22`);
 
-  const cloudX = 18 + Math.sin(cloudPhase * 0.22) * 1.2;
-  const cloudY = 7 + Math.cos(cloudPhase * 0.18) * 1.0;
-  heroCloud.setAttribute("position", `${cloudX.toFixed(2)} ${cloudY.toFixed(2)} -44`);
+  const fogFarX = 20 + Math.sin(motionPhase * 0.22) * 1.2;
+  const fogFarY = 16 + Math.cos(motionPhase * 0.18) * 0.8;
+  fogFar.setAttribute("position", `${fogFarX.toFixed(2)} ${fogFarY.toFixed(2)} -54`);
 
-  /* slight hero object breathing */
-  const bubbleScale = 1 + Math.sin(cloudPhase * 0.22) * 0.03;
+  const bubbleScale = 1 + Math.sin(motionPhase * 0.22) * 0.025;
   bubbleNebula.setAttribute("scale", `${bubbleScale.toFixed(3)} ${bubbleScale.toFixed(3)} 1`);
 
-  /* subtle sparkle layer shimmer */
-  const starsOpacity = playing ? 0.34 + (Math.sin(cloudPhase * 2.2) * 0.03) : 0.26;
-  starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starsOpacity.toFixed(3)}; alphaTest: 0.02`);
-  starsFarRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starsOpacity * 0.72).toFixed(3)}; alphaTest: 0.02`);
-  starsFarLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starsOpacity * 0.72).toFixed(3)}; alphaTest: 0.02`);
+  const starPulse = playing ? 0.24 + (Math.sin(motionPhase * 2.4) * 0.03) : 0.18;
+  starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starPulse.toFixed(3)}; alphaTest: 0.02`);
+  starsLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starPulse * 0.66).toFixed(3)}; alphaTest: 0.02`);
+  starsRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starPulse * 0.66).toFixed(3)}; alphaTest: 0.02`);
+
+  const pulse = playing
+    ? (Math.sin(motionPhase * 0.09) * 0.5 + 0.5) * 0.08
+    : (Math.sin(motionPhase * 0.05) * 0.5 + 0.5) * 0.03;
+
+  pulseShell.setAttribute(
+    "material",
+    `shader: flat; color: #8f63ff; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
+  );
 
   requestAnimationFrame(animateUniverse);
 }
