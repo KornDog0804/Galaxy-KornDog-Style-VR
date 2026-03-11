@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brandi's Universe — STARSET VR V3</title>
+  <title>Brandi's Universe — STARSET VR V3.1</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
     html, body {
@@ -14,7 +14,6 @@
       font-family: Arial, sans-serif;
       color: #fff;
     }
-
     .player {
       position: fixed;
       right: 12px;
@@ -28,13 +27,11 @@
       z-index: 9999;
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
     }
-
     .player-title {
       font-size: 13px;
       opacity: .85;
       margin-bottom: 8px;
     }
-
     #song {
       font-weight: bold;
       font-size: 14px;
@@ -42,13 +39,11 @@
       line-height: 1.25;
       word-break: break-word;
     }
-
     .controls {
       display: flex;
       gap: 8px;
       margin-top: 8px;
     }
-
     button {
       flex: 1;
       padding: 10px;
@@ -58,18 +53,15 @@
       color: #fff;
       font-weight: bold;
     }
-
     .volume {
       margin-top: 8px;
     }
-
     #status {
       margin-top: 8px;
       font-size: 12px;
       opacity: .85;
       min-height: 16px;
     }
-
     audio {
       width: 100%;
     }
@@ -98,89 +90,89 @@
 
 <a-scene background="color:#000">
   <a-assets>
-    <!-- 4 full worlds -->
     <img id="sky1" src="./blue_nebulae_1.png">
     <img id="sky2" src="./hazy_nebulae_1.png">
     <img id="sky3" src="./plain_starfield_1.png">
     <img id="sky4" src="./ringed_gas_giant_planet.png">
 
-    <!-- safe overlays -->
     <img id="starsOverlay" src="./starfield-overlay.png">
     <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
   <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-  <!-- normal headset look, no cursor ring -->
-  <a-entity id="cameraRig" position="0 1.6 0">
+  <!-- normal headset look, no cursor -->
+  <a-entity position="0 1.6 0">
     <a-camera look-controls="pointerLockEnabled: false"></a-camera>
   </a-entity>
 
-  <a-entity id="universeRig">
-    <!-- main sky world -->
-    <a-sky id="sky" src="#sky1" rotation="0 -90 0"></a-sky>
+  <!-- SKY -->
+  <a-sky id="sky" src="#sky1" rotation="0 -90 0"
+    animation__spin="property: rotation; to: 8 270 12; dur: 180000; easing: linear; loop: true; dir: alternate">
+  </a-sky>
 
-    <!-- subtle depth shimmer -->
-    <a-plane
-      id="starsFar"
-      src="#starsOverlay"
-      position="0 16 -120"
-      width="230"
-      height="135"
-      material="shader: flat; transparent: true; opacity: 0.12; alphaTest: 0.02">
-    </a-plane>
+  <!-- SUBTLE STAR DEPTH -->
+  <a-plane
+    id="starsFar"
+    src="#starsOverlay"
+    position="0 18 -125"
+    width="240"
+    height="140"
+    material="shader: flat; transparent: true; opacity: 0.11; alphaTest: 0.02"
+    animation__drift="property: position; to: 12 22 -125; dur: 42000; dir: alternate; loop: true; easing: easeInOutSine"
+    animation__pulse="property: material.opacity; to: 0.17; dur: 5000; dir: alternate; loop: true; easing: easeInOutSine">
+  </a-plane>
 
-    <!-- meteor shower pool -->
-    <a-plane
-      id="meteor1"
-      src="#meteorStreak"
-      position="-70 36 -90"
-      width="12"
-      height="5"
-      visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
-    </a-plane>
+  <!-- METEOR SHOWERS -->
+  <a-plane
+    src="#meteorStreak"
+    position="-120 60 -110"
+    width="12"
+    height="5"
+    material="shader: flat; transparent: true; opacity: 0.9; alphaTest: 0.02; blending: additive"
+    animation__fly="property: position; from: -120 60 -110; to: 120 -10 -110; dur: 5200; easing: linear; loop: true; delay: 0"
+    animation__fade="property: material.opacity; from: 0.0; to: 0.95; dur: 500; dir: alternate; loop: true">
+  </a-plane>
 
-    <a-plane
-      id="meteor2"
-      src="#meteorStreak"
-      position="-70 36 -90"
-      width="14"
-      height="5.5"
-      visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
-    </a-plane>
+  <a-plane
+    src="#meteorStreak"
+    position="-140 75 -130"
+    width="15"
+    height="6"
+    material="shader: flat; transparent: true; opacity: 0.85; alphaTest: 0.02; blending: additive"
+    animation__fly="property: position; from: -140 75 -130; to: 130 -25 -130; dur: 6300; easing: linear; loop: true; delay: 1400"
+    animation__fade="property: material.opacity; from: 0.0; to: 0.85; dur: 650; dir: alternate; loop: true; delay: 1400">
+  </a-plane>
 
-    <a-plane
-      id="meteor3"
-      src="#meteorStreak"
-      position="-70 36 -90"
-      width="10"
-      height="4.2"
-      visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
-    </a-plane>
+  <a-plane
+    src="#meteorStreak"
+    position="-100 48 -90"
+    width="10"
+    height="4"
+    material="shader: flat; transparent: true; opacity: 0.8; alphaTest: 0.02; blending: additive"
+    animation__fly="property: position; from: -100 48 -90; to: 110 -18 -90; dur: 4700; easing: linear; loop: true; delay: 2800"
+    animation__fade="property: material.opacity; from: 0.0; to: 0.8; dur: 500; dir: alternate; loop: true; delay: 2800">
+  </a-plane>
 
-    <a-plane
-      id="meteor4"
-      src="#meteorStreak"
-      position="-70 36 -90"
-      width="13"
-      height="5.2"
-      visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
-    </a-plane>
+  <a-plane
+    src="#meteorStreak"
+    position="-150 82 -150"
+    width="13"
+    height="5.2"
+    material="shader: flat; transparent: true; opacity: 0.88; alphaTest: 0.02; blending: additive"
+    animation__fly="property: position; from: -150 82 -150; to: 140 -30 -150; dur: 7000; easing: linear; loop: true; delay: 4200"
+    animation__fade="property: material.opacity; from: 0.0; to: 0.88; dur: 700; dir: alternate; loop: true; delay: 4200">
+  </a-plane>
 
-    <a-plane
-      id="meteor5"
-      src="#meteorStreak"
-      position="-70 36 -90"
-      width="11"
-      height="4.8"
-      visible="false"
-      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
-    </a-plane>
-  </a-entity>
+  <a-plane
+    src="#meteorStreak"
+    position="-110 68 -120"
+    width="11"
+    height="4.5"
+    material="shader: flat; transparent: true; opacity: 0.82; alphaTest: 0.02; blending: additive"
+    animation__fly="property: position; from: -110 68 -120; to: 125 -22 -120; dur: 5600; easing: linear; loop: true; delay: 5600"
+    animation__fade="property: material.opacity; from: 0.0; to: 0.82; dur: 650; dir: alternate; loop: true; delay: 5600">
+  </a-plane>
 </a-scene>
 
 <script>
@@ -275,12 +267,10 @@ function shuffleArray(arr) {
 
 function rebuildShuffle(keepCurrent = null) {
   shuffledSongs = shuffleArray(songs);
-
   if (keepCurrent && shuffledSongs.length > 1 && shuffledSongs[0] === keepCurrent) {
     const swapIndex = 1 + Math.floor(Math.random() * (shuffledSongs.length - 1));
     [shuffledSongs[0], shuffledSongs[swapIndex]] = [shuffledSongs[swapIndex], shuffledSongs[0]];
   }
-
   index = 0;
 }
 
@@ -352,102 +342,6 @@ setInterval(() => {
   skyIndex = (skyIndex + 1) % skyCycle.length;
   sky.setAttribute("src", skyCycle[skyIndex]);
 }, 60000);
-
-/* --------------------------
-   VR WORLD MOTION
---------------------------- */
-const starsFar = document.getElementById("starsFar");
-
-let skyYaw = -90;
-let skyPitch = 0;
-let skyRoll = 0;
-let phase = 0;
-
-function animateUniverse() {
-  const playing = !audio.paused && !audio.ended && !!audio.src;
-
-  phase += playing ? 0.020 : 0.010;
-
-  /* animate sky directly so movement survives VR mode */
-  skyYaw += playing ? 0.070 : 0.028;
-  skyPitch = Math.sin(phase * 0.12) * 8.5;
-  skyRoll = Math.cos(phase * 0.09) * 14.5;
-
-  sky.setAttribute("rotation", `${skyPitch.toFixed(2)} ${skyYaw.toFixed(2)} ${skyRoll.toFixed(2)}`);
-
-  const starBase = playing ? 0.12 + (Math.sin(phase * 1.5) * 0.02) : 0.09;
-  starsFar.setAttribute(
-    "material",
-    `shader: flat; transparent: true; opacity: ${starBase.toFixed(3)}; alphaTest: 0.02`
-  );
-
-  requestAnimationFrame(animateUniverse);
-}
-
-animateUniverse();
-
-/* --------------------------
-   METEOR SHOWERS
---------------------------- */
-const meteors = [
-  document.getElementById("meteor1"),
-  document.getElementById("meteor2"),
-  document.getElementById("meteor3"),
-  document.getElementById("meteor4"),
-  document.getElementById("meteor5")
-];
-
-function launchMeteor(el, delay = 0) {
-  setTimeout(() => {
-    let x = -100 - Math.random() * 40;
-    let y = 40 + Math.random() * 24;
-    let z = -100 - Math.random() * 40;
-    let opacity = 0.95;
-    const angle = -10 - Math.random() * 18;
-    const speedX = 1.4 + Math.random() * 0.8;
-    const speedY = 0.55 + Math.random() * 0.28;
-
-    el.setAttribute("visible", true);
-    el.setAttribute("position", `${x} ${y} ${z}`);
-    el.setAttribute("rotation", `0 0 ${angle}`);
-    el.setAttribute(
-      "material",
-      `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02; blending: additive`
-    );
-
-    function anim() {
-      x += speedX;
-      y -= speedY;
-      opacity -= 0.014;
-
-      el.setAttribute("position", `${x} ${y} ${z}`);
-      el.setAttribute(
-        "material",
-        `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02; blending: additive`
-      );
-
-      if (opacity > 0) {
-        requestAnimationFrame(anim);
-      } else {
-        el.setAttribute("visible", false);
-      }
-    }
-
-    requestAnimationFrame(anim);
-  }, delay);
-}
-
-function meteorShower() {
-  launchMeteor(meteors[0], 0);
-  launchMeteor(meteors[1], 350);
-  launchMeteor(meteors[2], 800);
-  launchMeteor(meteors[3], 1400);
-  launchMeteor(meteors[4], 2100);
-}
-
-setInterval(() => {
-  meteorShower();
-}, 8500);
 </script>
 
 </body>
