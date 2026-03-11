@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brandi's Universe — STARSET VR V3.1</title>
+  <title>Brandi's Universe — STARSET VR V3.2</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
     html, body {
@@ -14,6 +14,7 @@
       font-family: Arial, sans-serif;
       color: #fff;
     }
+
     .player {
       position: fixed;
       right: 12px;
@@ -27,11 +28,13 @@
       z-index: 9999;
       box-shadow: 0 10px 30px rgba(0,0,0,.35);
     }
+
     .player-title {
       font-size: 13px;
       opacity: .85;
       margin-bottom: 8px;
     }
+
     #song {
       font-weight: bold;
       font-size: 14px;
@@ -39,11 +42,13 @@
       line-height: 1.25;
       word-break: break-word;
     }
+
     .controls {
       display: flex;
       gap: 8px;
       margin-top: 8px;
     }
+
     button {
       flex: 1;
       padding: 10px;
@@ -53,15 +58,18 @@
       color: #fff;
       font-weight: bold;
     }
+
     .volume {
       margin-top: 8px;
     }
+
     #status {
       margin-top: 8px;
       font-size: 12px;
       opacity: .85;
       min-height: 16px;
     }
+
     audio {
       width: 100%;
     }
@@ -90,28 +98,43 @@
 
 <a-scene background="color:#000">
   <a-assets>
+    <!-- 4 full worlds -->
     <img id="sky1" src="./blue_nebulae_1.png">
     <img id="sky2" src="./hazy_nebulae_1.png">
     <img id="sky3" src="./plain_starfield_1.png">
     <img id="sky4" src="./ringed_gas_giant_planet.png">
 
+    <!-- safe overlays -->
     <img id="starsOverlay" src="./starfield-overlay.png">
     <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
   <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-  <!-- normal headset look, no cursor -->
-  <a-entity position="0 1.6 0">
-    <a-camera look-controls="pointerLockEnabled: false"></a-camera>
+  <!-- locomotion rig -->
+  <a-entity id="rig" position="0 0 0" thumbstick-locomotion>
+    <a-entity id="cameraRig" position="0 1.6 0">
+      <a-camera look-controls="pointerLockEnabled: false"></a-camera>
+    </a-entity>
+
+    <!-- invisible controllers, usable thumbsticks -->
+    <a-entity id="leftHand"
+              hand-controls="hand: left; handModelStyle: lowPoly; color: #ffffff"
+              visible="false">
+    </a-entity>
+
+    <a-entity id="rightHand"
+              hand-controls="hand: right; handModelStyle: lowPoly; color: #ffffff"
+              visible="false">
+    </a-entity>
   </a-entity>
 
-  <!-- SKY -->
+  <!-- main sky -->
   <a-sky id="sky" src="#sky1" rotation="0 -90 0"
-    animation__spin="property: rotation; to: 8 270 12; dur: 180000; easing: linear; loop: true; dir: alternate">
+         animation__spin="property: rotation; to: 6 270 5; dur: 220000; easing: linear; loop: true; dir: alternate">
   </a-sky>
 
-  <!-- SUBTLE STAR DEPTH -->
+  <!-- subtle depth shimmer -->
   <a-plane
     id="starsFar"
     src="#starsOverlay"
@@ -119,11 +142,11 @@
     width="240"
     height="140"
     material="shader: flat; transparent: true; opacity: 0.11; alphaTest: 0.02"
-    animation__drift="property: position; to: 12 22 -125; dur: 42000; dir: alternate; loop: true; easing: easeInOutSine"
+    animation__drift="property: position; to: 10 22 -125; dur: 42000; dir: alternate; loop: true; easing: easeInOutSine"
     animation__pulse="property: material.opacity; to: 0.17; dur: 5000; dir: alternate; loop: true; easing: easeInOutSine">
   </a-plane>
 
-  <!-- METEOR SHOWERS -->
+  <!-- meteor showers -->
   <a-plane
     src="#meteorStreak"
     position="-120 60 -110"
@@ -176,6 +199,107 @@
 </a-scene>
 
 <script>
+AFRAME.registerComponent('thumbstick-locomotion', {
+  init: function () {
+    this.leftX = 0;
+    this.leftY = 0;
+    this.rightX = 0;
+
+    this.moveSpeed = 0.08;
+    this.turnSpeed = 1.7;
+
+    this.leftHand = null;
+    this.rightHand = null;
+
+    this.onLeftThumbstickMoved = (evt) => {
+      this.leftX = evt.detail.x || 0;
+      this.leftY = evt.detail.y || 0;
+    };
+
+    this.onRightThumbstickMoved = (evt) => {
+      this.rightX = evt.detail.x || 0;
+    };
+
+    this.onEnterVR = () => {
+      this.leftHand = document.querySelector('#leftHand');
+      this.rightHand = document.querySelector('#rightHand');
+
+      if (this.leftHand) {
+        this.leftHand.addEventListener('thumbstickmoved', this.onLeftThumbstickMoved);
+      }
+      if (this.rightHand) {
+        this.rightHand.addEventListener('thumbstickmoved', this.onRightThumbstickMoved);
+      }
+    };
+
+    this.onExitVR = () => {
+      if (this.leftHand) {
+        this.leftHand.removeEventListener('thumbstickmoved', this.onLeftThumbstickMoved);
+      }
+      if (this.rightHand) {
+        this.rightHand.removeEventListener('thumbstickmoved', this.onRightThumbstickMoved);
+      }
+      this.leftX = 0;
+      this.leftY = 0;
+      this.rightX = 0;
+    };
+
+    this.sceneEl = this.el.sceneEl;
+    this.sceneEl.addEventListener('enter-vr', this.onEnterVR);
+    this.sceneEl.addEventListener('exit-vr', this.onExitVR);
+  },
+
+  tick: function () {
+    if (!this.el.sceneEl.is('vr-mode')) return;
+
+    const deadzone = 0.15;
+
+    if (Math.abs(this.rightX) > deadzone) {
+      const currentRot = this.el.getAttribute('rotation');
+      this.el.setAttribute('rotation', {
+        x: currentRot.x,
+        y: currentRot.y - (this.rightX * this.turnSpeed),
+        z: currentRot.z
+      });
+    }
+
+    if (Math.abs(this.leftX) > deadzone || Math.abs(this.leftY) > deadzone) {
+      const rot = this.el.getAttribute('rotation');
+      const yaw = THREE.MathUtils.degToRad(rot.y);
+
+      const forward = new THREE.Vector3(
+        -Math.sin(yaw),
+        0,
+        -Math.cos(yaw)
+      );
+
+      const right = new THREE.Vector3(
+        Math.cos(yaw),
+        0,
+        -Math.sin(yaw)
+      );
+
+      const move = new THREE.Vector3();
+      move.add(forward.multiplyScalar(-this.leftY * this.moveSpeed));
+      move.add(right.multiplyScalar(this.leftX * this.moveSpeed));
+
+      const pos = this.el.getAttribute('position');
+      this.el.setAttribute('position', {
+        x: pos.x + move.x,
+        y: pos.y,
+        z: pos.z + move.z
+      });
+    }
+  },
+
+  remove: function () {
+    if (this.sceneEl) {
+      this.sceneEl.removeEventListener('enter-vr', this.onEnterVR);
+      this.sceneEl.removeEventListener('exit-vr', this.onExitVR);
+    }
+  }
+});
+
 /* --------------------------
    MUSIC / PLAYER
 --------------------------- */
