@@ -22,7 +22,7 @@ html,body{
   right:12px;
   bottom:12px;
   width:340px;
-  background:rgba(0,0,0,.6);
+  background:rgba(0,0,0,.62);
   padding:14px;
   border-radius:12px;
   backdrop-filter:blur(8px);
@@ -72,7 +72,7 @@ button:hover{
 #status{
   margin-top:8px;
   font-size:12px;
-  opacity:.8;
+  opacity:.85;
   min-height:16px;
 }
 </style>
@@ -97,7 +97,7 @@ button:hover{
     <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8">
   </div>
 
-  <div id="status">Cosmic system ready</div>
+  <div id="status">Diamond show armed</div>
 </div>
 
 <a-scene background="color:#000">
@@ -109,36 +109,68 @@ button:hover{
   <a-sky id="sky" src="#sky1"></a-sky>
   <a-entity light="type:ambient;intensity:1"></a-entity>
 
-  <!-- BIG OBVIOUS TEST LABEL -->
+  <!-- IF YOU SEE THIS, THE RIGHT FILE IS LOADING -->
   <a-text
-    id="cosmicLabel"
     value="COSMIC V2 LIVE"
-    position="0 4 -10"
+    position="0 4 -9"
     align="center"
-    width="30"
-    color="#7ad7ff"
-    shader="msdf">
+    width="24"
+    color="#3dc4ff">
   </a-text>
 
   <a-text
-    id="cosmicSubLabel"
-    value="If you see this, the right file is loading"
-    position="0 3.1 -10"
+    value="Diamond show armed"
+    position="0 3.15 -9"
     align="center"
-    width="20"
-    color="#ffffff"
-    shader="msdf">
+    width="15"
+    color="#ffffff">
   </a-text>
 
-  <!-- cosmic layers -->
-  <a-entity id="starfieldFX"></a-entity>
+  <!-- giant obvious center FX -->
+  <a-entity id="heroFX" position="0 1.6 -7">
+    <a-ring
+      id="ringA"
+      radius-inner="1.10"
+      radius-outer="1.18"
+      material="color:#37d6ff; shader:flat; transparent:true; opacity:0.95">
+    </a-ring>
+
+    <a-ring
+      id="ringB"
+      radius-inner="1.45"
+      radius-outer="1.52"
+      material="color:#ff4fd8; shader:flat; transparent:true; opacity:0.7">
+    </a-ring>
+
+    <a-ring
+      id="ringC"
+      radius-inner="1.85"
+      radius-outer="1.92"
+      material="color:#ffffff; shader:flat; transparent:true; opacity:0.45">
+    </a-ring>
+
+    <a-entity id="sniperScope">
+      <a-ring
+        radius-inner="0.22"
+        radius-outer="0.27"
+        material="color:#ffffff; shader:flat; transparent:true; opacity:0.92">
+      </a-ring>
+
+      <a-box position="0 0 0" width="0.42" height="0.012" depth="0.01" material="color:#ffffff; shader:flat;"></a-box>
+      <a-box position="0 0 0" width="0.012" height="0.42" depth="0.01" material="color:#ffffff; shader:flat;"></a-box>
+
+      <a-sphere radius="0.035" position="0 0 0.01" material="color:#ff4fd8; shader:flat;"></a-sphere>
+    </a-entity>
+  </a-entity>
+
+  <a-entity id="diamondFX"></a-entity>
   <a-entity id="dustFX"></a-entity>
   <a-entity id="meteorFX"></a-entity>
   <a-entity id="burstFX"></a-entity>
 
   <a-sphere
     id="pulseShell"
-    radius="30"
+    radius="28"
     position="0 0 0"
     material="shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0">
   </a-sphere>
@@ -271,80 +303,88 @@ setInterval(()=>{
   toggle=!toggle;
 },45000);
 
-/* ---------- COSMIC SHOW ---------- */
-const starfieldFX=document.getElementById("starfieldFX");
+/* BRIGHT DIAMOND SHOW */
+const diamondFX=document.getElementById("diamondFX");
 const dustFX=document.getElementById("dustFX");
 const meteorFX=document.getElementById("meteorFX");
 const burstFX=document.getElementById("burstFX");
 const pulseShell=document.getElementById("pulseShell");
+const ringA=document.getElementById("ringA");
+const ringB=document.getElementById("ringB");
+const ringC=document.getElementById("ringC");
+const sniperScope=document.getElementById("sniperScope");
 
-const stars=[];
+const diamonds=[];
 const dust=[];
 
-function makeStar(){
-  const star=document.createElement("a-sphere");
-  const x=(Math.random()*30)-15;
-  const y=(Math.random()*16)-8;
-  const z=-6-(Math.random()*20);
-  const r=0.03+Math.random()*0.05;
+function makeDiamond(){
+  const d=document.createElement("a-octahedron");
+  const x=(Math.random()*20)-10;
+  const y=(Math.random()*10)-5;
+  const z=-4-(Math.random()*12);
+  const r=0.12+Math.random()*0.18;
+  const colors=["#ffffff","#37d6ff","#ff4fd8","#9bf8ff"];
+  const color=colors[Math.floor(Math.random()*colors.length)];
 
-  star.setAttribute("radius",r.toFixed(3));
-  star.setAttribute("position",`${x} ${y} ${z}`);
-  star.setAttribute("material","shader: flat; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1");
+  d.setAttribute("radius",r.toFixed(2));
+  d.setAttribute("position",`${x} ${y} ${z}`);
+  d.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.9`);
 
-  starfieldFX.appendChild(star);
+  diamondFX.appendChild(d);
 
-  stars.push({
-    el:star,
+  diamonds.push({
+    el:d,
     x,y,z,
-    vx:(Math.random()-0.5)*0.01,
-    vy:(Math.random()-0.5)*0.01
+    rx:Math.random()*360,
+    ry:Math.random()*360,
+    vx:(Math.random()-0.5)*0.015,
+    vy:(Math.random()-0.5)*0.015
   });
 }
 
 function makeDust(){
   const p=document.createElement("a-sphere");
-  const x=(Math.random()*26)-13;
-  const y=(Math.random()*14)-7;
-  const z=-5-(Math.random()*18);
-  const r=0.04+Math.random()*0.04;
+  const x=(Math.random()*20)-10;
+  const y=(Math.random()*10)-5;
+  const z=-3-(Math.random()*10);
+  const r=0.03+Math.random()*0.05;
 
   p.setAttribute("radius",r.toFixed(3));
   p.setAttribute("position",`${x} ${y} ${z}`);
-  p.setAttribute("material","shader: flat; color: #7ad7ff; transparent: true; opacity: 0.12");
+  p.setAttribute("material","shader: flat; color: #7ad7ff; transparent: true; opacity: 0.18");
 
   dustFX.appendChild(p);
 
   dust.push({
     el:p,
     x,y,z,
-    vx:(Math.random()-0.5)*0.004,
-    vy:(Math.random()-0.5)*0.004
+    vx:(Math.random()-0.5)*0.006,
+    vy:(Math.random()-0.5)*0.006
   });
 }
 
-for(let i=0;i<180;i++) makeStar();
-for(let i=0;i<60;i++) makeDust();
+for(let i=0;i<36;i++) makeDiamond();
+for(let i=0;i<70;i++) makeDust();
 
 function makeMeteor(color="#ff4fd8"){
   const meteor=document.createElement("a-cylinder");
-  let x=(Math.random()*20)-10;
-  let y=8+Math.random()*4;
-  let z=-10-Math.random()*10;
-  let opacity=0.95;
+  let x=(Math.random()*16)-8;
+  let y=7+Math.random()*4;
+  let z=-8-Math.random()*6;
+  let opacity=0.98;
 
-  meteor.setAttribute("radius","0.03");
-  meteor.setAttribute("height","2");
+  meteor.setAttribute("radius","0.05");
+  meteor.setAttribute("height","3");
   meteor.setAttribute("rotation","45 0 0");
   meteor.setAttribute("position",`${x} ${y} ${z}`);
-  meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.95`);
+  meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.98`);
 
   meteorFX.appendChild(meteor);
 
   function animateMeteor(){
-    x+=0.18;
-    y-=0.18;
-    opacity-=0.03;
+    x+=0.24;
+    y-=0.24;
+    opacity-=0.035;
 
     meteor.setAttribute("position",`${x} ${y} ${z}`);
     meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(opacity,0)}`);
@@ -360,24 +400,24 @@ function makeMeteor(color="#ff4fd8"){
 }
 
 function triggerSongBurst(){
-  for(let i=0;i<8;i++){
+  for(let i=0;i<14;i++){
     const burst=document.createElement("a-sphere");
-    const x=(Math.random()*20)-10;
-    const y=(Math.random()*10)-5;
-    const z=-6-Math.random()*10;
+    const x=(Math.random()*14)-7;
+    const y=(Math.random()*8)-4;
+    const z=-4-(Math.random()*8);
 
-    burst.setAttribute("radius","0.08");
+    burst.setAttribute("radius","0.14");
     burst.setAttribute("position",`${x} ${y} ${z}`);
-    burst.setAttribute("material","shader: flat; color: #ff4fd8; transparent: true; opacity: 0.55");
+    burst.setAttribute("material","shader: flat; color: #ff4fd8; transparent: true; opacity: 0.7");
 
     burstFX.appendChild(burst);
 
-    let scale=0.2;
-    let opacity=0.55;
+    let scale=0.25;
+    let opacity=0.7;
 
     function animateBurst(){
-      scale+=0.08;
-      opacity-=0.025;
+      scale+=0.12;
+      opacity-=0.03;
       burst.setAttribute("scale",`${scale} ${scale} ${scale}`);
       burst.setAttribute("material",`shader: flat; color: #ff4fd8; transparent: true; opacity: ${Math.max(opacity,0)}`);
 
@@ -393,50 +433,63 @@ function triggerSongBurst(){
 }
 
 let t=0;
+
 function animateCosmos(){
   const playing=!audio.paused && !audio.ended && !!audio.src;
+  const speed=playing?1.4:0.45;
 
-  stars.forEach((s)=>{
-    const mul=playing?1.2:0.2;
-    s.x+=s.vx*mul;
-    s.y+=s.vy*mul;
+  diamonds.forEach((d)=>{
+    d.x+=d.vx*speed;
+    d.y+=d.vy*speed;
+    d.rx+=1.4*speed;
+    d.ry+=1.9*speed;
 
-    if(s.x<-16) s.x=16;
-    if(s.x>16) s.x=-16;
-    if(s.y<-9) s.y=9;
-    if(s.y>9) s.y=-9;
+    if(d.x<-11) d.x=11;
+    if(d.x>11) d.x=-11;
+    if(d.y<-6) d.y=6;
+    if(d.y>6) d.y=-6;
 
-    s.el.setAttribute("position",`${s.x} ${s.y} ${s.z}`);
+    d.el.setAttribute("position",`${d.x} ${d.y} ${d.z}`);
+    d.el.setAttribute("rotation",`${d.rx} ${d.ry} 0`);
   });
 
   dust.forEach((p)=>{
-    const mul=playing?0.7:0.15;
-    p.x+=p.vx*mul;
-    p.y+=p.vy*mul;
+    p.x+=p.vx*speed;
+    p.y+=p.vy*speed;
 
-    if(p.x<-14) p.x=14;
-    if(p.x>14) p.x=-14;
-    if(p.y<-8) p.y=8;
-    if(p.y>8) p.y=-8;
+    if(p.x<-11) p.x=11;
+    if(p.x>11) p.x=-11;
+    if(p.y<-6) p.y=6;
+    if(p.y>6) p.y=-6;
 
     p.el.setAttribute("position",`${p.x} ${p.y} ${p.z}`);
   });
 
+  ringA.setAttribute("rotation",`0 0 ${t*1.5}`);
+  ringB.setAttribute("rotation",`0 0 ${-t*1.1}`);
+  ringC.setAttribute("rotation",`0 0 ${t*0.7}`);
+  sniperScope.setAttribute("rotation",`0 0 ${t*0.25}`);
+
   if(playing){
-    const pulse=(Math.sin(t*0.08)*0.5+0.5)*0.18;
+    const pulse=(Math.sin(t*0.12)*0.5+0.5)*0.24;
     pulseShell.setAttribute(
       "material",
       `shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
     );
 
-    if(Math.random()<0.02){
-      makeMeteor(Math.random()>0.5 ? "#ff4fd8" : "#7ad7ff");
+    if(Math.random()<0.03){
+      makeMeteor(Math.random()>0.5 ? "#ff4fd8" : "#37d6ff");
     }
   }else{
+    const idlePulse=(Math.sin(t*0.06)*0.5+0.5)*0.06;
     pulseShell.setAttribute(
       "material",
-      "shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0"
+      `shader: flat; color: #37d6ff; side: back; transparent: true; opacity: ${idlePulse.toFixed(3)}`
     );
+
+    if(Math.random()<0.008){
+      makeMeteor("#ffffff");
+    }
   }
 
   t+=1;
