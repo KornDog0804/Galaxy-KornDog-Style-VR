@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Brandi's Universe — Cosmic v2</title>
+
 <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
 <style>
@@ -15,6 +16,7 @@ html,body{
   font-family:Arial,sans-serif;
   color:white;
 }
+
 .player{
   position:fixed;
   right:12px;
@@ -28,11 +30,13 @@ html,body{
   z-index:9999;
   box-shadow:0 10px 30px rgba(0,0,0,.35);
 }
+
 .player-title{
   font-size:13px;
   opacity:.85;
   margin-bottom:8px;
 }
+
 #song{
   font-weight:bold;
   font-size:14px;
@@ -40,11 +44,13 @@ html,body{
   line-height:1.25;
   word-break:break-word;
 }
+
 .controls{
   display:flex;
   gap:8px;
   margin-top:8px;
 }
+
 button{
   flex:1;
   padding:10px;
@@ -54,12 +60,15 @@ button{
   color:white;
   font-weight:bold;
 }
+
 button:hover{
   background:#444;
 }
+
 .volume{
   margin-top:8px;
 }
+
 #status{
   margin-top:8px;
   font-size:12px;
@@ -68,10 +77,12 @@ button:hover{
 }
 </style>
 </head>
+
 <body>
 
 <div class="player">
   <div class="player-title">Brandi’s Universe • STARSET Cosmic Player</div>
+
   <div id="song">Ready</div>
 
   <audio id="audio" controls preload="metadata" playsinline webkit-playsinline style="width:100%;"></audio>
@@ -98,6 +109,28 @@ button:hover{
   <a-sky id="sky" src="#sky1"></a-sky>
   <a-entity light="type:ambient;intensity:1"></a-entity>
 
+  <!-- BIG OBVIOUS TEST LABEL -->
+  <a-text
+    id="cosmicLabel"
+    value="COSMIC V2 LIVE"
+    position="0 4 -10"
+    align="center"
+    width="30"
+    color="#7ad7ff"
+    shader="msdf">
+  </a-text>
+
+  <a-text
+    id="cosmicSubLabel"
+    value="If you see this, the right file is loading"
+    position="0 3.1 -10"
+    align="center"
+    width="20"
+    color="#ffffff"
+    shader="msdf">
+  </a-text>
+
+  <!-- cosmic layers -->
   <a-entity id="starfieldFX"></a-entity>
   <a-entity id="dustFX"></a-entity>
   <a-entity id="meteorFX"></a-entity>
@@ -105,7 +138,7 @@ button:hover{
 
   <a-sphere
     id="pulseShell"
-    radius="42"
+    radius="30"
     position="0 0 0"
     material="shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0">
   </a-sphere>
@@ -180,6 +213,7 @@ const songs=[
 const audio=document.getElementById("audio");
 const song=document.getElementById("song");
 const statusText=document.getElementById("status");
+
 let index=0;
 
 function url(name){
@@ -231,12 +265,13 @@ load(0);
 /* background swap */
 const sky=document.getElementById("sky");
 let toggle=true;
+
 setInterval(()=>{
   sky.setAttribute("src",toggle?"#sky2":"#sky1");
   toggle=!toggle;
 },45000);
 
-/* visuals */
+/* ---------- COSMIC SHOW ---------- */
 const starfieldFX=document.getElementById("starfieldFX");
 const dustFX=document.getElementById("dustFX");
 const meteorFX=document.getElementById("meteorFX");
@@ -244,172 +279,171 @@ const burstFX=document.getElementById("burstFX");
 const pulseShell=document.getElementById("pulseShell");
 
 const stars=[];
+const dust=[];
+
 function makeStar(){
   const star=document.createElement("a-sphere");
-  const x=(Math.random()*140)-70;
-  const y=(Math.random()*56)-28;
-  const z=(Math.random()*140)-70;
-  const r=0.005+Math.random()*0.014;
+  const x=(Math.random()*30)-15;
+  const y=(Math.random()*16)-8;
+  const z=-6-(Math.random()*20);
+  const r=0.03+Math.random()*0.05;
+
   star.setAttribute("radius",r.toFixed(3));
   star.setAttribute("position",`${x} ${y} ${z}`);
   star.setAttribute("material","shader: flat; color: #ffffff; emissive: #ffffff; emissiveIntensity: 1");
+
   starfieldFX.appendChild(star);
+
   stars.push({
-    el:star, x,y,z,
-    vx:(Math.random()-0.5)*0.002,
-    vy:(Math.random()-0.5)*0.002,
-    vz:(Math.random()-0.5)*0.002
+    el:star,
+    x,y,z,
+    vx:(Math.random()-0.5)*0.01,
+    vy:(Math.random()-0.5)*0.01
   });
 }
-for(let i=0;i<650;i++) makeStar();
 
-const dust=[];
 function makeDust(){
   const p=document.createElement("a-sphere");
-  const x=(Math.random()*120)-60;
-  const y=(Math.random()*46)-23;
-  const z=(Math.random()*120)-60;
-  const r=0.01+Math.random()*0.02;
+  const x=(Math.random()*26)-13;
+  const y=(Math.random()*14)-7;
+  const z=-5-(Math.random()*18);
+  const r=0.04+Math.random()*0.04;
+
   p.setAttribute("radius",r.toFixed(3));
   p.setAttribute("position",`${x} ${y} ${z}`);
-  p.setAttribute("material","shader: flat; color: #8ecbff; transparent: true; opacity: 0.07");
+  p.setAttribute("material","shader: flat; color: #7ad7ff; transparent: true; opacity: 0.12");
+
   dustFX.appendChild(p);
+
   dust.push({
-    el:p, x,y,z,
-    vx:(Math.random()-0.5)*0.001,
-    vz:(Math.random()-0.5)*0.001
+    el:p,
+    x,y,z,
+    vx:(Math.random()-0.5)*0.004,
+    vy:(Math.random()-0.5)*0.004
   });
 }
-for(let i=0;i<140;i++) makeDust();
 
-function recycleStar(s){
-  s.x=(Math.random()*140)-70;
-  s.y=(Math.random()*56)-28;
-  s.z=(Math.random()*140)-70;
-}
+for(let i=0;i<180;i++) makeStar();
+for(let i=0;i<60;i++) makeDust();
 
-function currentSongName(){
-  const src=audio.src||"";
-  try{
-    return decodeURIComponent(src.split("/").pop()||"").toLowerCase();
-  }catch{
-    return src.toLowerCase();
-  }
-}
+function makeMeteor(color="#ff4fd8"){
+  const meteor=document.createElement("a-cylinder");
+  let x=(Math.random()*20)-10;
+  let y=8+Math.random()*4;
+  let z=-10-Math.random()*10;
+  let opacity=0.95;
 
-function getMood(song=""){
-  if(
-    song.includes("manifest") ||
-    song.includes("degenerate") ||
-    song.includes("infected") ||
-    song.includes("devolution") ||
-    song.includes("trials") ||
-    song.includes("frequency") ||
-    song.includes("breach")
-  ){
-    return { pulse:0.12, meteorRate:0.018, color:"#ff4fd8", drift:1.6 };
+  meteor.setAttribute("radius","0.03");
+  meteor.setAttribute("height","2");
+  meteor.setAttribute("rotation","45 0 0");
+  meteor.setAttribute("position",`${x} ${y} ${z}`);
+  meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.95`);
+
+  meteorFX.appendChild(meteor);
+
+  function animateMeteor(){
+    x+=0.18;
+    y-=0.18;
+    opacity-=0.03;
+
+    meteor.setAttribute("position",`${x} ${y} ${z}`);
+    meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(opacity,0)}`);
+
+    if(opacity>0){
+      requestAnimationFrame(animateMeteor);
+    }else{
+      meteor.remove();
+    }
   }
-  if(
-    song.includes("earthrise") ||
-    song.includes("everglow") ||
-    song.includes("starlight") ||
-    song.includes("telepathic") ||
-    song.includes("satellite")
-  ){
-    return { pulse:0.05, meteorRate:0.006, color:"#7ad7ff", drift:0.7 };
-  }
-  return { pulse:0.08, meteorRate:0.01, color:"#d66bff", drift:1.0 };
+
+  requestAnimationFrame(animateMeteor);
 }
 
 function triggerSongBurst(){
-  const mood=getMood(currentSongName());
   for(let i=0;i<8;i++){
     const burst=document.createElement("a-sphere");
-    const x=(Math.random()*60)-30;
-    const y=(Math.random()*24)-12;
-    const z=(Math.random()*60)-30;
-    burst.setAttribute("radius","0.06");
+    const x=(Math.random()*20)-10;
+    const y=(Math.random()*10)-5;
+    const z=-6-Math.random()*10;
+
+    burst.setAttribute("radius","0.08");
     burst.setAttribute("position",`${x} ${y} ${z}`);
-    burst.setAttribute("material",`shader: flat; color: ${mood.color}; transparent: true; opacity: 0.5`);
+    burst.setAttribute("material","shader: flat; color: #ff4fd8; transparent: true; opacity: 0.55");
+
     burstFX.appendChild(burst);
 
     let scale=0.2;
-    let opacity=0.5;
-    function anim(){
-      scale+=0.07;
-      opacity-=0.02;
+    let opacity=0.55;
+
+    function animateBurst(){
+      scale+=0.08;
+      opacity-=0.025;
       burst.setAttribute("scale",`${scale} ${scale} ${scale}`);
-      burst.setAttribute("material",`shader: flat; color: ${mood.color}; transparent: true; opacity: ${Math.max(opacity,0)}`);
-      if(opacity>0) requestAnimationFrame(anim);
-      else burst.remove();
+      burst.setAttribute("material",`shader: flat; color: #ff4fd8; transparent: true; opacity: ${Math.max(opacity,0)}`);
+
+      if(opacity>0){
+        requestAnimationFrame(animateBurst);
+      }else{
+        burst.remove();
+      }
     }
-    requestAnimationFrame(anim);
-  }
-}
 
-function makeMeteor(color="#ffffff"){
-  const meteor=document.createElement("a-cylinder");
-  const x=(Math.random()*90)-45;
-  const y=(Math.random()*34)-10;
-  const z=(Math.random()*90)-45;
-  meteor.setAttribute("radius","0.01");
-  meteor.setAttribute("height","1.0");
-  meteor.setAttribute("rotation","45 0 0");
-  meteor.setAttribute("position",`${x} ${y} ${z}`);
-  meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: 0.82`);
-  meteorFX.appendChild(meteor);
-
-  let px=x, py=y, pz=z, op=0.82;
-  function anim(){
-    px+=0.24; py-=0.20; pz+=0.08; op-=0.03;
-    meteor.setAttribute("position",`${px} ${py} ${pz}`);
-    meteor.setAttribute("material",`shader: flat; color: ${color}; transparent: true; opacity: ${Math.max(op,0)}`);
-    if(op>0) requestAnimationFrame(anim);
-    else meteor.remove();
+    requestAnimationFrame(animateBurst);
   }
-  requestAnimationFrame(anim);
 }
 
 let t=0;
-function tickCosmos(){
+function animateCosmos(){
   const playing=!audio.paused && !audio.ended && !!audio.src;
-  const mood=getMood(currentSongName());
 
-  for(const s of stars){
-    const mul=playing?mood.drift:0.2;
+  stars.forEach((s)=>{
+    const mul=playing?1.2:0.2;
     s.x+=s.vx*mul;
     s.y+=s.vy*mul;
-    s.z+=s.vz*mul;
 
-    if(s.x<-75 || s.x>75 || s.y<-32 || s.y>32 || s.z<-75 || s.z>75){
-      recycleStar(s);
-    }
+    if(s.x<-16) s.x=16;
+    if(s.x>16) s.x=-16;
+    if(s.y<-9) s.y=9;
+    if(s.y>9) s.y=-9;
+
     s.el.setAttribute("position",`${s.x} ${s.y} ${s.z}`);
-  }
+  });
 
-  for(const p of dust){
-    const mul=playing?1.2:0.25;
+  dust.forEach((p)=>{
+    const mul=playing?0.7:0.15;
     p.x+=p.vx*mul;
-    p.z+=p.vz*mul;
-    if(p.x<-65) p.x=65;
-    if(p.x>65) p.x=-65;
-    if(p.z<-65) p.z=65;
-    if(p.z>65) p.z=-65;
+    p.y+=p.vy*mul;
+
+    if(p.x<-14) p.x=14;
+    if(p.x>14) p.x=-14;
+    if(p.y<-8) p.y=8;
+    if(p.y>8) p.y=-8;
+
     p.el.setAttribute("position",`${p.x} ${p.y} ${p.z}`);
-  }
+  });
 
   if(playing){
-    const pulse=(Math.sin(t*0.06)*0.5+0.5)*mood.pulse;
-    pulseShell.setAttribute("material",`shader: flat; color: ${mood.color}; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`);
-    if(Math.random()<mood.meteorRate) makeMeteor(mood.color);
+    const pulse=(Math.sin(t*0.08)*0.5+0.5)*0.18;
+    pulseShell.setAttribute(
+      "material",
+      `shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
+    );
+
+    if(Math.random()<0.02){
+      makeMeteor(Math.random()>0.5 ? "#ff4fd8" : "#7ad7ff");
+    }
   }else{
-    pulseShell.setAttribute("material","shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0");
+    pulseShell.setAttribute(
+      "material",
+      "shader: flat; color: #ff4fd8; side: back; transparent: true; opacity: 0.0"
+    );
   }
 
   t+=1;
-  requestAnimationFrame(tickCosmos);
+  requestAnimationFrame(animateCosmos);
 }
-tickCosmos();
+
+animateCosmos();
 </script>
 
 </body>
