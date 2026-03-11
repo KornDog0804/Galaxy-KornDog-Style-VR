@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Brandi's Universe — STARSET VR</title>
-
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
   <style>
     html, body {
       margin: 0;
@@ -81,7 +79,6 @@
 
 <div class="player">
   <div class="player-title">Brandi’s Universe • STARSET Cosmic Player</div>
-
   <div id="song">Ready</div>
 
   <audio id="audio" controls preload="metadata" playsinline webkit-playsinline></audio>
@@ -101,252 +98,120 @@
 
 <a-scene background="color:#000">
   <a-assets>
-    <!-- new 360 worlds -->
+    <!-- 4 full worlds -->
     <img id="sky1" src="./blue_nebulae_1.png">
     <img id="sky2" src="./hazy_nebulae_1.png">
     <img id="sky3" src="./plain_starfield_1.png">
     <img id="sky4" src="./ringed_gas_giant_planet.png">
 
-    <!-- safe layers -->
+    <!-- safe extras -->
     <img id="nebula1" src="./nebula-overlay-1.jpg">
-    <img id="nebula2" src="./nebula-overlay-2.png">
     <img id="starsOverlay" src="./starfield-overlay.png">
     <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
   <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-  <!-- camera + VR gaze cursor -->
+  <!-- normal VR head look, no cursor junk -->
   <a-entity id="cameraRig" position="0 1.6 0">
-    <a-camera>
-      <a-cursor
-        color="#ffffff"
-        fuse="true"
-        fuse-timeout="900"
-        raycaster="objects: .clickable">
-      </a-cursor>
-    </a-camera>
-
-    <!-- VR control panel follows you -->
-    <a-entity id="vrPanel" position="0 -0.1 -2.8">
-      <a-plane
-        width="2.3"
-        height="1.28"
-        color="#0d0d14"
-        opacity="0.84"
-        material="transparent:true">
-      </a-plane>
-
-      <a-text
-        value="STARSET VR CONTROLS"
-        position="0 0.45 0.02"
-        align="center"
-        width="3.2"
-        color="#ffffff">
-      </a-text>
-
-      <a-text
-        id="vrTrackText"
-        value="Loading..."
-        position="0 0.18 0.02"
-        align="center"
-        width="2.5"
-        color="#9fd6ff"
-        wrap-count="28">
-      </a-text>
-
-      <a-plane id="vrPrevBtn" class="clickable"
-        position="-0.68 -0.17 0.03"
-        width="0.48" height="0.22"
-        color="#2a2a2a">
-      </a-plane>
-      <a-text
-        value="PREV"
-        position="-0.68 -0.17 0.04"
-        align="center"
-        width="1.8"
-        color="#ffffff">
-      </a-text>
-
-      <a-plane id="vrPlayBtn" class="clickable"
-        position="0 -0.17 0.03"
-        width="0.52" height="0.22"
-        color="#4a2cff">
-      </a-plane>
-      <a-text
-        id="vrPlayLabel"
-        value="PLAY"
-        position="0 -0.17 0.04"
-        align="center"
-        width="1.8"
-        color="#ffffff">
-      </a-text>
-
-      <a-plane id="vrNextBtn" class="clickable"
-        position="0.68 -0.17 0.03"
-        width="0.48" height="0.22"
-        color="#2a2a2a">
-      </a-plane>
-      <a-text
-        value="NEXT"
-        position="0.68 -0.17 0.04"
-        align="center"
-        width="1.8"
-        color="#ffffff">
-      </a-text>
-
-      <a-plane id="vrVolDownBtn" class="clickable"
-        position="-0.42 -0.52 0.03"
-        width="0.28" height="0.18"
-        color="#333333">
-      </a-plane>
-      <a-text
-        value="VOL-"
-        position="-0.42 -0.52 0.04"
-        align="center"
-        width="1.4"
-        color="#ffffff">
-      </a-text>
-
-      <a-text
-        id="vrVolText"
-        value="80%"
-        position="0 -0.52 0.04"
-        align="center"
-        width="1.8"
-        color="#ffffff">
-      </a-text>
-
-      <a-plane id="vrVolUpBtn" class="clickable"
-        position="0.42 -0.52 0.03"
-        width="0.28" height="0.18"
-        color="#333333">
-      </a-plane>
-      <a-text
-        value="VOL+"
-        position="0.42 -0.52 0.04"
-        align="center"
-        width="1.4"
-        color="#ffffff">
-      </a-text>
-    </a-entity>
+    <a-camera look-controls="pointerLockEnabled: false"></a-camera>
   </a-entity>
 
-  <!-- universe rig -->
   <a-entity id="universeRig">
+    <!-- main 360 world -->
     <a-sky id="sky" src="#sky1" rotation="0 -90 0"></a-sky>
 
     <!-- far star shimmer -->
     <a-plane
       id="starsFar"
       src="#starsOverlay"
-      position="0 14 -70"
-      width="170"
-      height="96"
-      material="shader: flat; transparent: true; opacity: 0.20; alphaTest: 0.02">
+      position="0 14 -90"
+      width="210"
+      height="120"
+      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02">
     </a-plane>
 
     <a-plane
       id="starsLeft"
       src="#starsOverlay"
-      position="-58 16 -64"
+      position="-85 20 -80"
       rotation="0 34 0"
-      width="96"
-      height="58"
-      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02">
+      width="120"
+      height="72"
+      material="shader: flat; transparent: true; opacity: 0.12; alphaTest: 0.02">
     </a-plane>
 
     <a-plane
       id="starsRight"
       src="#starsOverlay"
-      position="58 10 -64"
+      position="85 10 -80"
       rotation="0 -34 0"
-      width="96"
-      height="58"
-      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02">
+      width="120"
+      height="72"
+      material="shader: flat; transparent: true; opacity: 0.12; alphaTest: 0.02">
     </a-plane>
 
-    <!-- giant hero nebula landmark -->
+    <!-- one main nebula only, pushed back -->
     <a-plane
       id="heroNebula"
       src="#nebula1"
-      position="-34 20 -90"
-      rotation="0 22 0"
-      width="42"
-      height="42"
-      material="shader: flat; transparent: true; opacity: 0.92">
+      position="-55 24 -140"
+      rotation="0 20 0"
+      width="70"
+      height="70"
+      material="shader: flat; transparent: true; opacity: 0.88">
     </a-plane>
 
-    <!-- drifting reactive purple nebula banks -->
+    <!-- meteor shower pool -->
     <a-plane
-      id="fogMain"
-      src="#nebula2"
-      position="0 20 -72"
-      width="64"
-      height="42"
-      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02; blending: additive">
-    </a-plane>
-
-    <a-plane
-      id="fogLeft"
-      src="#nebula2"
-      position="-54 24 -86"
-      rotation="0 28 0"
-      width="40"
-      height="28"
-      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02; blending: additive">
-    </a-plane>
-
-    <a-plane
-      id="fogRight"
-      src="#nebula2"
-      position="54 16 -86"
-      rotation="0 -28 0"
-      width="40"
-      height="28"
-      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02; blending: additive">
-    </a-plane>
-
-    <!-- distant extra cloud -->
-    <a-plane
-      id="fogFar"
-      src="#nebula2"
-      position="24 26 -120"
-      rotation="0 -16 0"
-      width="40"
-      height="30"
-      material="shader: flat; transparent: true; opacity: 0.10; alphaTest: 0.02; blending: additive">
-    </a-plane>
-
-    <!-- safe ringed gas giant as a distant object -->
-    <a-plane
-      id="ringedPlanet"
-      src="#sky4"
-      position="66 26 -140"
-      rotation="0 -10 0"
-      width="52"
-      height="26"
-      material="shader: flat; transparent: true; opacity: 0.68">
-    </a-plane>
-
-    <!-- meteor -->
-    <a-plane
-      id="meteorPlane"
+      id="meteor1"
       src="#meteorStreak"
-      position="-30 20 -40"
-      width="11"
+      position="-60 34 -70"
+      width="12"
       height="5"
       visible="false"
       material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
     </a-plane>
 
-    <!-- pulse shell -->
-    <a-sphere
-      id="pulseShell"
-      radius="40"
-      position="0 0 0"
-      material="shader: flat; color: #7a5cff; side: back; transparent: true; opacity: 0.0">
-    </a-sphere>
+    <a-plane
+      id="meteor2"
+      src="#meteorStreak"
+      position="-60 34 -70"
+      width="14"
+      height="5.5"
+      visible="false"
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
+    </a-plane>
+
+    <a-plane
+      id="meteor3"
+      src="#meteorStreak"
+      position="-60 34 -70"
+      width="10"
+      height="4.2"
+      visible="false"
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
+    </a-plane>
+
+    <a-plane
+      id="meteor4"
+      src="#meteorStreak"
+      position="-60 34 -70"
+      width="13"
+      height="5.2"
+      visible="false"
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
+    </a-plane>
+
+    <a-plane
+      id="meteor5"
+      src="#meteorStreak"
+      position="-60 34 -70"
+      width="11"
+      height="4.8"
+      visible="false"
+      material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
+    </a-plane>
   </a-entity>
 </a-scene>
 
@@ -424,18 +289,53 @@ const song = document.getElementById("song");
 const statusText = document.getElementById("status");
 const volumeSlider = document.getElementById("volume");
 
+let shuffledSongs = [];
 let index = 0;
 
 function url(name) {
   return BASE + name.replaceAll(" ", "%20");
 }
 
+function shuffleArray(arr) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function rebuildShuffle(keepCurrent = null) {
+  shuffledSongs = shuffleArray(songs);
+
+  if (keepCurrent && shuffledSongs.length > 1 && shuffledSongs[0] === keepCurrent) {
+    const swapIndex = 1 + Math.floor(Math.random() * (shuffledSongs.length - 1));
+    [shuffledSongs[0], shuffledSongs[swapIndex]] = [shuffledSongs[swapIndex], shuffledSongs[0]];
+  }
+
+  index = 0;
+}
+
+function currentSongName() {
+  return shuffledSongs[index];
+}
+
 function load(n) {
-  index = (n + songs.length) % songs.length;
-  audio.src = url(songs[index]);
-  song.innerText = songs[index];
-  statusText.innerText = `Loaded ${index + 1} of ${songs.length}`;
-  updateVRPanel();
+  if (!shuffledSongs.length) rebuildShuffle();
+
+  if (n < 0) n = shuffledSongs.length - 1;
+
+  if (n >= shuffledSongs.length) {
+    const lastSong = shuffledSongs[shuffledSongs.length - 1];
+    rebuildShuffle(lastSong);
+    n = 0;
+  }
+
+  index = n;
+  const track = currentSongName();
+  audio.src = url(track);
+  song.innerText = track;
+  statusText.innerText = `Loaded ${index + 1} of ${shuffledSongs.length} • Shuffled`;
 }
 
 document.getElementById("next").onclick = () => {
@@ -450,7 +350,6 @@ document.getElementById("prev").onclick = () => {
 
 volumeSlider.oninput = (e) => {
   audio.volume = e.target.value;
-  updateVRPanel();
 };
 
 audio.addEventListener("ended", () => {
@@ -459,14 +358,11 @@ audio.addEventListener("ended", () => {
 });
 
 audio.addEventListener("play", () => {
-  statusText.innerText = `Playing ${index + 1} of ${songs.length}`;
-  initAudioReactive();
-  updateVRPanel();
+  statusText.innerText = `Playing ${index + 1} of ${shuffledSongs.length} • Shuffled`;
 });
 
 audio.addEventListener("pause", () => {
   if (!audio.ended) statusText.innerText = "Paused";
-  updateVRPanel();
 });
 
 audio.addEventListener("error", () => {
@@ -474,62 +370,8 @@ audio.addEventListener("error", () => {
 });
 
 audio.volume = 0.8;
+rebuildShuffle();
 load(0);
-
-/* --------------------------
-   VR PANEL
---------------------------- */
-const vrTrackText = document.getElementById("vrTrackText");
-const vrPlayBtn = document.getElementById("vrPlayBtn");
-const vrPlayLabel = document.getElementById("vrPlayLabel");
-const vrPrevBtn = document.getElementById("vrPrevBtn");
-const vrNextBtn = document.getElementById("vrNextBtn");
-const vrVolDownBtn = document.getElementById("vrVolDownBtn");
-const vrVolUpBtn = document.getElementById("vrVolUpBtn");
-const vrVolText = document.getElementById("vrVolText");
-
-function updateVRPanel() {
-  vrTrackText.setAttribute("value", songs[index]);
-  vrPlayLabel.setAttribute("value", audio.paused ? "PLAY" : "PAUSE");
-  vrVolText.setAttribute("value", `${Math.round(audio.volume * 100)}%`);
-}
-
-function togglePlay() {
-  if (audio.paused) {
-    audio.play();
-  } else {
-    audio.pause();
-  }
-  updateVRPanel();
-}
-
-function volumeUp() {
-  audio.volume = Math.min(1, audio.volume + 0.1);
-  volumeSlider.value = audio.volume;
-  updateVRPanel();
-}
-
-function volumeDown() {
-  audio.volume = Math.max(0, audio.volume - 0.1);
-  volumeSlider.value = audio.volume;
-  updateVRPanel();
-}
-
-vrPrevBtn.addEventListener("click", () => {
-  load(index - 1);
-  audio.play();
-});
-
-vrNextBtn.addEventListener("click", () => {
-  load(index + 1);
-  audio.play();
-});
-
-vrPlayBtn.addEventListener("click", togglePlay);
-vrVolUpBtn.addEventListener("click", volumeUp);
-vrVolDownBtn.addEventListener("click", volumeDown);
-
-updateVRPanel();
 
 /* --------------------------
    SKY CYCLE
@@ -544,173 +386,112 @@ setInterval(() => {
 }, 60000);
 
 /* --------------------------
-   AUDIO REACTIVE WORLD
+   WORLD MOTION
 --------------------------- */
 const universeRig = document.getElementById("universeRig");
 const starsFar = document.getElementById("starsFar");
 const starsLeft = document.getElementById("starsLeft");
 const starsRight = document.getElementById("starsRight");
-
-const fogMain = document.getElementById("fogMain");
-const fogLeft = document.getElementById("fogLeft");
-const fogRight = document.getElementById("fogRight");
-const fogFar = document.getElementById("fogFar");
-
 const heroNebula = document.getElementById("heroNebula");
-const ringedPlanet = document.getElementById("ringedPlanet");
-const meteorPlane = document.getElementById("meteorPlane");
-const pulseShell = document.getElementById("pulseShell");
 
-let audioCtx = null;
-let analyser = null;
-let sourceNode = null;
-let freqData = null;
-let reactiveReady = false;
-
-function initAudioReactive() {
-  if (reactiveReady) return;
-
-  try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    sourceNode = audioCtx.createMediaElementSource(audio);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    freqData = new Uint8Array(analyser.frequencyBinCount);
-
-    sourceNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
-
-    reactiveReady = true;
-  } catch (err) {
-    console.log("Audio reactive setup skipped:", err);
-  }
-}
-
-function getEnergy() {
-  if (!reactiveReady || !analyser || !freqData) return 0.15;
-
-  analyser.getByteFrequencyData(freqData);
-
-  let sum = 0;
-  for (let i = 0; i < freqData.length; i++) {
-    sum += freqData[i];
-  }
-
-  return Math.min(1, (sum / freqData.length) / 140);
-}
-
-/* --------------------------
-   METEOR
---------------------------- */
-let meteorActive = false;
-
-function launchMeteor(speedBoost = 1) {
-  if (meteorActive) return;
-  meteorActive = true;
-
-  let x = -34;
-  let y = 20 + Math.random() * 10;
-  let z = -48 - Math.random() * 18;
-  let opacity = 0.95;
-  let stepX = 0.42 * speedBoost;
-  let stepY = 0.18 * speedBoost;
-  const angle = -16 - Math.random() * 18;
-
-  meteorPlane.setAttribute("visible", true);
-  meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
-  meteorPlane.setAttribute("rotation", `0 0 ${angle}`);
-  meteorPlane.setAttribute(
-    "material",
-    `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02; blending: additive`
-  );
-
-  function animateMeteor() {
-    x += stepX;
-    y -= stepY;
-    opacity -= 0.018;
-
-    meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
-    meteorPlane.setAttribute(
-      "material",
-      `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02; blending: additive`
-    );
-
-    if (opacity > 0) {
-      requestAnimationFrame(animateMeteor);
-    } else {
-      meteorPlane.setAttribute("visible", false);
-      meteorActive = false;
-    }
-  }
-
-  requestAnimationFrame(animateMeteor);
-}
-
-setInterval(() => {
-  const playing = !audio.paused && !audio.ended && !!audio.src;
-  launchMeteor(playing ? 1.1 : 0.9);
-}, 10000);
-
-/* --------------------------
-   MASTER ANIMATION LOOP
---------------------------- */
-let universeY = 0;
+let skyYaw = -90;
+let skyPitch = 0;
+let skyRoll = 0;
 let phase = 0;
 
 function animateUniverse() {
   const playing = !audio.paused && !audio.ended && !!audio.src;
-  const energy = getEnergy();
 
-  /* more obvious planetarium spin */
-  universeY += playing ? (0.020 + energy * 0.045) : 0.008;
-  universeRig.setAttribute("rotation", `0 ${universeY} 0`);
+  phase += playing ? 0.016 : 0.007;
 
-  phase += playing ? (0.012 + energy * 0.02) : 0.006;
+  /* actual noticeable spin + roll so you can see the whole world */
+  skyYaw += playing ? 0.045 : 0.020;
+  skyPitch = Math.sin(phase * 0.16) * 6.5;
+  skyRoll = Math.cos(phase * 0.12) * 10.5;
 
-  /* move distant nebula banks */
-  const mainX = Math.sin(phase * 0.42) * (6 + energy * 8);
-  const mainY = 20 + Math.cos(phase * 0.28) * (1.6 + energy * 2.4);
-  fogMain.setAttribute("position", `${mainX.toFixed(2)} ${mainY.toFixed(2)} -72`);
+  sky.setAttribute("rotation", `${skyPitch.toFixed(2)} ${skyYaw.toFixed(2)} ${skyRoll.toFixed(2)}`);
 
-  const leftX = -54 + Math.cos(phase * 0.34) * (3.5 + energy * 4.5);
-  const leftY = 24 + Math.sin(phase * 0.30) * (1.2 + energy * 1.8);
-  fogLeft.setAttribute("position", `${leftX.toFixed(2)} ${leftY.toFixed(2)} -86`);
-
-  const rightX = 54 + Math.sin(phase * 0.36) * (3.5 + energy * 4.5);
-  const rightY = 16 + Math.cos(phase * 0.32) * (1.2 + energy * 1.8);
-  fogRight.setAttribute("position", `${rightX.toFixed(2)} ${rightY.toFixed(2)} -86`);
-
-  const farX = 24 + Math.sin(phase * 0.18) * (2.2 + energy * 3.2);
-  const farY = 26 + Math.cos(phase * 0.16) * (1.0 + energy * 1.8);
-  fogFar.setAttribute("position", `${farX.toFixed(2)} ${farY.toFixed(2)} -120`);
-
-  /* nebula and planet breathing */
-  const nebulaScale = 1 + energy * 0.12 + Math.sin(phase * 0.22) * 0.03;
-  heroNebula.setAttribute("scale", `${nebulaScale.toFixed(3)} ${nebulaScale.toFixed(3)} 1`);
-
-  const planetScale = 1 + energy * 0.06;
-  ringedPlanet.setAttribute("scale", `${planetScale.toFixed(3)} ${planetScale.toFixed(3)} 1`);
-
-  /* stars shimmer more with music */
-  const starBase = playing ? 0.18 + energy * 0.18 : 0.12;
+  /* subtle stars alive in the distance */
+  const starBase = playing ? 0.18 + (Math.sin(phase * 1.8) * 0.03) : 0.12;
   starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starBase.toFixed(3)}; alphaTest: 0.02`);
   starsLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starBase * 0.7).toFixed(3)}; alphaTest: 0.02`);
   starsRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starBase * 0.7).toFixed(3)}; alphaTest: 0.02`);
 
-  /* pulse shell reacts to track energy */
-  const pulse = playing
-    ? ((Math.sin(phase * 0.12) * 0.5 + 0.5) * (0.03 + energy * 0.16))
-    : ((Math.sin(phase * 0.06) * 0.5 + 0.5) * 0.02);
+  /* hero nebula breathing very lightly in the distance */
+  const nebulaScale = 1 + Math.sin(phase * 0.18) * 0.035;
+  const nebulaX = -55 + Math.cos(phase * 0.10) * 5;
+  const nebulaY = 24 + Math.sin(phase * 0.12) * 2.5;
 
-  pulseShell.setAttribute(
-    "material",
-    `shader: flat; color: #7a5cff; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
-  );
+  heroNebula.setAttribute("scale", `${nebulaScale.toFixed(3)} ${nebulaScale.toFixed(3)} 1`);
+  heroNebula.setAttribute("position", `${nebulaX.toFixed(2)} ${nebulaY.toFixed(2)} -140`);
 
   requestAnimationFrame(animateUniverse);
 }
 
 animateUniverse();
+
+/* --------------------------
+   METEOR SHOWERS
+--------------------------- */
+const meteors = [
+  document.getElementById("meteor1"),
+  document.getElementById("meteor2"),
+  document.getElementById("meteor3"),
+  document.getElementById("meteor4"),
+  document.getElementById("meteor5")
+];
+
+function launchMeteor(el, delay = 0) {
+  setTimeout(() => {
+    let x = -90 - Math.random() * 30;
+    let y = 35 + Math.random() * 20;
+    let z = -85 - Math.random() * 35;
+    let opacity = 0.95;
+    const angle = -10 - Math.random() * 20;
+    const speedX = 1.2 + Math.random() * 0.6;
+    const speedY = 0.45 + Math.random() * 0.25;
+
+    el.setAttribute("visible", true);
+    el.setAttribute("position", `${x} ${y} ${z}`);
+    el.setAttribute("rotation", `0 0 ${angle}`);
+    el.setAttribute(
+      "material",
+      `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02; blending: additive`
+    );
+
+    function anim() {
+      x += speedX;
+      y -= speedY;
+      opacity -= 0.014;
+
+      el.setAttribute("position", `${x} ${y} ${z}`);
+      el.setAttribute(
+        "material",
+        `shader: flat; transparent: true; opacity: ${Math.max(opacity, 0)}; alphaTest: 0.02; blending: additive`
+      );
+
+      if (opacity > 0) {
+        requestAnimationFrame(anim);
+      } else {
+        el.setAttribute("visible", false);
+      }
+    }
+
+    requestAnimationFrame(anim);
+  }, delay);
+}
+
+function meteorShower() {
+  launchMeteor(meteors[0], 0);
+  launchMeteor(meteors[1], 400);
+  launchMeteor(meteors[2], 900);
+  launchMeteor(meteors[3], 1500);
+  launchMeteor(meteors[4], 2300);
+}
+
+setInterval(() => {
+  meteorShower();
+}, 8500);
 </script>
 
 </body>
