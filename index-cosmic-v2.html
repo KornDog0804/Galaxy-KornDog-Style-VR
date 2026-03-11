@@ -1,471 +1,397 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brandi's Universe — STARSET VR V3.2</title>
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <style>
-    html, body {
-      margin: 0;
-      height: 100%;
-      background: #000;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      color: #fff;
-    }
 
-    .player {
-      position: fixed;
-      right: 12px;
-      bottom: 12px;
-      width: 340px;
-      background: rgba(0,0,0,.62);
-      padding: 14px;
-      border-radius: 12px;
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,.15);
-      z-index: 9999;
-      box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    .player-title {
-      font-size: 13px;
-      opacity: .85;
-      margin-bottom: 8px;
-    }
+<title>Brandi's Universe</title>
 
-    #song {
-      font-weight: bold;
-      font-size: 14px;
-      margin-bottom: 10px;
-      line-height: 1.25;
-      word-break: break-word;
-    }
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-    .controls {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-    }
+<style>
 
-    button {
-      flex: 1;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      background: #222;
-      color: #fff;
-      font-weight: bold;
-    }
+html,body{
+margin:0;
+height:100%;
+background:black;
+overflow:hidden;
+font-family:Arial;
+color:white;
+}
 
-    .volume {
-      margin-top: 8px;
-    }
+.player{
+position:fixed;
+right:12px;
+bottom:12px;
+width:340px;
+background:rgba(0,0,0,.6);
+padding:14px;
+border-radius:12px;
+backdrop-filter:blur(8px);
+border:1px solid rgba(255,255,255,.15);
+z-index:9999;
+}
 
-    #status {
-      margin-top: 8px;
-      font-size: 12px;
-      opacity: .85;
-      min-height: 16px;
-    }
+.player-title{
+font-size:13px;
+opacity:.85;
+margin-bottom:8px;
+}
 
-    audio {
-      width: 100%;
-    }
-  </style>
+#song{
+font-weight:bold;
+font-size:14px;
+margin-bottom:10px;
+}
+
+.controls{
+display:flex;
+gap:8px;
+margin-top:8px;
+}
+
+button{
+flex:1;
+padding:10px;
+border-radius:8px;
+border:none;
+background:#222;
+color:white;
+font-weight:bold;
+}
+
+button:hover{
+background:#444;
+}
+
+.volume{
+margin-top:8px;
+}
+
+</style>
 </head>
+
 <body>
 
 <div class="player">
-  <div class="player-title">Brandi’s Universe • STARSET Cosmic Player</div>
-  <div id="song">Ready</div>
 
-  <audio id="audio" controls preload="metadata" playsinline webkit-playsinline></audio>
+<div class="player-title">
+Brandi’s Universe • STARSET Cloud Player
+</div>
 
-  <div class="controls">
-    <button id="prev">Prev</button>
-    <button id="next">Next</button>
-  </div>
+<div id="song">Ready</div>
 
-  <div class="volume">
-    Volume
-    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" />
-  </div>
+<audio id="audio" controls preload="metadata" playsinline webkit-playsinline style="width:100%;"></audio>
 
-  <div id="status">Universe online</div>
+<div class="controls">
+<button id="prev">Prev</button>
+<button id="next">Next</button>
+</div>
+
+<div class="volume">
+Volume
+<input id="volume" type="range" min="0" max="1" step="0.01" value="0.8">
+</div>
+
 </div>
 
 <a-scene background="color:#000">
-  <a-assets>
-    <!-- 4 full worlds -->
-    <img id="sky1" src="./blue_nebulae_1.png">
-    <img id="sky2" src="./hazy_nebulae_1.png">
-    <img id="sky3" src="./plain_starfield_1.png">
-    <img id="sky4" src="./ringed_gas_giant_planet.png">
 
-    <!-- safe overlays -->
-    <img id="starsOverlay" src="./starfield-overlay.png">
-    <img id="meteorStreak" src="./meteor-streak.png">
-  </a-assets>
+<a-assets>
 
-  <a-entity light="type: ambient; intensity: 1.0"></a-entity>
+<img id="sky1" src="blue_nebulae_1.png">
+<img id="sky2" src="hazy_nebulae_1.png">
+<img id="sky3" src="plain_starfield_1.png">
+<img id="sky4" src="ringed_gas_giant_planet.png">
 
-  <!-- locomotion rig -->
-  <a-entity id="rig" position="0 0 0" thumbstick-locomotion>
-    <a-entity id="cameraRig" position="0 1.6 0">
-      <a-camera look-controls="pointerLockEnabled: false"></a-camera>
-    </a-entity>
+<img id="meteor" src="meteor-streak.png">
 
-    <!-- invisible controllers, usable thumbsticks -->
-    <a-entity id="leftHand"
-              hand-controls="hand: left; handModelStyle: lowPoly; color: #ffffff"
-              visible="false">
-    </a-entity>
+</a-assets>
 
-    <a-entity id="rightHand"
-              hand-controls="hand: right; handModelStyle: lowPoly; color: #ffffff"
-              visible="false">
-    </a-entity>
-  </a-entity>
+<a-entity light="type:ambient;intensity:1"></a-entity>
 
-  <!-- main sky -->
-  <a-sky id="sky" src="#sky1" rotation="0 -90 0"
-         animation__spin="property: rotation; to: 6 270 5; dur: 220000; easing: linear; loop: true; dir: alternate">
-  </a-sky>
+<a-entity id="rig" position="0 0 0" thumbstick-locomotion>
 
-  <!-- subtle depth shimmer -->
-  <a-plane
-    id="starsFar"
-    src="#starsOverlay"
-    position="0 18 -125"
-    width="240"
-    height="140"
-    material="shader: flat; transparent: true; opacity: 0.11; alphaTest: 0.02"
-    animation__drift="property: position; to: 10 22 -125; dur: 42000; dir: alternate; loop: true; easing: easeInOutSine"
-    animation__pulse="property: material.opacity; to: 0.17; dur: 5000; dir: alternate; loop: true; easing: easeInOutSine">
-  </a-plane>
+<a-entity id="cameraRig" position="0 1.6 0">
+<a-camera look-controls></a-camera>
+</a-entity>
 
-  <!-- meteor showers -->
-  <a-plane
-    src="#meteorStreak"
-    position="-120 60 -110"
-    width="12"
-    height="5"
-    material="shader: flat; transparent: true; opacity: 0.9; alphaTest: 0.02; blending: additive"
-    animation__fly="property: position; from: -120 60 -110; to: 120 -10 -110; dur: 5200; easing: linear; loop: true; delay: 0"
-    animation__fade="property: material.opacity; from: 0.0; to: 0.95; dur: 500; dir: alternate; loop: true">
-  </a-plane>
+<a-entity id="leftHand"
+hand-controls="hand: left"
+visible="false">
+</a-entity>
 
-  <a-plane
-    src="#meteorStreak"
-    position="-140 75 -130"
-    width="15"
-    height="6"
-    material="shader: flat; transparent: true; opacity: 0.85; alphaTest: 0.02; blending: additive"
-    animation__fly="property: position; from: -140 75 -130; to: 130 -25 -130; dur: 6300; easing: linear; loop: true; delay: 1400"
-    animation__fade="property: material.opacity; from: 0.0; to: 0.85; dur: 650; dir: alternate; loop: true; delay: 1400">
-  </a-plane>
+<a-entity id="rightHand"
+hand-controls="hand: right"
+visible="false">
+</a-entity>
 
-  <a-plane
-    src="#meteorStreak"
-    position="-100 48 -90"
-    width="10"
-    height="4"
-    material="shader: flat; transparent: true; opacity: 0.8; alphaTest: 0.02; blending: additive"
-    animation__fly="property: position; from: -100 48 -90; to: 110 -18 -90; dur: 4700; easing: linear; loop: true; delay: 2800"
-    animation__fade="property: material.opacity; from: 0.0; to: 0.8; dur: 500; dir: alternate; loop: true; delay: 2800">
-  </a-plane>
+</a-entity>
 
-  <a-plane
-    src="#meteorStreak"
-    position="-150 82 -150"
-    width="13"
-    height="5.2"
-    material="shader: flat; transparent: true; opacity: 0.88; alphaTest: 0.02; blending: additive"
-    animation__fly="property: position; from: -150 82 -150; to: 140 -30 -150; dur: 7000; easing: linear; loop: true; delay: 4200"
-    animation__fade="property: material.opacity; from: 0.0; to: 0.88; dur: 700; dir: alternate; loop: true; delay: 4200">
-  </a-plane>
+<a-sky id="sky" src="#sky1" rotation="0 -90 0"
+animation="property: rotation; to: 6 270 5; dur: 220000; easing: linear; loop: true">
+</a-sky>
 
-  <a-plane
-    src="#meteorStreak"
-    position="-110 68 -120"
-    width="11"
-    height="4.5"
-    material="shader: flat; transparent: true; opacity: 0.82; alphaTest: 0.02; blending: additive"
-    animation__fly="property: position; from: -110 68 -120; to: 125 -22 -120; dur: 5600; easing: linear; loop: true; delay: 5600"
-    animation__fade="property: material.opacity; from: 0.0; to: 0.82; dur: 650; dir: alternate; loop: true; delay: 5600">
-  </a-plane>
+<a-plane
+src="#meteor"
+position="-120 60 -110"
+width="12"
+height="5"
+material="transparent:true"
+animation="property:position;from:-120 60 -110;to:120 -10 -110;dur:5200;loop:true">
+</a-plane>
+
+<a-plane
+src="#meteor"
+position="-140 75 -130"
+width="15"
+height="6"
+material="transparent:true"
+animation="property:position;from:-140 75 -130;to:130 -25 -130;dur:6300;loop:true">
+</a-plane>
+
 </a-scene>
 
 <script>
-AFRAME.registerComponent('thumbstick-locomotion', {
-  init: function () {
-    this.leftX = 0;
-    this.leftY = 0;
-    this.rightX = 0;
 
-    this.moveSpeed = 0.08;
-    this.turnSpeed = 1.7;
+AFRAME.registerComponent('thumbstick-locomotion',{
 
-    this.leftHand = null;
-    this.rightHand = null;
+init:function(){
 
-    this.onLeftThumbstickMoved = (evt) => {
-      this.leftX = evt.detail.x || 0;
-      this.leftY = evt.detail.y || 0;
-    };
+this.leftX=0
+this.leftY=0
+this.rightX=0
+this.rightY=0
 
-    this.onRightThumbstickMoved = (evt) => {
-      this.rightX = evt.detail.x || 0;
-    };
+this.moveSpeed=0.08
+this.turnSpeed=1.7
 
-    this.onEnterVR = () => {
-      this.leftHand = document.querySelector('#leftHand');
-      this.rightHand = document.querySelector('#rightHand');
-
-      if (this.leftHand) {
-        this.leftHand.addEventListener('thumbstickmoved', this.onLeftThumbstickMoved);
-      }
-      if (this.rightHand) {
-        this.rightHand.addEventListener('thumbstickmoved', this.onRightThumbstickMoved);
-      }
-    };
-
-    this.onExitVR = () => {
-      if (this.leftHand) {
-        this.leftHand.removeEventListener('thumbstickmoved', this.onLeftThumbstickMoved);
-      }
-      if (this.rightHand) {
-        this.rightHand.removeEventListener('thumbstickmoved', this.onRightThumbstickMoved);
-      }
-      this.leftX = 0;
-      this.leftY = 0;
-      this.rightX = 0;
-    };
-
-    this.sceneEl = this.el.sceneEl;
-    this.sceneEl.addEventListener('enter-vr', this.onEnterVR);
-    this.sceneEl.addEventListener('exit-vr', this.onExitVR);
-  },
-
-  tick: function () {
-    if (!this.el.sceneEl.is('vr-mode')) return;
-
-    const deadzone = 0.15;
-
-    if (Math.abs(this.rightX) > deadzone) {
-      const currentRot = this.el.getAttribute('rotation');
-      this.el.setAttribute('rotation', {
-        x: currentRot.x,
-        y: currentRot.y - (this.rightX * this.turnSpeed),
-        z: currentRot.z
-      });
-    }
-
-    if (Math.abs(this.leftX) > deadzone || Math.abs(this.leftY) > deadzone) {
-      const rot = this.el.getAttribute('rotation');
-      const yaw = THREE.MathUtils.degToRad(rot.y);
-
-      const forward = new THREE.Vector3(
-        -Math.sin(yaw),
-        0,
-        -Math.cos(yaw)
-      );
-
-      const right = new THREE.Vector3(
-        Math.cos(yaw),
-        0,
-        -Math.sin(yaw)
-      );
-
-      const move = new THREE.Vector3();
-      move.add(forward.multiplyScalar(-this.leftY * this.moveSpeed));
-      move.add(right.multiplyScalar(this.leftX * this.moveSpeed));
-
-      const pos = this.el.getAttribute('position');
-      this.el.setAttribute('position', {
-        x: pos.x + move.x,
-        y: pos.y,
-        z: pos.z + move.z
-      });
-    }
-  },
-
-  remove: function () {
-    if (this.sceneEl) {
-      this.sceneEl.removeEventListener('enter-vr', this.onEnterVR);
-      this.sceneEl.removeEventListener('exit-vr', this.onExitVR);
-    }
-  }
-});
-
-/* --------------------------
-   MUSIC / PLAYER
---------------------------- */
-const BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
-
-const songs = [
-  "01 STARSET - A BRIEF HISTORY OF THE FUTURE.mp3",
-  "01 STARSET - praesens.mp3",
-  "01 STARSET - The Order.mp3",
-  "01 STARSET - UNVEILING THE ARCHITECTURE.mp3",
-  "02 STARSET - DEGENERATE.mp3",
-  "02 STARSET - MANIFEST.mp3",
-  "02 STARSET - Satellite.mp3",
-  "02 STARSET - THE BREACH.mp3",
-  "03 STARSET - ECHO.mp3",
-  "03 STARSET - Frequency.mp3",
-  "03 STARSET - OTHERWORLDLY.mp3",
-  "03 STARSET - SILOS.mp3",
-  "04 STARSET - Die For You.mp3",
-  "04 STARSET - ICARUS.mp3",
-  "04 STARSET - rise of messenger.mp3",
-  "04 STARSET - WHERE THE SKIES END.mp3",
-  "05 STARSET - DARK THINGS.mp3",
-  "05 STARSET - EARTHRISE.mp3",
-  "05 STARSET - PERFECT MACHINE.mp3",
-  "05 STARSET - Ricochet.mp3",
-  "06 STARSET - LEAVING THIS WORLD BEHIND.mp3",
-  "06 STARSET - SHATTERED DREAMS.mp3",
-  "06 STARSET - Starlight.mp3",
-  "06 STARSET - TELEKINETIC.mp3",
-  "07 STARSET - DEVOLUTION.mp3",
-  "07 STARSET - Into The Unknown.mp3",
-  "07 STARSET - STRATOSPHERE.mp3",
-  "07 STARSET - temple of milton.mp3",
-  "08 STARSET - ANNIHILATED LOVE.mp3",
-  "08 STARSET - BRAVE NEW WORLD.mp3",
-  "08 STARSET - FAULTLINE.mp3",
-  "08 STARSET - Gravity Of You.mp3",
-  "09 STARSET - ALCHEMY.mp3",
-  "09 STARSET - Back To The Earth.mp3",
-  "09 STARSET - DYSTOPIA.mp3",
-  "09 STARSET - SOLSTICE.mp3",
-  "10 STARSET - DISAPPEAR.mp3",
-  "10 STARSET - HEAD OVER HEELS.mp3",
-  "10 STARSET - Last To Fall.mp3",
-  "10 STARSET - TRIALS.mp3",
-  "11 STARSET - Bringing It Down.mp3",
-  "11 STARSET - SWAY.mp3",
-  "11 STARSET - THIS ENDLESS ENDEAVOR.mp3",
-  "11 STARSET - WAKING UP.mp3",
-  "12 STARSET - OTHER WORLDS THAN THESE.mp3",
-  "12 STARSET - SYMBIOTIC.mp3",
-  "12 STARSET - the antihero's journey.mp3",
-  "12 STARSET - Unbecoming.mp3",
-  "13 STARSET - DIVING BELL.mp3",
-  "13 STARSET - DREAMCATCHER.mp3",
-  "13 STARSET - Monster.mp3",
-  "13 STARSET - TOKSIK.mp3",
-  "14 STARSET - at his altar.mp3",
-  "14 STARSET - Telepathic.mp3",
-  "14 STARSET - TUNNELVISION.mp3",
-  "15 STARSET - AD ASTRA.mp3",
-  "15 STARSET - Everglow.mp3",
-  "15 STARSET - INFECTED.mp3",
-  "16 STARSET - requiem of the order.mp3",
-  "16 STARSET - SOMETHING WICKED.mp3"
-];
-
-const audio = document.getElementById("audio");
-const song = document.getElementById("song");
-const statusText = document.getElementById("status");
-const volumeSlider = document.getElementById("volume");
-
-let shuffledSongs = [];
-let index = 0;
-
-function url(name) {
-  return BASE + name.replaceAll(" ", "%20");
+this.onLeftThumbstickMoved=(e)=>{
+this.leftX=e.detail.x||0
+this.leftY=e.detail.y||0
 }
 
-function shuffleArray(arr) {
-  const copy = [...arr];
-  for (let i = copy.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [copy[i], copy[j]] = [copy[j], copy[i]];
-  }
-  return copy;
+this.onRightThumbstickMoved=(e)=>{
+this.rightX=e.detail.x||0
+this.rightY=e.detail.y||0
 }
 
-function rebuildShuffle(keepCurrent = null) {
-  shuffledSongs = shuffleArray(songs);
-  if (keepCurrent && shuffledSongs.length > 1 && shuffledSongs[0] === keepCurrent) {
-    const swapIndex = 1 + Math.floor(Math.random() * (shuffledSongs.length - 1));
-    [shuffledSongs[0], shuffledSongs[swapIndex]] = [shuffledSongs[swapIndex], shuffledSongs[0]];
-  }
-  index = 0;
+this.onEnterVR=()=>{
+this.leftHand=document.querySelector('#leftHand')
+this.rightHand=document.querySelector('#rightHand')
+
+this.leftHand.addEventListener('thumbstickmoved',this.onLeftThumbstickMoved)
+this.rightHand.addEventListener('thumbstickmoved',this.onRightThumbstickMoved)
 }
 
-function currentSongName() {
-  return shuffledSongs[index];
+this.onExitVR=()=>{
+this.leftX=0
+this.leftY=0
+this.rightX=0
+this.rightY=0
 }
 
-function load(n) {
-  if (!shuffledSongs.length) rebuildShuffle();
+this.el.sceneEl.addEventListener('enter-vr',this.onEnterVR)
+this.el.sceneEl.addEventListener('exit-vr',this.onExitVR)
 
-  if (n < 0) n = shuffledSongs.length - 1;
+},
 
-  if (n >= shuffledSongs.length) {
-    const lastSong = shuffledSongs[shuffledSongs.length - 1];
-    rebuildShuffle(lastSong);
-    n = 0;
-  }
+tick:function(){
 
-  index = n;
-  const track = currentSongName();
-  audio.src = url(track);
-  song.innerText = track;
-  statusText.innerText = `Loaded ${index + 1} of ${shuffledSongs.length} • Shuffled`;
+if(!this.el.sceneEl.is('vr-mode')) return
+
+const dead=0.15
+
+let rot=this.el.getAttribute('rotation')
+
+let newY=rot.y
+let newX=rot.x
+
+if(Math.abs(this.rightX)>dead)
+newY=rot.y-(this.rightX*this.turnSpeed)
+
+if(Math.abs(this.rightY)>dead){
+newX=rot.x+(this.rightY*1.2)
+newX=Math.max(-35,Math.min(35,newX))
 }
 
-document.getElementById("next").onclick = () => {
-  load(index + 1);
-  audio.play();
-};
+this.el.setAttribute('rotation',{
+x:newX,
+y:newY,
+z:rot.z
+})
 
-document.getElementById("prev").onclick = () => {
-  load(index - 1);
-  audio.play();
-};
+if(Math.abs(this.leftX)>dead||Math.abs(this.leftY)>dead){
 
-volumeSlider.oninput = (e) => {
-  audio.volume = e.target.value;
-};
+const yaw=THREE.MathUtils.degToRad(newY)
 
-audio.addEventListener("ended", () => {
-  load(index + 1);
-  audio.play();
-});
+const forward=new THREE.Vector3(
+-Math.sin(yaw),
+0,
+-Math.cos(yaw)
+)
 
-audio.addEventListener("play", () => {
-  statusText.innerText = `Playing ${index + 1} of ${shuffledSongs.length} • Shuffled`;
-});
+const right=new THREE.Vector3(
+Math.cos(yaw),
+0,
+-Math.sin(yaw)
+)
 
-audio.addEventListener("pause", () => {
-  if (!audio.ended) statusText.innerText = "Paused";
-});
+const move=new THREE.Vector3()
 
-audio.addEventListener("error", () => {
-  statusText.innerText = "Track failed to load";
-});
+move.add(forward.multiplyScalar(-this.leftY*this.moveSpeed))
+move.add(right.multiplyScalar(this.leftX*this.moveSpeed))
 
-audio.volume = 0.8;
-rebuildShuffle();
-load(0);
+let pos=this.el.getAttribute('position')
 
-/* --------------------------
-   SKY CYCLE
---------------------------- */
-const sky = document.getElementById("sky");
-const skyCycle = ["#sky1", "#sky2", "#sky3", "#sky4"];
-let skyIndex = 0;
+this.el.setAttribute('position',{
+x:pos.x+move.x,
+y:pos.y,
+z:pos.z+move.z
+})
 
-setInterval(() => {
-  skyIndex = (skyIndex + 1) % skyCycle.length;
-  sky.setAttribute("src", skyCycle[skyIndex]);
-}, 60000);
+}
+
+}
+
+})
+
+const BASE="https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/"
+
+const songs=[
+
+"01 STARSET - A BRIEF HISTORY OF THE FUTURE.mp3",
+"01 STARSET - praesens.mp3",
+"01 STARSET - The Order.mp3",
+"01 STARSET - UNVEILING THE ARCHITECTURE.mp3",
+
+"02 STARSET - DEGENERATE.mp3",
+"02 STARSET - MANIFEST.mp3",
+"02 STARSET - Satellite.mp3",
+"02 STARSET - THE BREACH.mp3",
+
+"03 STARSET - ECHO.mp3",
+"03 STARSET - Frequency.mp3",
+"03 STARSET - OTHERWORLDLY.mp3",
+"03 STARSET - SILOS.mp3",
+
+"04 STARSET - Die For You.mp3",
+"04 STARSET - ICARUS.mp3",
+"04 STARSET - rise of messenger.mp3",
+"04 STARSET - WHERE THE SKIES END.mp3",
+
+"05 STARSET - DARK THINGS.mp3",
+"05 STARSET - EARTHRISE.mp3",
+"05 STARSET - PERFECT MACHINE.mp3",
+"05 STARSET - Ricochet.mp3",
+
+"06 STARSET - LEAVING THIS WORLD BEHIND.mp3",
+"06 STARSET - SHATTERED DREAMS.mp3",
+"06 STARSET - Starlight.mp3",
+"06 STARSET - TELEKINETIC.mp3",
+
+"07 STARSET - DEVOLUTION.mp3",
+"07 STARSET - Into The Unknown.mp3",
+"07 STARSET - STRATOSPHERE.mp3",
+"07 STARSET - temple of milton.mp3",
+
+"08 STARSET - ANNIHILATED LOVE.mp3",
+"08 STARSET - BRAVE NEW WORLD.mp3",
+"08 STARSET - FAULTLINE.mp3",
+"08 STARSET - Gravity Of You.mp3",
+
+"09 STARSET - ALCHEMY.mp3",
+"09 STARSET - Back To The Earth.mp3",
+"09 STARSET - DYSTOPIA.mp3",
+"09 STARSET - SOLSTICE.mp3",
+
+"10 STARSET - DISAPPEAR.mp3",
+"10 STARSET - HEAD OVER HEELS.mp3",
+"10 STARSET - Last To Fall.mp3",
+"10 STARSET - TRIALS.mp3",
+
+"11 STARSET - Bringing It Down.mp3",
+"11 STARSET - SWAY.mp3",
+"11 STARSET - THIS ENDLESS ENDEAVOR.mp3",
+"11 STARSET - WAKING UP.mp3",
+
+"12 STARSET - OTHER WORLDS THAN THESE.mp3",
+"12 STARSET - SYMBIOTIC.mp3",
+"12 STARSET - the antihero's journey.mp3",
+"12 STARSET - Unbecoming.mp3",
+
+"13 STARSET - DIVING BELL.mp3",
+"13 STARSET - DREAMCATCHER.mp3",
+"13 STARSET - Monster.mp3",
+"13 STARSET - TOKSIK.mp3",
+
+"14 STARSET - at his altar.mp3",
+"14 STARSET - Telepathic.mp3",
+"14 STARSET - TUNNELVISION.mp3",
+
+"15 STARSET - AD ASTRA.mp3",
+"15 STARSET - Everglow.mp3",
+"15 STARSET - INFECTED.mp3",
+
+"16 STARSET - requiem of the order.mp3",
+"16 STARSET - SOMETHING WICKED.mp3"
+
+]
+
+const audio=document.getElementById("audio")
+const song=document.getElementById("song")
+
+let shuffled=[...songs].sort(()=>Math.random()-0.5)
+let index=0
+
+function url(name){
+return BASE+name.replaceAll(" ","%20")
+}
+
+function load(n){
+
+index=(n+shuffled.length)%shuffled.length
+
+audio.src=url(shuffled[index])
+song.innerText=shuffled[index]
+
+}
+
+document.getElementById("next").onclick=()=>{
+load(index+1)
+audio.play()
+}
+
+document.getElementById("prev").onclick=()=>{
+load(index-1)
+audio.play()
+}
+
+document.getElementById("volume").oninput=(e)=>{
+audio.volume=e.target.value
+}
+
+audio.addEventListener("ended",()=>{
+load(index+1)
+audio.play()
+})
+
+audio.volume=.8
+
+load(0)
+
+const sky=document.getElementById("sky")
+
+const worlds=["#sky1","#sky2","#sky3","#sky4"]
+
+let w=0
+
+setInterval(()=>{
+w=(w+1)%worlds.length
+sky.setAttribute("src",worlds[w])
+},60000)
+
 </script>
 
 </body>
