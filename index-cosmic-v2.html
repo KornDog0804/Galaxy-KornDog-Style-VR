@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Brandi's Universe — STARSET VR</title>
+  <title>Brandi's Universe — STARSET VR V3</title>
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <style>
     html, body {
@@ -104,69 +104,37 @@
     <img id="sky3" src="./plain_starfield_1.png">
     <img id="sky4" src="./ringed_gas_giant_planet.png">
 
-    <!-- safe extras -->
-    <img id="nebula1" src="./nebula-overlay-1.jpg">
+    <!-- safe overlays -->
     <img id="starsOverlay" src="./starfield-overlay.png">
     <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
   <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
-  <!-- normal VR head look, no cursor junk -->
+  <!-- normal headset look, no cursor ring -->
   <a-entity id="cameraRig" position="0 1.6 0">
     <a-camera look-controls="pointerLockEnabled: false"></a-camera>
   </a-entity>
 
   <a-entity id="universeRig">
-    <!-- main 360 world -->
+    <!-- main sky world -->
     <a-sky id="sky" src="#sky1" rotation="0 -90 0"></a-sky>
 
-    <!-- far star shimmer -->
+    <!-- subtle depth shimmer -->
     <a-plane
       id="starsFar"
       src="#starsOverlay"
-      position="0 14 -90"
-      width="210"
-      height="120"
-      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02">
-    </a-plane>
-
-    <a-plane
-      id="starsLeft"
-      src="#starsOverlay"
-      position="-85 20 -80"
-      rotation="0 34 0"
-      width="120"
-      height="72"
+      position="0 16 -120"
+      width="230"
+      height="135"
       material="shader: flat; transparent: true; opacity: 0.12; alphaTest: 0.02">
-    </a-plane>
-
-    <a-plane
-      id="starsRight"
-      src="#starsOverlay"
-      position="85 10 -80"
-      rotation="0 -34 0"
-      width="120"
-      height="72"
-      material="shader: flat; transparent: true; opacity: 0.12; alphaTest: 0.02">
-    </a-plane>
-
-    <!-- one main nebula only, pushed back -->
-    <a-plane
-      id="heroNebula"
-      src="#nebula1"
-      position="-55 24 -140"
-      rotation="0 20 0"
-      width="70"
-      height="70"
-      material="shader: flat; transparent: true; opacity: 0.88">
     </a-plane>
 
     <!-- meteor shower pool -->
     <a-plane
       id="meteor1"
       src="#meteorStreak"
-      position="-60 34 -70"
+      position="-70 36 -90"
       width="12"
       height="5"
       visible="false"
@@ -176,7 +144,7 @@
     <a-plane
       id="meteor2"
       src="#meteorStreak"
-      position="-60 34 -70"
+      position="-70 36 -90"
       width="14"
       height="5.5"
       visible="false"
@@ -186,7 +154,7 @@
     <a-plane
       id="meteor3"
       src="#meteorStreak"
-      position="-60 34 -70"
+      position="-70 36 -90"
       width="10"
       height="4.2"
       visible="false"
@@ -196,7 +164,7 @@
     <a-plane
       id="meteor4"
       src="#meteorStreak"
-      position="-60 34 -70"
+      position="-70 36 -90"
       width="13"
       height="5.2"
       visible="false"
@@ -206,7 +174,7 @@
     <a-plane
       id="meteor5"
       src="#meteorStreak"
-      position="-60 34 -70"
+      position="-70 36 -90"
       width="11"
       height="4.8"
       visible="false"
@@ -386,13 +354,9 @@ setInterval(() => {
 }, 60000);
 
 /* --------------------------
-   WORLD MOTION
+   VR WORLD MOTION
 --------------------------- */
-const universeRig = document.getElementById("universeRig");
 const starsFar = document.getElementById("starsFar");
-const starsLeft = document.getElementById("starsLeft");
-const starsRight = document.getElementById("starsRight");
-const heroNebula = document.getElementById("heroNebula");
 
 let skyYaw = -90;
 let skyPitch = 0;
@@ -402,28 +366,20 @@ let phase = 0;
 function animateUniverse() {
   const playing = !audio.paused && !audio.ended && !!audio.src;
 
-  phase += playing ? 0.016 : 0.007;
+  phase += playing ? 0.020 : 0.010;
 
-  /* actual noticeable spin + roll so you can see the whole world */
-  skyYaw += playing ? 0.045 : 0.020;
-  skyPitch = Math.sin(phase * 0.16) * 6.5;
-  skyRoll = Math.cos(phase * 0.12) * 10.5;
+  /* animate sky directly so movement survives VR mode */
+  skyYaw += playing ? 0.070 : 0.028;
+  skyPitch = Math.sin(phase * 0.12) * 8.5;
+  skyRoll = Math.cos(phase * 0.09) * 14.5;
 
   sky.setAttribute("rotation", `${skyPitch.toFixed(2)} ${skyYaw.toFixed(2)} ${skyRoll.toFixed(2)}`);
 
-  /* subtle stars alive in the distance */
-  const starBase = playing ? 0.18 + (Math.sin(phase * 1.8) * 0.03) : 0.12;
-  starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starBase.toFixed(3)}; alphaTest: 0.02`);
-  starsLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starBase * 0.7).toFixed(3)}; alphaTest: 0.02`);
-  starsRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starBase * 0.7).toFixed(3)}; alphaTest: 0.02`);
-
-  /* hero nebula breathing very lightly in the distance */
-  const nebulaScale = 1 + Math.sin(phase * 0.18) * 0.035;
-  const nebulaX = -55 + Math.cos(phase * 0.10) * 5;
-  const nebulaY = 24 + Math.sin(phase * 0.12) * 2.5;
-
-  heroNebula.setAttribute("scale", `${nebulaScale.toFixed(3)} ${nebulaScale.toFixed(3)} 1`);
-  heroNebula.setAttribute("position", `${nebulaX.toFixed(2)} ${nebulaY.toFixed(2)} -140`);
+  const starBase = playing ? 0.12 + (Math.sin(phase * 1.5) * 0.02) : 0.09;
+  starsFar.setAttribute(
+    "material",
+    `shader: flat; transparent: true; opacity: ${starBase.toFixed(3)}; alphaTest: 0.02`
+  );
 
   requestAnimationFrame(animateUniverse);
 }
@@ -443,13 +399,13 @@ const meteors = [
 
 function launchMeteor(el, delay = 0) {
   setTimeout(() => {
-    let x = -90 - Math.random() * 30;
-    let y = 35 + Math.random() * 20;
-    let z = -85 - Math.random() * 35;
+    let x = -100 - Math.random() * 40;
+    let y = 40 + Math.random() * 24;
+    let z = -100 - Math.random() * 40;
     let opacity = 0.95;
-    const angle = -10 - Math.random() * 20;
-    const speedX = 1.2 + Math.random() * 0.6;
-    const speedY = 0.45 + Math.random() * 0.25;
+    const angle = -10 - Math.random() * 18;
+    const speedX = 1.4 + Math.random() * 0.8;
+    const speedY = 0.55 + Math.random() * 0.28;
 
     el.setAttribute("visible", true);
     el.setAttribute("position", `${x} ${y} ${z}`);
@@ -483,10 +439,10 @@ function launchMeteor(el, delay = 0) {
 
 function meteorShower() {
   launchMeteor(meteors[0], 0);
-  launchMeteor(meteors[1], 400);
-  launchMeteor(meteors[2], 900);
-  launchMeteor(meteors[3], 1500);
-  launchMeteor(meteors[4], 2300);
+  launchMeteor(meteors[1], 350);
+  launchMeteor(meteors[2], 800);
+  launchMeteor(meteors[3], 1400);
+  launchMeteor(meteors[4], 2100);
 }
 
 setInterval(() => {
