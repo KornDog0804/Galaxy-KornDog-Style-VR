@@ -1,85 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Brandi's Universe — Cosmic v2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Brandi's Universe — STARSET VR</title>
 
-<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 
-<style>
-html, body {
-  margin: 0;
-  height: 100%;
-  background: #000;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-  color: #fff;
-}
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #000;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      color: #fff;
+    }
 
-.player {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  width: 340px;
-  background: rgba(0,0,0,.62);
-  padding: 14px;
-  border-radius: 12px;
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255,255,255,.15);
-  z-index: 9999;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
+    .player {
+      position: fixed;
+      right: 12px;
+      bottom: 12px;
+      width: 340px;
+      background: rgba(0,0,0,.62);
+      padding: 14px;
+      border-radius: 12px;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,.15);
+      z-index: 9999;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
 
-.player-title {
-  font-size: 13px;
-  opacity: .85;
-  margin-bottom: 8px;
-}
+    .player-title {
+      font-size: 13px;
+      opacity: .85;
+      margin-bottom: 8px;
+    }
 
-#song {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 10px;
-  line-height: 1.25;
-  word-break: break-word;
-}
+    #song {
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 10px;
+      line-height: 1.25;
+      word-break: break-word;
+    }
 
-.controls {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
-}
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
 
-button {
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  background: #222;
-  color: #fff;
-  font-weight: bold;
-}
+    button {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #222;
+      color: #fff;
+      font-weight: bold;
+    }
 
-button:hover {
-  background: #444;
-}
+    .volume {
+      margin-top: 8px;
+    }
 
-.volume {
-  margin-top: 8px;
-}
+    #status {
+      margin-top: 8px;
+      font-size: 12px;
+      opacity: .85;
+      min-height: 16px;
+    }
 
-#status {
-  margin-top: 8px;
-  font-size: 12px;
-  opacity: .85;
-  min-height: 16px;
-}
-
-audio {
-  width: 100%;
-}
-</style>
+    audio {
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
 
@@ -105,133 +101,258 @@ audio {
 
 <a-scene background="color:#000">
   <a-assets>
-    <!-- locked base working backgrounds -->
-    <img id="sky1" src="./space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy.jpg">
-    <img id="sky2" src="./space-background-realistic-starry-night-cosmos-shining-stars-milky-way-stardust-color-galaxy (1).jpg">
+    <!-- new 360 worlds -->
+    <img id="sky1" src="./blue_nebulae_1.png">
+    <img id="sky2" src="./hazy_nebulae_1.png">
+    <img id="sky3" src="./plain_starfield_1.png">
+    <img id="sky4" src="./ringed_gas_giant_planet.png">
 
-    <!-- safe assets -->
+    <!-- safe layers -->
     <img id="nebula1" src="./nebula-overlay-1.jpg">
     <img id="nebula2" src="./nebula-overlay-2.png">
-    <img id="starfieldOverlay" src="./starfield-overlay.png">
+    <img id="starsOverlay" src="./starfield-overlay.png">
     <img id="meteorStreak" src="./meteor-streak.png">
   </a-assets>
 
   <a-entity light="type: ambient; intensity: 1.0"></a-entity>
 
+  <!-- camera + VR gaze cursor -->
   <a-entity id="cameraRig" position="0 1.6 0">
-    <a-camera></a-camera>
+    <a-camera>
+      <a-cursor
+        color="#ffffff"
+        fuse="true"
+        fuse-timeout="900"
+        raycaster="objects: .clickable">
+      </a-cursor>
+    </a-camera>
+
+    <!-- VR control panel follows you -->
+    <a-entity id="vrPanel" position="0 -0.1 -2.8">
+      <a-plane
+        width="2.3"
+        height="1.28"
+        color="#0d0d14"
+        opacity="0.84"
+        material="transparent:true">
+      </a-plane>
+
+      <a-text
+        value="STARSET VR CONTROLS"
+        position="0 0.45 0.02"
+        align="center"
+        width="3.2"
+        color="#ffffff">
+      </a-text>
+
+      <a-text
+        id="vrTrackText"
+        value="Loading..."
+        position="0 0.18 0.02"
+        align="center"
+        width="2.5"
+        color="#9fd6ff"
+        wrap-count="28">
+      </a-text>
+
+      <a-plane id="vrPrevBtn" class="clickable"
+        position="-0.68 -0.17 0.03"
+        width="0.48" height="0.22"
+        color="#2a2a2a">
+      </a-plane>
+      <a-text
+        value="PREV"
+        position="-0.68 -0.17 0.04"
+        align="center"
+        width="1.8"
+        color="#ffffff">
+      </a-text>
+
+      <a-plane id="vrPlayBtn" class="clickable"
+        position="0 -0.17 0.03"
+        width="0.52" height="0.22"
+        color="#4a2cff">
+      </a-plane>
+      <a-text
+        id="vrPlayLabel"
+        value="PLAY"
+        position="0 -0.17 0.04"
+        align="center"
+        width="1.8"
+        color="#ffffff">
+      </a-text>
+
+      <a-plane id="vrNextBtn" class="clickable"
+        position="0.68 -0.17 0.03"
+        width="0.48" height="0.22"
+        color="#2a2a2a">
+      </a-plane>
+      <a-text
+        value="NEXT"
+        position="0.68 -0.17 0.04"
+        align="center"
+        width="1.8"
+        color="#ffffff">
+      </a-text>
+
+      <a-plane id="vrVolDownBtn" class="clickable"
+        position="-0.42 -0.52 0.03"
+        width="0.28" height="0.18"
+        color="#333333">
+      </a-plane>
+      <a-text
+        value="VOL-"
+        position="-0.42 -0.52 0.04"
+        align="center"
+        width="1.4"
+        color="#ffffff">
+      </a-text>
+
+      <a-text
+        id="vrVolText"
+        value="80%"
+        position="0 -0.52 0.04"
+        align="center"
+        width="1.8"
+        color="#ffffff">
+      </a-text>
+
+      <a-plane id="vrVolUpBtn" class="clickable"
+        position="0.42 -0.52 0.03"
+        width="0.28" height="0.18"
+        color="#333333">
+      </a-plane>
+      <a-text
+        value="VOL+"
+        position="0.42 -0.52 0.04"
+        align="center"
+        width="1.4"
+        color="#ffffff">
+      </a-text>
+    </a-entity>
   </a-entity>
 
   <!-- universe rig -->
   <a-entity id="universeRig">
-    <a-sky id="sky" src="#sky1"></a-sky>
+    <a-sky id="sky" src="#sky1" rotation="0 -90 0"></a-sky>
 
-    <!-- far sparkle depth -->
+    <!-- far star shimmer -->
     <a-plane
       id="starsFar"
-      src="#starfieldOverlay"
-      position="0 10 -52"
-      width="135"
-      height="78"
-      material="shader: flat; transparent: true; opacity: 0.24; alphaTest: 0.02">
+      src="#starsOverlay"
+      position="0 14 -70"
+      width="170"
+      height="96"
+      material="shader: flat; transparent: true; opacity: 0.20; alphaTest: 0.02">
     </a-plane>
 
     <a-plane
       id="starsLeft"
-      src="#starfieldOverlay"
-      position="-42 10 -38"
-      rotation="0 38 0"
-      width="78"
-      height="48"
-      material="shader: flat; transparent: true; opacity: 0.16; alphaTest: 0.02">
+      src="#starsOverlay"
+      position="-58 16 -64"
+      rotation="0 34 0"
+      width="96"
+      height="58"
+      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02">
     </a-plane>
 
     <a-plane
       id="starsRight"
-      src="#starfieldOverlay"
-      position="42 6 -38"
-      rotation="0 -38 0"
-      width="78"
-      height="48"
-      material="shader: flat; transparent: true; opacity: 0.16; alphaTest: 0.02">
+      src="#starsOverlay"
+      position="58 10 -64"
+      rotation="0 -34 0"
+      width="96"
+      height="58"
+      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02">
     </a-plane>
 
-    <!-- dramatic distant nebula landmark -->
+    <!-- giant hero nebula landmark -->
     <a-plane
-      id="bubbleNebula"
+      id="heroNebula"
       src="#nebula1"
-      position="-24 12 -62"
+      position="-34 20 -90"
       rotation="0 22 0"
-      width="26"
-      height="26"
+      width="42"
+      height="42"
       material="shader: flat; transparent: true; opacity: 0.92">
     </a-plane>
 
-    <!-- main safe drifting purple nebula -->
+    <!-- drifting reactive purple nebula banks -->
     <a-plane
       id="fogMain"
       src="#nebula2"
-      position="0 6 -26"
-      width="34"
-      height="22"
-      material="shader: flat; transparent: true; opacity: 0.42; alphaTest: 0.02; blending: additive">
+      position="0 20 -72"
+      width="64"
+      height="42"
+      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02; blending: additive">
     </a-plane>
 
     <a-plane
       id="fogLeft"
       src="#nebula2"
-      position="-18 9 -22"
-      rotation="0 24 0"
-      width="18"
-      height="14"
-      material="shader: flat; transparent: true; opacity: 0.24; alphaTest: 0.02; blending: additive">
+      position="-54 24 -86"
+      rotation="0 28 0"
+      width="40"
+      height="28"
+      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02; blending: additive">
     </a-plane>
 
     <a-plane
       id="fogRight"
       src="#nebula2"
-      position="18 3 -22"
-      rotation="0 -24 0"
-      width="18"
-      height="14"
-      material="shader: flat; transparent: true; opacity: 0.24; alphaTest: 0.02; blending: additive">
+      position="54 16 -86"
+      rotation="0 -28 0"
+      width="40"
+      height="28"
+      material="shader: flat; transparent: true; opacity: 0.14; alphaTest: 0.02; blending: additive">
     </a-plane>
 
-    <!-- extra distant nebula glow -->
+    <!-- distant extra cloud -->
     <a-plane
       id="fogFar"
       src="#nebula2"
-      position="20 16 -54"
-      rotation="0 -18 0"
-      width="26"
-      height="20"
-      material="shader: flat; transparent: true; opacity: 0.18; alphaTest: 0.02; blending: additive">
+      position="24 26 -120"
+      rotation="0 -16 0"
+      width="40"
+      height="30"
+      material="shader: flat; transparent: true; opacity: 0.10; alphaTest: 0.02; blending: additive">
+    </a-plane>
+
+    <!-- safe ringed gas giant as a distant object -->
+    <a-plane
+      id="ringedPlanet"
+      src="#sky4"
+      position="66 26 -140"
+      rotation="0 -10 0"
+      width="52"
+      height="26"
+      material="shader: flat; transparent: true; opacity: 0.68">
     </a-plane>
 
     <!-- meteor -->
     <a-plane
       id="meteorPlane"
       src="#meteorStreak"
-      position="-20 14 -24"
-      width="9"
-      height="4"
+      position="-30 20 -40"
+      width="11"
+      height="5"
       visible="false"
       material="shader: flat; transparent: true; opacity: 0.0; alphaTest: 0.02; blending: additive">
     </a-plane>
 
-    <!-- subtle universe pulse -->
+    <!-- pulse shell -->
     <a-sphere
       id="pulseShell"
-      radius="36"
+      radius="40"
       position="0 0 0"
-      material="shader: flat; color: #8f63ff; side: back; transparent: true; opacity: 0.0">
+      material="shader: flat; color: #7a5cff; side: back; transparent: true; opacity: 0.0">
     </a-sphere>
   </a-entity>
 </a-scene>
 
 <script>
 /* --------------------------
-   MUSIC / PLAYER (unchanged logic style)
+   MUSIC / PLAYER
 --------------------------- */
 const BASE = "https://pub-180861afe41148b8acd08af4e87da48b.r2.dev/Music/tree/";
 
@@ -301,6 +422,7 @@ const songs = [
 const audio = document.getElementById("audio");
 const song = document.getElementById("song");
 const statusText = document.getElementById("status");
+const volumeSlider = document.getElementById("volume");
 
 let index = 0;
 
@@ -313,6 +435,7 @@ function load(n) {
   audio.src = url(songs[index]);
   song.innerText = songs[index];
   statusText.innerText = `Loaded ${index + 1} of ${songs.length}`;
+  updateVRPanel();
 }
 
 document.getElementById("next").onclick = () => {
@@ -325,8 +448,9 @@ document.getElementById("prev").onclick = () => {
   audio.play();
 };
 
-document.getElementById("volume").oninput = (e) => {
+volumeSlider.oninput = (e) => {
   audio.volume = e.target.value;
+  updateVRPanel();
 };
 
 audio.addEventListener("ended", () => {
@@ -336,10 +460,13 @@ audio.addEventListener("ended", () => {
 
 audio.addEventListener("play", () => {
   statusText.innerText = `Playing ${index + 1} of ${songs.length}`;
+  initAudioReactive();
+  updateVRPanel();
 });
 
 audio.addEventListener("pause", () => {
   if (!audio.ended) statusText.innerText = "Paused";
+  updateVRPanel();
 });
 
 audio.addEventListener("error", () => {
@@ -350,11 +477,76 @@ audio.volume = 0.8;
 load(0);
 
 /* --------------------------
-   VISUALS
+   VR PANEL
+--------------------------- */
+const vrTrackText = document.getElementById("vrTrackText");
+const vrPlayBtn = document.getElementById("vrPlayBtn");
+const vrPlayLabel = document.getElementById("vrPlayLabel");
+const vrPrevBtn = document.getElementById("vrPrevBtn");
+const vrNextBtn = document.getElementById("vrNextBtn");
+const vrVolDownBtn = document.getElementById("vrVolDownBtn");
+const vrVolUpBtn = document.getElementById("vrVolUpBtn");
+const vrVolText = document.getElementById("vrVolText");
+
+function updateVRPanel() {
+  vrTrackText.setAttribute("value", songs[index]);
+  vrPlayLabel.setAttribute("value", audio.paused ? "PLAY" : "PAUSE");
+  vrVolText.setAttribute("value", `${Math.round(audio.volume * 100)}%`);
+}
+
+function togglePlay() {
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+  updateVRPanel();
+}
+
+function volumeUp() {
+  audio.volume = Math.min(1, audio.volume + 0.1);
+  volumeSlider.value = audio.volume;
+  updateVRPanel();
+}
+
+function volumeDown() {
+  audio.volume = Math.max(0, audio.volume - 0.1);
+  volumeSlider.value = audio.volume;
+  updateVRPanel();
+}
+
+vrPrevBtn.addEventListener("click", () => {
+  load(index - 1);
+  audio.play();
+});
+
+vrNextBtn.addEventListener("click", () => {
+  load(index + 1);
+  audio.play();
+});
+
+vrPlayBtn.addEventListener("click", togglePlay);
+vrVolUpBtn.addEventListener("click", volumeUp);
+vrVolDownBtn.addEventListener("click", volumeDown);
+
+updateVRPanel();
+
+/* --------------------------
+   SKY CYCLE
+--------------------------- */
+const sky = document.getElementById("sky");
+const skyCycle = ["#sky1", "#sky2", "#sky3", "#sky4"];
+let skyIndex = 0;
+
+setInterval(() => {
+  skyIndex = (skyIndex + 1) % skyCycle.length;
+  sky.setAttribute("src", skyCycle[skyIndex]);
+}, 60000);
+
+/* --------------------------
+   AUDIO REACTIVE WORLD
 --------------------------- */
 const universeRig = document.getElementById("universeRig");
-const sky = document.getElementById("sky");
-
 const starsFar = document.getElementById("starsFar");
 const starsLeft = document.getElementById("starsLeft");
 const starsRight = document.getElementById("starsRight");
@@ -363,44 +555,78 @@ const fogMain = document.getElementById("fogMain");
 const fogLeft = document.getElementById("fogLeft");
 const fogRight = document.getElementById("fogRight");
 const fogFar = document.getElementById("fogFar");
-const bubbleNebula = document.getElementById("bubbleNebula");
 
+const heroNebula = document.getElementById("heroNebula");
+const ringedPlanet = document.getElementById("ringedPlanet");
 const meteorPlane = document.getElementById("meteorPlane");
 const pulseShell = document.getElementById("pulseShell");
 
-/* keep the working base background swap */
-let toggle = true;
-setInterval(() => {
-  sky.setAttribute("src", toggle ? "#sky2" : "#sky1");
-  toggle = !toggle;
-}, 45000);
+let audioCtx = null;
+let analyser = null;
+let sourceNode = null;
+let freqData = null;
+let reactiveReady = false;
 
-let universeY = 0;
-let motionPhase = 0;
+function initAudioReactive() {
+  if (reactiveReady) return;
+
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    sourceNode = audioCtx.createMediaElementSource(audio);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    freqData = new Uint8Array(analyser.frequencyBinCount);
+
+    sourceNode.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    reactiveReady = true;
+  } catch (err) {
+    console.log("Audio reactive setup skipped:", err);
+  }
+}
+
+function getEnergy() {
+  if (!reactiveReady || !analyser || !freqData) return 0.15;
+
+  analyser.getByteFrequencyData(freqData);
+
+  let sum = 0;
+  for (let i = 0; i < freqData.length; i++) {
+    sum += freqData[i];
+  }
+
+  return Math.min(1, (sum / freqData.length) / 140);
+}
+
+/* --------------------------
+   METEOR
+--------------------------- */
 let meteorActive = false;
 
-function launchMeteor() {
+function launchMeteor(speedBoost = 1) {
   if (meteorActive) return;
   meteorActive = true;
 
-  let x = -26;
-  let y = 16 + Math.random() * 5;
-  let z = -22 - Math.random() * 10;
+  let x = -34;
+  let y = 20 + Math.random() * 10;
+  let z = -48 - Math.random() * 18;
   let opacity = 0.95;
-  const angle = -18 - Math.random() * 14;
+  let stepX = 0.42 * speedBoost;
+  let stepY = 0.18 * speedBoost;
+  const angle = -16 - Math.random() * 18;
 
   meteorPlane.setAttribute("visible", true);
   meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
   meteorPlane.setAttribute("rotation", `0 0 ${angle}`);
-  meteorPlane.setAttribute("scale", "1 1 1");
   meteorPlane.setAttribute(
     "material",
     `shader: flat; transparent: true; opacity: ${opacity}; alphaTest: 0.02; blending: additive`
   );
 
   function animateMeteor() {
-    x += 0.48;
-    y -= 0.20;
+    x += stepX;
+    y -= stepY;
     opacity -= 0.018;
 
     meteorPlane.setAttribute("position", `${x} ${y} ${z}`);
@@ -420,52 +646,65 @@ function launchMeteor() {
   requestAnimationFrame(animateMeteor);
 }
 
-/* occasional meteor */
 setInterval(() => {
-  launchMeteor();
-}, 10000 + Math.floor(Math.random() * 5000));
+  const playing = !audio.paused && !audio.ended && !!audio.src;
+  launchMeteor(playing ? 1.1 : 0.9);
+}, 10000);
+
+/* --------------------------
+   MASTER ANIMATION LOOP
+--------------------------- */
+let universeY = 0;
+let phase = 0;
 
 function animateUniverse() {
   const playing = !audio.paused && !audio.ended && !!audio.src;
+  const energy = getEnergy();
 
-  /* slow planetarium rotation */
-  universeY += playing ? 0.010 : 0.004;
+  /* more obvious planetarium spin */
+  universeY += playing ? (0.020 + energy * 0.045) : 0.008;
   universeRig.setAttribute("rotation", `0 ${universeY} 0`);
 
-  /* layered drift */
-  motionPhase += playing ? 0.010 : 0.004;
+  phase += playing ? (0.012 + energy * 0.02) : 0.006;
 
-  const fogMainX = Math.sin(motionPhase * 0.70) * 2.6;
-  const fogMainY = 6 + Math.cos(motionPhase * 0.42) * 0.7;
-  fogMain.setAttribute("position", `${fogMainX.toFixed(2)} ${fogMainY.toFixed(2)} -26`);
+  /* move distant nebula banks */
+  const mainX = Math.sin(phase * 0.42) * (6 + energy * 8);
+  const mainY = 20 + Math.cos(phase * 0.28) * (1.6 + energy * 2.4);
+  fogMain.setAttribute("position", `${mainX.toFixed(2)} ${mainY.toFixed(2)} -72`);
 
-  const fogLeftX = -18 + Math.cos(motionPhase * 0.56) * 1.6;
-  const fogLeftY = 9 + Math.sin(motionPhase * 0.50) * 0.6;
-  fogLeft.setAttribute("position", `${fogLeftX.toFixed(2)} ${fogLeftY.toFixed(2)} -22`);
+  const leftX = -54 + Math.cos(phase * 0.34) * (3.5 + energy * 4.5);
+  const leftY = 24 + Math.sin(phase * 0.30) * (1.2 + energy * 1.8);
+  fogLeft.setAttribute("position", `${leftX.toFixed(2)} ${leftY.toFixed(2)} -86`);
 
-  const fogRightX = 18 + Math.sin(motionPhase * 0.54) * 1.6;
-  const fogRightY = 3 + Math.cos(motionPhase * 0.48) * 0.6;
-  fogRight.setAttribute("position", `${fogRightX.toFixed(2)} ${fogRightY.toFixed(2)} -22`);
+  const rightX = 54 + Math.sin(phase * 0.36) * (3.5 + energy * 4.5);
+  const rightY = 16 + Math.cos(phase * 0.32) * (1.2 + energy * 1.8);
+  fogRight.setAttribute("position", `${rightX.toFixed(2)} ${rightY.toFixed(2)} -86`);
 
-  const fogFarX = 20 + Math.sin(motionPhase * 0.22) * 1.2;
-  const fogFarY = 16 + Math.cos(motionPhase * 0.18) * 0.8;
-  fogFar.setAttribute("position", `${fogFarX.toFixed(2)} ${fogFarY.toFixed(2)} -54`);
+  const farX = 24 + Math.sin(phase * 0.18) * (2.2 + energy * 3.2);
+  const farY = 26 + Math.cos(phase * 0.16) * (1.0 + energy * 1.8);
+  fogFar.setAttribute("position", `${farX.toFixed(2)} ${farY.toFixed(2)} -120`);
 
-  const bubbleScale = 1 + Math.sin(motionPhase * 0.22) * 0.025;
-  bubbleNebula.setAttribute("scale", `${bubbleScale.toFixed(3)} ${bubbleScale.toFixed(3)} 1`);
+  /* nebula and planet breathing */
+  const nebulaScale = 1 + energy * 0.12 + Math.sin(phase * 0.22) * 0.03;
+  heroNebula.setAttribute("scale", `${nebulaScale.toFixed(3)} ${nebulaScale.toFixed(3)} 1`);
 
-  const starPulse = playing ? 0.24 + (Math.sin(motionPhase * 2.4) * 0.03) : 0.18;
-  starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starPulse.toFixed(3)}; alphaTest: 0.02`);
-  starsLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starPulse * 0.66).toFixed(3)}; alphaTest: 0.02`);
-  starsRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starPulse * 0.66).toFixed(3)}; alphaTest: 0.02`);
+  const planetScale = 1 + energy * 0.06;
+  ringedPlanet.setAttribute("scale", `${planetScale.toFixed(3)} ${planetScale.toFixed(3)} 1`);
 
+  /* stars shimmer more with music */
+  const starBase = playing ? 0.18 + energy * 0.18 : 0.12;
+  starsFar.setAttribute("material", `shader: flat; transparent: true; opacity: ${starBase.toFixed(3)}; alphaTest: 0.02`);
+  starsLeft.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starBase * 0.7).toFixed(3)}; alphaTest: 0.02`);
+  starsRight.setAttribute("material", `shader: flat; transparent: true; opacity: ${(starBase * 0.7).toFixed(3)}; alphaTest: 0.02`);
+
+  /* pulse shell reacts to track energy */
   const pulse = playing
-    ? (Math.sin(motionPhase * 0.09) * 0.5 + 0.5) * 0.08
-    : (Math.sin(motionPhase * 0.05) * 0.5 + 0.5) * 0.03;
+    ? ((Math.sin(phase * 0.12) * 0.5 + 0.5) * (0.03 + energy * 0.16))
+    : ((Math.sin(phase * 0.06) * 0.5 + 0.5) * 0.02);
 
   pulseShell.setAttribute(
     "material",
-    `shader: flat; color: #8f63ff; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
+    `shader: flat; color: #7a5cff; side: back; transparent: true; opacity: ${pulse.toFixed(3)}`
   );
 
   requestAnimationFrame(animateUniverse);
