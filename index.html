@@ -58,6 +58,7 @@ button.on{background:#6d2a8f}
   cosmos-fx>
 
   <a-entity id="sky" cosmos-sky></a-entity>
+  <a-entity id="solar" cosmos-solar></a-entity>
 
   <a-entity id="rig" cosmos-locomotion wasd-controls="acceleration:35">
     <a-entity id="head" camera look-controls="pointerLockEnabled:false"></a-entity>
@@ -121,6 +122,8 @@ const store={
   get(k,d){try{const v=localStorage.getItem("bu."+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
   set(k,v){try{localStorage.setItem("bu."+k,JSON.stringify(v))}catch(e){}}
 };
+
+window.CosmosShared={C:C,THREE:THREE};
 
 function prettyName(f){return f.replace(/\.mp3$/i,"").replace(/^\d+\s+STARSET\s+-\s+/i,"")}
 function shuffleInPlace(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));const t=a[i];a[i]=a[j];a[j]=t}return a}
@@ -691,5 +694,6 @@ AFRAME.registerComponent("cosmos-panel",{
 
 })();
 </script>
+<script src="solar.js"></script>
 </body>
 </html>
